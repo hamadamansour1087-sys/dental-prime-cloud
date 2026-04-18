@@ -1,0 +1,117 @@
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+
+type Role = "admin" | "manager" | "technician";
+
+interface Profile {
+  id: string;
+  lab_id: string | null;
+  full_name: string | null;
+}
+
+interface AuthCtx {
+  user: User | null;
+  session: Session | null;
+  profile: Profile | null;
+  roles: Role[];
+  labId: string | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, labName: string) => Promise<{ error: string | null }>;
+  signOut: () => Promise<void>;
+  hasRole: (r: Role) => boolean;
+  refresh: () => Promise<void>;
+}
+
+const Ctx = createContext<AuthCtx | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadProfileAndRoles = async (uid: string) => {
+    const [{ data: prof }, { data: rs }] = await Promise.all([
+      supabase.from("profiles").select("id, lab_id, full_name").eq("id", uid).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", uid),
+    ]);
+    setProfile(prof ?? null);
+    setRoles(((rs ?? []) as { role: Role }[]).map((r) => r.role));
+  };
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        setTimeout(() => loadProfileAndRoles(sess.user.id), 0);
+      } else {
+        setProfile(null);
+        setRoles([]);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) loadProfileAndRoles(sess.user.id).finally(() => setLoading(false));
+      else setLoading(false);
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  };
+
+  const signUp = async (email: string, password: string, fullName: string, labName: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        data: { full_name: fullName, lab_name: labName },
+      },
+    });
+    return { error: error?.message ?? null };
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const refresh = async () => {
+    if (user) await loadProfileAndRoles(user.id);
+  };
+
+  return (
+    <Ctx.Provider
+      value={{
+        user,
+        session,
+        profile,
+        roles,
+        labId: profile?.lab_id ?? null,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        hasRole: (r) => roles.includes(r),
+        refresh,
+      }}
+    >
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
+}
