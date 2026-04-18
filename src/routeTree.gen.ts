@@ -9,38 +9,181 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
+import { Route as AppUsersRouteImport } from './routes/_app.users'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppPatientsRouteImport } from './routes/_app.patients'
+import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCasesRouteImport } from './routes/_app.cases'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientsRoute = AppPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDoctorsRoute = AppDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCasesRoute = AppCasesRouteImport.update({
+  id: '/cases',
+  path: '/cases',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/cases': typeof AppCasesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/doctors': typeof AppDoctorsRoute
+  '/patients': typeof AppPatientsRoute
+  '/settings': typeof AppSettingsRoute
+  '/users': typeof AppUsersRoute
+  '/workflows': typeof AppWorkflowsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/cases': typeof AppCasesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/doctors': typeof AppDoctorsRoute
+  '/patients': typeof AppPatientsRoute
+  '/settings': typeof AppSettingsRoute
+  '/users': typeof AppUsersRoute
+  '/workflows': typeof AppWorkflowsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/_app/cases': typeof AppCasesRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/doctors': typeof AppDoctorsRoute
+  '/_app/patients': typeof AppPatientsRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/users': typeof AppUsersRoute
+  '/_app/workflows': typeof AppWorkflowsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/cases'
+    | '/dashboard'
+    | '/doctors'
+    | '/patients'
+    | '/settings'
+    | '/users'
+    | '/workflows'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/cases'
+    | '/dashboard'
+    | '/doctors'
+    | '/patients'
+    | '/settings'
+    | '/users'
+    | '/workflows'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/login'
+    | '/signup'
+    | '/_app/cases'
+    | '/_app/dashboard'
+    | '/_app/doctors'
+    | '/_app/patients'
+    | '/_app/settings'
+    | '/_app/users'
+    | '/_app/workflows'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +191,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/workflows': {
+      id: '/_app/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof AppWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/patients': {
+      id: '/_app/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AppPatientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/doctors': {
+      id: '/_app/doctors'
+      path: '/doctors'
+      fullPath: '/doctors'
+      preLoaderRoute: typeof AppDoctorsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cases': {
+      id: '/_app/cases'
+      path: '/cases'
+      fullPath: '/cases'
+      preLoaderRoute: typeof AppCasesRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppCasesRoute: typeof AppCasesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDoctorsRoute: typeof AppDoctorsRoute
+  AppPatientsRoute: typeof AppPatientsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppUsersRoute: typeof AppUsersRoute
+  AppWorkflowsRoute: typeof AppWorkflowsRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCasesRoute: AppCasesRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppDoctorsRoute: AppDoctorsRoute,
+  AppPatientsRoute: AppPatientsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppUsersRoute: AppUsersRoute,
+  AppWorkflowsRoute: AppWorkflowsRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
