@@ -24,7 +24,8 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
-const items = [
+type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; adminOnly?: boolean };
+const items: NavItem[] = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الحالات", url: "/cases", icon: ClipboardList },
   { title: "الأطباء", url: "/doctors", icon: Stethoscope },
@@ -32,7 +33,7 @@ const items = [
   { title: "سير العمل", url: "/workflows", icon: Workflow, adminOnly: true },
   { title: "المستخدمون والأدوار", url: "/users", icon: Shield, adminOnly: true },
   { title: "الإعدادات", url: "/settings", icon: Settings, adminOnly: true },
-] as const;
+];
 
 export function AppSidebar() {
   const { state } = useSidebar();
