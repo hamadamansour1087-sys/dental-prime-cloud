@@ -15,8 +15,8 @@ function UsersPage() {
     queryKey: ["lab-users", labId],
     enabled: !!labId,
     queryFn: async () => {
-      const { data: profiles } = await supabase.from("profiles").select("*").eq("lab_id", labId);
-      const { data: roles } = await supabase.from("user_roles").select("user_id, role").eq("lab_id", labId);
+      const { data: profiles } = await supabase.from("profiles").select("*").eq("lab_id", labId!);
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").eq("lab_id", labId!);
       return (profiles ?? []).map((p) => ({
         ...p,
         roles: (roles ?? []).filter((r) => r.user_id === p.id).map((r) => r.role),
@@ -27,7 +27,7 @@ function UsersPage() {
   const { data: roles } = useQuery({
     queryKey: ["lab-roles", labId],
     enabled: !!labId,
-    queryFn: async () => (await supabase.from("roles").select("*").eq("lab_id", labId)).data ?? [],
+    queryFn: async () => (await supabase.from("roles").select("*").eq("lab_id", labId!)).data ?? [],
   });
 
   return (
