@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   ClipboardList,
   Stethoscope,
-  Users,
   Workflow,
   Shield,
   Settings,
