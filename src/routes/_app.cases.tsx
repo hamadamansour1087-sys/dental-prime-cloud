@@ -63,11 +63,6 @@ function CasesPage() {
     enabled: !!labId,
     queryFn: async () => (await supabase.from("doctors").select("id, name").eq("is_active", true)).data ?? [],
   });
-  const { data: patients } = useQuery({
-    queryKey: ["patients-select", labId],
-    enabled: !!labId,
-    queryFn: async () => (await supabase.from("patients").select("id, name")).data ?? [],
-  });
   const { data: workTypes } = useQuery({
     queryKey: ["worktypes-select", labId],
     enabled: !!labId,
