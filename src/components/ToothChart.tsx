@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// FDI numbering: quadrants 1-4 (adult permanent)
-// Q1: upper-right 18-11 | Q2: upper-left 21-28
-// Q4: lower-right 48-41 | Q3: lower-left 31-38
+type System = "FDI" | "Universal" | "Quadrant";
+
+// FDI: full numbers (e.g. 18, 11, 21, 28)
 const FDI = {
   upperRight: [18, 17, 16, 15, 14, 13, 12, 11],
   upperLeft: [21, 22, 23, 24, 25, 26, 27, 28],
@@ -12,9 +12,7 @@ const FDI = {
   lowerLeft: [31, 32, 33, 34, 35, 36, 37, 38],
 };
 
-// Universal numbering 1-32
-// Upper: 1 (upper-right 3rd molar) → 16 (upper-left 3rd molar)
-// Lower: 17 (lower-left 3rd molar) → 32 (lower-right 3rd molar)
+// Universal 1-32
 const UNIV = {
   upperRight: [1, 2, 3, 4, 5, 6, 7, 8],
   upperLeft: [9, 10, 11, 12, 13, 14, 15, 16],
@@ -22,10 +20,18 @@ const UNIV = {
   lowerRight: [32, 31, 30, 29, 28, 27, 26, 25],
 };
 
-type System = "FDI" | "Universal";
+// Quadrant: each quadrant numbered 1-8 from midline outward
+// We store with quadrant prefix to keep uniqueness: UR1..UR8, UL1..UL8, LR1..LR8, LL1..LL8
+// But display only the number 1-8.
+const QUAD = {
+  upperRight: ["UR8", "UR7", "UR6", "UR5", "UR4", "UR3", "UR2", "UR1"],
+  upperLeft: ["UL1", "UL2", "UL3", "UL4", "UL5", "UL6", "UL7", "UL8"],
+  lowerRight: ["LR8", "LR7", "LR6", "LR5", "LR4", "LR3", "LR2", "LR1"],
+  lowerLeft: ["LL1", "LL2", "LL3", "LL4", "LL5", "LL6", "LL7", "LL8"],
+};
 
 export interface ToothChartProps {
-  value: string; // comma-separated tooth numbers
+  value: string;
   onChange: (value: string) => void;
 }
 
@@ -42,65 +48,67 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
   const [system, setSystem] = useState<System>("FDI");
   const selected = useMemo(() => parseSelected(value), [value]);
 
-  const toggle = (n: number) => {
-    const key = String(n);
+  const toggle = (key: string) => {
     const next = new Set(selected);
     if (next.has(key)) next.delete(key);
     else next.add(key);
-    onChange(
-      Array.from(next)
-        .sort((a, b) => Number(a) - Number(b))
-        .join(", "),
-    );
+    const arr = Array.from(next);
+    // Sort numerically for FDI/Universal, alphabetically for Quadrant codes
+    arr.sort((a, b) => {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    });
+    onChange(arr.join(", "));
   };
 
   const clear = () => onChange("");
 
-  const rows = system === "FDI" ? FDI : UNIV;
+  const rows = system === "FDI" ? FDI : system === "Universal" ? UNIV : QUAD;
 
-  const Tooth = ({ n }: { n: number }) => {
-    const isOn = selected.has(String(n));
+  const Tooth = ({ value: v }: { value: string | number }) => {
+    const key = String(v);
+    const isOn = selected.has(key);
+    // For Quadrant display, strip the prefix (UR/UL/LR/LL)
+    const display = system === "Quadrant" ? key.replace(/^(UR|UL|LR|LL)/, "") : key;
     return (
       <button
         type="button"
-        onClick={() => toggle(n)}
+        onClick={() => toggle(key)}
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-md border text-xs font-semibold transition-colors",
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs",
           isOn
             ? "border-primary bg-primary text-primary-foreground"
             : "border-border bg-card hover:bg-accent",
         )}
       >
-        {n}
+        {display}
       </button>
     );
   };
 
   return (
-    <div className="space-y-3 rounded-lg border bg-muted/30 p-3" dir="ltr">
-      <div className="flex items-center justify-between" dir="rtl">
-        <div className="flex gap-1">
-          <Button
-            type="button"
-            size="sm"
-            variant={system === "FDI" ? "default" : "outline"}
-            onClick={() => setSystem("FDI")}
-          >
-            FDI
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={system === "Universal" ? "default" : "outline"}
-            onClick={() => setSystem("Universal")}
-          >
-            Universal
-          </Button>
+    <div className="space-y-3 rounded-lg border bg-muted/30 p-2 sm:p-3" dir="ltr">
+      <div className="flex flex-wrap items-center justify-between gap-2" dir="rtl">
+        <div className="flex flex-wrap gap-1">
+          {(["FDI", "Universal", "Quadrant"] as System[]).map((s) => (
+            <Button
+              key={s}
+              type="button"
+              size="sm"
+              variant={system === s ? "default" : "outline"}
+              onClick={() => setSystem(s)}
+              className="h-7 px-2 text-xs sm:h-8 sm:px-3"
+            >
+              {s === "Quadrant" ? "ربع (1-8)" : s}
+            </Button>
+          ))}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{selected.size} مختار</span>
           {selected.size > 0 && (
-            <Button type="button" size="sm" variant="ghost" onClick={clear}>
+            <Button type="button" size="sm" variant="ghost" onClick={clear} className="h-7 px-2 text-xs">
               مسح
             </Button>
           )}
@@ -110,22 +118,21 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
       {/* Upper jaw */}
       <div className="space-y-1">
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Upper</p>
-        <div className="flex justify-center gap-1">
-          {rows.upperRight.map((n) => <Tooth key={n} n={n} />)}
-          <div className="mx-1 w-px bg-border" />
-          {rows.upperLeft.map((n) => <Tooth key={n} n={n} />)}
+        <div className="flex justify-center gap-0.5 sm:gap-1">
+          {rows.upperRight.map((n) => <Tooth key={String(n)} value={n} />)}
+          <div className="mx-0.5 w-px bg-border sm:mx-1" />
+          {rows.upperLeft.map((n) => <Tooth key={String(n)} value={n} />)}
         </div>
       </div>
 
-      {/* Divider */}
       <div className="h-px bg-border" />
 
       {/* Lower jaw */}
       <div className="space-y-1">
-        <div className="flex justify-center gap-1">
-          {rows.lowerRight.map((n) => <Tooth key={n} n={n} />)}
-          <div className="mx-1 w-px bg-border" />
-          {rows.lowerLeft.map((n) => <Tooth key={n} n={n} />)}
+        <div className="flex justify-center gap-0.5 sm:gap-1">
+          {rows.lowerRight.map((n) => <Tooth key={String(n)} value={n} />)}
+          <div className="mx-0.5 w-px bg-border sm:mx-1" />
+          {rows.lowerLeft.map((n) => <Tooth key={String(n)} value={n} />)}
         </div>
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Lower</p>
       </div>

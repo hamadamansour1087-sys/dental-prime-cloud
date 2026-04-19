@@ -149,7 +149,7 @@ function CasesPage() {
           <DialogTrigger asChild>
             <Button><Plus className="ml-1 h-4 w-4" />حالة جديدة</Button>
           </DialogTrigger>
-          <DialogContent dir="rtl" className="max-h-[90vh] overflow-y-auto">
+          <DialogContent dir="rtl" className="max-h-[90vh] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto sm:w-full">
             <DialogHeader><DialogTitle>حالة جديدة</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
