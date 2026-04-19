@@ -25,6 +25,7 @@ function CasesPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     doctor_id: "",
+    clinic_id: "",
     patient_name: "",
     work_type_id: "",
     shade: "",
@@ -61,8 +62,13 @@ function CasesPage() {
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
-    queryFn: async () => (await supabase.from("doctors").select("id, name").eq("is_active", true)).data ?? [],
+    queryFn: async () =>
+      (await supabase
+        .from("doctors")
+        .select("id, name, governorate, doctor_clinics(id, name)")
+        .eq("is_active", true)).data ?? [],
   });
+  const selectedDoctor = doctors?.find((d: any) => d.id === form.doctor_id) as any;
   const { data: workTypes } = useQuery({
     queryKey: ["worktypes-select", labId],
     enabled: !!labId,
@@ -128,7 +134,7 @@ function CasesPage() {
     }
     toast.success("تم إنشاء الحالة");
     setOpen(false);
-    setForm({ doctor_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
+    setForm({ doctor_id: "", clinic_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
     qc.invalidateQueries({ queryKey: ["cases"] });
   };
 
@@ -154,11 +160,25 @@ function CasesPage() {
             <div className="space-y-3">
               <div>
                 <Label>الطبيب *</Label>
-                <Select value={form.doctor_id} onValueChange={(v) => setForm({ ...form, doctor_id: v })}>
+                <Select value={form.doctor_id} onValueChange={(v) => setForm({ ...form, doctor_id: v, clinic_id: "" })}>
                   <SelectTrigger><SelectValue placeholder="اختر طبيبًا" /></SelectTrigger>
-                  <SelectContent>{doctors?.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
+                  <SelectContent>{doctors?.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}{d.governorate ? ` — ${d.governorate}` : ""}</SelectItem>)}</SelectContent>
                 </Select>
+                {selectedDoctor?.governorate && (
+                  <p className="mt-1 text-xs text-muted-foreground">المحافظة: {selectedDoctor.governorate}</p>
+                )}
               </div>
+              {selectedDoctor?.doctor_clinics?.length > 0 && (
+                <div>
+                  <Label>العيادة</Label>
+                  <Select value={form.clinic_id} onValueChange={(v) => setForm({ ...form, clinic_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="اختر العيادة" /></SelectTrigger>
+                    <SelectContent>
+                      {selectedDoctor.doctor_clinics.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label>اسم المريض</Label>
                 <Input
