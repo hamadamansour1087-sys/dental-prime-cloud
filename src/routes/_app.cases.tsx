@@ -25,7 +25,7 @@ function CasesPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     doctor_id: "",
-    patient_id: "",
+    patient_name: "",
     work_type_id: "",
     shade: "",
     tooth_numbers: "",
