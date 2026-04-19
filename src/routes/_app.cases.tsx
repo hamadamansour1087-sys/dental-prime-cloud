@@ -74,6 +74,28 @@ function CasesPage() {
       toast.error("اختر الطبيب");
       return;
     }
+    // Resolve patient: find existing by name (case-insensitive) or create
+    let patientId: string | null = null;
+    const trimmedName = form.patient_name.trim();
+    if (trimmedName) {
+      const { data: existing } = await supabase
+        .from("patients")
+        .select("id")
+        .ilike("name", trimmedName)
+        .maybeSingle();
+      if (existing) {
+        patientId = existing.id;
+      } else {
+        const { data: newP, error: pErr } = await supabase
+          .from("patients")
+          .insert({ lab_id: labId, name: trimmedName })
+          .select("id")
+          .single();
+        if (pErr) return toast.error(pErr.message);
+        patientId = newP.id;
+      }
+    }
+
     const { data: caseNum } = await supabase.rpc("generate_case_number", { _lab_id: labId });
     const { data: wf } = await supabase.from("workflows").select("id").eq("is_default", true).maybeSingle();
     const startStage = stages?.find((s) => s.order_index === 1);
@@ -83,7 +105,7 @@ function CasesPage() {
         lab_id: labId,
         case_number: caseNum as string,
         doctor_id: form.doctor_id,
-        patient_id: form.patient_id || null,
+        patient_id: patientId,
         work_type_id: form.work_type_id || null,
         workflow_id: wf?.id ?? null,
         current_stage_id: startStage?.id ?? null,
@@ -106,7 +128,7 @@ function CasesPage() {
     }
     toast.success("تم إنشاء الحالة");
     setOpen(false);
-    setForm({ doctor_id: "", patient_id: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
+    setForm({ doctor_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
     qc.invalidateQueries({ queryKey: ["cases"] });
   };
 
