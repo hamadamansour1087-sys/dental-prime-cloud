@@ -25,6 +25,7 @@ function CasesPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     doctor_id: "",
+    clinic_id: "",
     patient_name: "",
     work_type_id: "",
     shade: "",
@@ -61,8 +62,13 @@ function CasesPage() {
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
-    queryFn: async () => (await supabase.from("doctors").select("id, name").eq("is_active", true)).data ?? [],
+    queryFn: async () =>
+      (await supabase
+        .from("doctors")
+        .select("id, name, governorate, doctor_clinics(id, name)")
+        .eq("is_active", true)).data ?? [],
   });
+  const selectedDoctor = doctors?.find((d: any) => d.id === form.doctor_id) as any;
   const { data: workTypes } = useQuery({
     queryKey: ["worktypes-select", labId],
     enabled: !!labId,
