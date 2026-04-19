@@ -28,7 +28,6 @@ const items: NavItem[] = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الحالات", url: "/cases", icon: ClipboardList },
   { title: "الأطباء", url: "/doctors", icon: Stethoscope },
-  { title: "المرضى", url: "/patients", icon: Users },
   { title: "سير العمل", url: "/workflows", icon: Workflow, adminOnly: true },
   { title: "المستخدمون والأدوار", url: "/users", icon: Shield, adminOnly: true },
   { title: "الإعدادات", url: "/settings", icon: Settings, adminOnly: true },
