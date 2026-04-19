@@ -32,8 +32,17 @@ function CasesPage() {
     tooth_numbers: "",
     units: "1",
     due_date: "",
-    price: "",
     notes: "",
+  });
+
+  // Preview the next case number when the dialog is open
+  const { data: nextCaseNumber } = useQuery({
+    queryKey: ["next-case-number", labId, open],
+    enabled: !!labId && open,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("generate_case_number", { _lab_id: labId! });
+      return data as string;
+    },
   });
 
   const { data: stages } = useQuery({
@@ -119,7 +128,6 @@ function CasesPage() {
         tooth_numbers: form.tooth_numbers || null,
         units: parseInt(form.units) || 1,
         due_date: form.due_date || null,
-        price: form.price ? parseFloat(form.price) : null,
         notes: form.notes || null,
       })
       .select()
@@ -132,10 +140,11 @@ function CasesPage() {
         stage_id: startStage.id,
       });
     }
-    toast.success("تم إنشاء الحالة");
+    toast.success(`تم تسجيل الحالة رقم ${created?.case_number ?? caseNum}`);
     setOpen(false);
-    setForm({ doctor_id: "", clinic_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
+    setForm({ doctor_id: "", clinic_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", notes: "" });
     qc.invalidateQueries({ queryKey: ["cases"] });
+    qc.invalidateQueries({ queryKey: ["next-case-number"] });
   };
 
   const moveCase = async (caseId: string, toStageId: string) => {
@@ -156,7 +165,16 @@ function CasesPage() {
             <Button><Plus className="ml-1 h-4 w-4" />حالة جديدة</Button>
           </DialogTrigger>
           <DialogContent dir="rtl" className="max-h-[90vh] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto sm:w-full">
-            <DialogHeader><DialogTitle>حالة جديدة</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between gap-2">
+                <span>حالة جديدة</span>
+                {nextCaseNumber && (
+                  <span className="rounded-md bg-primary/10 px-2 py-1 font-mono text-sm text-primary">
+                    {nextCaseNumber}
+                  </span>
+                )}
+              </DialogTitle>
+            </DialogHeader>
             <div className="space-y-3">
               <div>
                 <Label>الطبيب *</Label>
@@ -202,9 +220,9 @@ function CasesPage() {
                 <Label>الأسنان</Label>
                 <ToothChart value={form.tooth_numbers} onChange={(v) => setForm({ ...form, tooth_numbers: v })} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>تاريخ التسليم</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
-                <div><Label>السعر</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div>
+              <div>
+                <Label>تاريخ التسليم</Label>
+                <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
               </div>
               <div><Label>ملاحظات</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
             </div>
