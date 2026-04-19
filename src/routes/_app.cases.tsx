@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Calendar, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ToothChart } from "@/components/ToothChart";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
@@ -24,7 +25,7 @@ function CasesPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     doctor_id: "",
-    patient_id: "",
+    patient_name: "",
     work_type_id: "",
     shade: "",
     tooth_numbers: "",
@@ -62,11 +63,6 @@ function CasesPage() {
     enabled: !!labId,
     queryFn: async () => (await supabase.from("doctors").select("id, name").eq("is_active", true)).data ?? [],
   });
-  const { data: patients } = useQuery({
-    queryKey: ["patients-select", labId],
-    enabled: !!labId,
-    queryFn: async () => (await supabase.from("patients").select("id, name")).data ?? [],
-  });
   const { data: workTypes } = useQuery({
     queryKey: ["worktypes-select", labId],
     enabled: !!labId,
@@ -78,6 +74,28 @@ function CasesPage() {
       toast.error("اختر الطبيب");
       return;
     }
+    // Resolve patient: find existing by name (case-insensitive) or create
+    let patientId: string | null = null;
+    const trimmedName = form.patient_name.trim();
+    if (trimmedName) {
+      const { data: existing } = await supabase
+        .from("patients")
+        .select("id")
+        .ilike("name", trimmedName)
+        .maybeSingle();
+      if (existing) {
+        patientId = existing.id;
+      } else {
+        const { data: newP, error: pErr } = await supabase
+          .from("patients")
+          .insert({ lab_id: labId, name: trimmedName })
+          .select("id")
+          .single();
+        if (pErr) return toast.error(pErr.message);
+        patientId = newP.id;
+      }
+    }
+
     const { data: caseNum } = await supabase.rpc("generate_case_number", { _lab_id: labId });
     const { data: wf } = await supabase.from("workflows").select("id").eq("is_default", true).maybeSingle();
     const startStage = stages?.find((s) => s.order_index === 1);
@@ -87,7 +105,7 @@ function CasesPage() {
         lab_id: labId,
         case_number: caseNum as string,
         doctor_id: form.doctor_id,
-        patient_id: form.patient_id || null,
+        patient_id: patientId,
         work_type_id: form.work_type_id || null,
         workflow_id: wf?.id ?? null,
         current_stage_id: startStage?.id ?? null,
@@ -110,7 +128,7 @@ function CasesPage() {
     }
     toast.success("تم إنشاء الحالة");
     setOpen(false);
-    setForm({ doctor_id: "", patient_id: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
+    setForm({ doctor_id: "", patient_name: "", work_type_id: "", shade: "", tooth_numbers: "", units: "1", due_date: "", price: "", notes: "" });
     qc.invalidateQueries({ queryKey: ["cases"] });
   };
 
@@ -142,11 +160,12 @@ function CasesPage() {
                 </Select>
               </div>
               <div>
-                <Label>المريض</Label>
-                <Select value={form.patient_id} onValueChange={(v) => setForm({ ...form, patient_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="اختر مريضًا" /></SelectTrigger>
-                  <SelectContent>{patients?.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <Label>اسم المريض</Label>
+                <Input
+                  value={form.patient_name}
+                  onChange={(e) => setForm({ ...form, patient_name: e.target.value })}
+                  placeholder="اكتب اسم المريض"
+                />
               </div>
               <div>
                 <Label>نوع العمل</Label>
@@ -159,7 +178,10 @@ function CasesPage() {
                 <div><Label>اللون</Label><Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} placeholder="A2" /></div>
                 <div><Label>عدد الوحدات</Label><Input type="number" value={form.units} onChange={(e) => setForm({ ...form, units: e.target.value })} /></div>
               </div>
-              <div><Label>أرقام الأسنان</Label><Input value={form.tooth_numbers} onChange={(e) => setForm({ ...form, tooth_numbers: e.target.value })} placeholder="11, 12, 13" /></div>
+              <div>
+                <Label>الأسنان</Label>
+                <ToothChart value={form.tooth_numbers} onChange={(v) => setForm({ ...form, tooth_numbers: v })} />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>تاريخ التسليم</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
                 <div><Label>السعر</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div>
