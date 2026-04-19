@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Calendar, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ToothChart } from "@/components/ToothChart";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
