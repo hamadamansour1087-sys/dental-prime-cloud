@@ -279,17 +279,70 @@ export type Database = {
           },
         ]
       }
+      doctor_clinics: {
+        Row: {
+          address: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          is_primary: boolean
+          lab_id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          is_primary?: boolean
+          lab_id: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          is_primary?: boolean
+          lab_id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_clinics_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_clinics_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           address: string | null
           clinic_name: string | null
           created_at: string
           email: string | null
+          governorate: string | null
           id: string
           is_active: boolean
           lab_id: string
           name: string
           notes: string | null
+          opening_balance: number
           phone: string | null
           updated_at: string
         }
@@ -298,11 +351,13 @@ export type Database = {
           clinic_name?: string | null
           created_at?: string
           email?: string | null
+          governorate?: string | null
           id?: string
           is_active?: boolean
           lab_id: string
           name: string
           notes?: string | null
+          opening_balance?: number
           phone?: string | null
           updated_at?: string
         }
@@ -311,11 +366,13 @@ export type Database = {
           clinic_name?: string | null
           created_at?: string
           email?: string | null
+          governorate?: string | null
           id?: string
           is_active?: boolean
           lab_id?: string
           name?: string
           notes?: string | null
+          opening_balance?: number
           phone?: string | null
           updated_at?: string
         }
