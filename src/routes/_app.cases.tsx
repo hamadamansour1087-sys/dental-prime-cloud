@@ -160,11 +160,12 @@ function CasesPage() {
                 </Select>
               </div>
               <div>
-                <Label>المريض</Label>
-                <Select value={form.patient_id} onValueChange={(v) => setForm({ ...form, patient_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="اختر مريضًا" /></SelectTrigger>
-                  <SelectContent>{patients?.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <Label>اسم المريض</Label>
+                <Input
+                  value={form.patient_name}
+                  onChange={(e) => setForm({ ...form, patient_name: e.target.value })}
+                  placeholder="اكتب اسم المريض"
+                />
               </div>
               <div>
                 <Label>نوع العمل</Label>
@@ -177,7 +178,10 @@ function CasesPage() {
                 <div><Label>اللون</Label><Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} placeholder="A2" /></div>
                 <div><Label>عدد الوحدات</Label><Input type="number" value={form.units} onChange={(e) => setForm({ ...form, units: e.target.value })} /></div>
               </div>
-              <div><Label>أرقام الأسنان</Label><Input value={form.tooth_numbers} onChange={(e) => setForm({ ...form, tooth_numbers: e.target.value })} placeholder="11, 12, 13" /></div>
+              <div>
+                <Label>الأسنان</Label>
+                <ToothChart value={form.tooth_numbers} onChange={(v) => setForm({ ...form, tooth_numbers: v })} />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>تاريخ التسليم</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
                 <div><Label>السعر</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div>
