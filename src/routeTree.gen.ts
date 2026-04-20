@@ -18,6 +18,7 @@ import { Route as AppUsersRouteImport } from './routes/_app.users'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
+import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
@@ -66,6 +67,11 @@ const AppPatientsRoute = AppPatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDoctorsRoute = AppDoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/cases': typeof AppCasesRoute
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
+  '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/cases': typeof AppCasesRoute
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
+  '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/_app/cases': typeof AppCasesRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/doctors': typeof AppDoctorsRoute
+  '/_app/invoices': typeof AppInvoicesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/dashboard'
     | '/doctors'
+    | '/invoices'
     | '/patients'
     | '/pricing'
     | '/settings'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/dashboard'
     | '/doctors'
+    | '/invoices'
     | '/patients'
     | '/pricing'
     | '/settings'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/_app/cases'
     | '/_app/dashboard'
     | '/_app/doctors'
+    | '/_app/invoices'
     | '/_app/patients'
     | '/_app/pricing'
     | '/_app/settings'
@@ -238,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/invoices': {
+      id: '/_app/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/doctors': {
       id: '/_app/doctors'
       path: '/doctors'
@@ -266,6 +285,7 @@ interface AppRouteChildren {
   AppCasesRoute: typeof AppCasesRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPricingRoute: typeof AppPricingRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -277,6 +297,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCasesRoute: AppCasesRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDoctorsRoute: AppDoctorsRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPricingRoute: AppPricingRoute,
   AppSettingsRoute: AppSettingsRoute,
