@@ -15,6 +15,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
+import { Route as AppStatementsRouteImport } from './routes/_app.statements'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
@@ -50,6 +51,11 @@ const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStatementsRoute = AppStatementsRouteImport.update({
+  id: '/statements',
+  path: '/statements',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/patients': typeof AppPatientsRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
+  '/statements': typeof AppStatementsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
 }
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/patients': typeof AppPatientsRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
+  '/statements': typeof AppStatementsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
 }
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/statements': typeof AppStatementsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
 }
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/patients'
     | '/pricing'
     | '/settings'
+    | '/statements'
     | '/users'
     | '/workflows'
   fileRoutesByTo: FileRoutesByTo
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/patients'
     | '/pricing'
     | '/settings'
+    | '/statements'
     | '/users'
     | '/workflows'
   id:
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_app/patients'
     | '/_app/pricing'
     | '/_app/settings'
+    | '/_app/statements'
     | '/_app/users'
     | '/_app/workflows'
   fileRoutesById: FileRoutesById
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/statements': {
+      id: '/_app/statements'
+      path: '/statements'
+      fullPath: '/statements'
+      preLoaderRoute: typeof AppStatementsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -289,6 +308,7 @@ interface AppRouteChildren {
   AppPatientsRoute: typeof AppPatientsRoute
   AppPricingRoute: typeof AppPricingRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppStatementsRoute: typeof AppStatementsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppWorkflowsRoute: typeof AppWorkflowsRoute
 }
@@ -301,6 +321,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPatientsRoute: AppPatientsRoute,
   AppPricingRoute: AppPricingRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppStatementsRoute: AppStatementsRoute,
   AppUsersRoute: AppUsersRoute,
   AppWorkflowsRoute: AppWorkflowsRoute,
 }
