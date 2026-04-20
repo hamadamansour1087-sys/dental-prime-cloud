@@ -84,6 +84,20 @@ function CasesPage() {
     queryFn: async () => (await supabase.from("work_types").select("id, name").eq("is_active", true)).data ?? [],
   });
 
+  // Live preview of resolved price (doctor > governorate > general)
+  const { data: previewPrice } = useQuery({
+    queryKey: ["resolve-price", labId, form.work_type_id, form.doctor_id],
+    enabled: !!labId && !!form.work_type_id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("resolve_case_price", {
+        _lab_id: labId!,
+        _work_type_id: form.work_type_id,
+        _doctor_id: (form.doctor_id || null) as string,
+      });
+      return data as number | null;
+    },
+  });
+
   const submit = async () => {
     if (!labId || !form.doctor_id) {
       toast.error("اختر الطبيب");
@@ -211,6 +225,16 @@ function CasesPage() {
                   <SelectTrigger><SelectValue placeholder="اختر النوع" /></SelectTrigger>
                   <SelectContent>{workTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
                 </Select>
+                {form.work_type_id && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    السعر التلقائي:{" "}
+                    {previewPrice != null ? (
+                      <span className="font-mono font-semibold text-primary">{Number(previewPrice).toFixed(2)}</span>
+                    ) : (
+                      <span className="text-destructive">غير محدد</span>
+                    )}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>اللون</Label><Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} placeholder="A2" /></div>

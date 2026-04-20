@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
@@ -55,6 +56,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPricingRoute = AppPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPatientsRoute = AppPatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/patients': typeof AppPatientsRoute
+  '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/patients': typeof AppPatientsRoute
+  '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/doctors': typeof AppDoctorsRoute
   '/_app/patients': typeof AppPatientsRoute
+  '/_app/pricing': typeof AppPricingRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/doctors'
     | '/patients'
+    | '/pricing'
     | '/settings'
     | '/users'
     | '/workflows'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/doctors'
     | '/patients'
+    | '/pricing'
     | '/settings'
     | '/users'
     | '/workflows'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/doctors'
     | '/_app/patients'
+    | '/_app/pricing'
     | '/_app/settings'
     | '/_app/users'
     | '/_app/workflows'
@@ -212,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pricing': {
+      id: '/_app/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof AppPricingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/patients': {
       id: '/_app/patients'
       path: '/patients'
@@ -248,6 +267,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
   AppPatientsRoute: typeof AppPatientsRoute
+  AppPricingRoute: typeof AppPricingRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppWorkflowsRoute: typeof AppWorkflowsRoute
@@ -258,6 +278,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDoctorsRoute: AppDoctorsRoute,
   AppPatientsRoute: AppPatientsRoute,
+  AppPricingRoute: AppPricingRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppUsersRoute: AppUsersRoute,
   AppWorkflowsRoute: AppWorkflowsRoute,
