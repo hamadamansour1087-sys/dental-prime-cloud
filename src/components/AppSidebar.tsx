@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   ClipboardList,
   Stethoscope,
+  DollarSign,
   Workflow,
   Shield,
   Settings,
