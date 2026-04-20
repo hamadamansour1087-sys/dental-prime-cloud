@@ -508,6 +508,67 @@ export type Database = {
         }
         Relationships: []
       }
+      price_lists: {
+        Row: {
+          created_at: string
+          doctor_id: string | null
+          governorate: string | null
+          id: string
+          is_active: boolean
+          lab_id: string
+          notes: string | null
+          price: number
+          updated_at: string
+          work_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id?: string | null
+          governorate?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id: string
+          notes?: string | null
+          price: number
+          updated_at?: string
+          work_type_id: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string | null
+          governorate?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id?: string
+          notes?: string | null
+          price?: number
+          updated_at?: string
+          work_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_lists_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_lists_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_lists_work_type_id_fkey"
+            columns: ["work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -856,6 +917,10 @@ export type Database = {
       is_lab_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_manager_or_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_member: { Args: { _lab_id: string }; Returns: boolean }
+      resolve_case_price: {
+        Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
+        Returns: number
+      }
       transition_case_stage: {
         Args: { _case_id: string; _notes?: string; _to_stage_id: string }
         Returns: undefined
