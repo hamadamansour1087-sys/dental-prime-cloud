@@ -225,6 +225,16 @@ function CasesPage() {
                   <SelectTrigger><SelectValue placeholder="اختر النوع" /></SelectTrigger>
                   <SelectContent>{workTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
                 </Select>
+                {form.work_type_id && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    السعر التلقائي:{" "}
+                    {previewPrice != null ? (
+                      <span className="font-mono font-semibold text-primary">{Number(previewPrice).toFixed(2)}</span>
+                    ) : (
+                      <span className="text-destructive">غير محدد</span>
+                    )}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>اللون</Label><Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} placeholder="A2" /></div>
