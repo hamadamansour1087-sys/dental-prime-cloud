@@ -92,7 +92,7 @@ function CasesPage() {
       const { data } = await supabase.rpc("resolve_case_price", {
         _lab_id: labId!,
         _work_type_id: form.work_type_id,
-        _doctor_id: form.doctor_id || null,
+        _doctor_id: (form.doctor_id || null) as string,
       });
       return data as number | null;
     },
