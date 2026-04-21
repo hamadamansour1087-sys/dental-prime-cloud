@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -521,21 +521,23 @@ function CasesPage() {
                   const overdue = c.due_date && c.due_date < today && c.status === "active";
                   const nextStage = stages?.find((s) => s.order_index === stage.order_index + 1);
                   return (
-                    <Card key={c.id} className="cursor-pointer">
+                    <Card key={c.id} className="cursor-pointer transition-colors hover:border-primary">
                       <CardContent className="p-3 text-sm">
-                        <div className="mb-1 flex items-center justify-between">
-                          <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
-                          {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
-                        </div>
-                        <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
-                        <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
-                        {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
-                        {c.due_date && (
-                          <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(c.due_date), "dd/MM/yyyy")}
-                          </p>
-                        )}
+                        <Link to="/cases/$caseId" params={{ caseId: c.id }} className="block">
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
+                            {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                          </div>
+                          <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
+                          <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
+                          {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
+                          {c.due_date && (
+                            <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(c.due_date), "dd/MM/yyyy")}
+                            </p>
+                          )}
+                        </Link>
                         {nextStage && !stage.is_end && (
                           <Button size="sm" variant="outline" className="mt-2 w-full text-xs" onClick={() => moveCase(c.id, nextStage.id)}>
                             ← {nextStage.name}
