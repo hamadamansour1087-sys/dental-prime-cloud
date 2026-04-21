@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+void Link;
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";

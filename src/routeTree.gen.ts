@@ -23,6 +23,7 @@ import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
+import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -93,12 +94,17 @@ const AppCasesRoute = AppCasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
+  id: '/$caseId',
+  path: '/$caseId',
+  getParentRoute: () => AppCasesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/cases': typeof AppCasesRoute
+  '/cases': typeof AppCasesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/invoices': typeof AppInvoicesRoute
@@ -108,12 +114,13 @@ export interface FileRoutesByFullPath {
   '/statements': typeof AppStatementsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/cases': typeof AppCasesRoute
+  '/cases': typeof AppCasesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/invoices': typeof AppInvoicesRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/statements': typeof AppStatementsRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -130,7 +138,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_app/cases': typeof AppCasesRoute
+  '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/doctors': typeof AppDoctorsRoute
   '/_app/invoices': typeof AppInvoicesRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/_app/statements': typeof AppStatementsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
+  '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/statements'
     | '/users'
     | '/workflows'
+    | '/cases/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/statements'
     | '/users'
     | '/workflows'
+    | '/cases/$caseId'
   id:
     | '__root__'
     | '/'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/_app/statements'
     | '/_app/users'
     | '/_app/workflows'
+    | '/_app/cases/$caseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -297,11 +309,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCasesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/cases/$caseId': {
+      id: '/_app/cases/$caseId'
+      path: '/$caseId'
+      fullPath: '/cases/$caseId'
+      preLoaderRoute: typeof AppCasesCaseIdRouteImport
+      parentRoute: typeof AppCasesRoute
+    }
   }
 }
 
+interface AppCasesRouteChildren {
+  AppCasesCaseIdRoute: typeof AppCasesCaseIdRoute
+}
+
+const AppCasesRouteChildren: AppCasesRouteChildren = {
+  AppCasesCaseIdRoute: AppCasesCaseIdRoute,
+}
+
+const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
+  AppCasesRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppCasesRoute: typeof AppCasesRoute
+  AppCasesRoute: typeof AppCasesRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
@@ -314,7 +345,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppCasesRoute: AppCasesRoute,
+  AppCasesRoute: AppCasesRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppDoctorsRoute: AppDoctorsRoute,
   AppInvoicesRoute: AppInvoicesRoute,
