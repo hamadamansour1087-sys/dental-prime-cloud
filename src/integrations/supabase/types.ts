@@ -62,6 +62,7 @@ export type Database = {
           file_name: string
           file_size: number | null
           id: string
+          kind: string
           lab_id: string
           mime_type: string | null
           storage_path: string
@@ -73,6 +74,7 @@ export type Database = {
           file_name: string
           file_size?: number | null
           id?: string
+          kind?: string
           lab_id: string
           mime_type?: string | null
           storage_path: string
@@ -84,6 +86,7 @@ export type Database = {
           file_name?: string
           file_size?: number | null
           id?: string
+          kind?: string
           lab_id?: string
           mime_type?: string | null
           storage_path?: string
@@ -102,6 +105,76 @@ export type Database = {
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_items: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          lab_id: string
+          notes: string | null
+          position: number
+          shade: string | null
+          tooth_numbers: string | null
+          total_price: number | null
+          unit_price: number | null
+          units: number
+          updated_at: string
+          work_type_id: string | null
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          lab_id: string
+          notes?: string | null
+          position?: number
+          shade?: string | null
+          tooth_numbers?: string | null
+          total_price?: number | null
+          unit_price?: number | null
+          units?: number
+          updated_at?: string
+          work_type_id?: string | null
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          lab_id?: string
+          notes?: string | null
+          position?: number
+          shade?: string | null
+          tooth_numbers?: string | null
+          total_price?: number | null
+          unit_price?: number | null
+          units?: number
+          updated_at?: string
+          work_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_items_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_items_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_items_work_type_id_fkey"
+            columns: ["work_type_id"]
+            isOneToOne: false
+            referencedRelation: "work_types"
             referencedColumns: ["id"]
           },
         ]
