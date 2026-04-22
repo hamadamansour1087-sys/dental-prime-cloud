@@ -87,6 +87,13 @@ export function StageTransitionDialog({
     }
   }, [open]);
 
+  // Auto-select technician if only one available
+  useEffect(() => {
+    if (requiresTechnician && technicians?.length === 1 && !technicianId) {
+      setTechnicianId(technicians[0].id);
+    }
+  }, [requiresTechnician, technicians, technicianId]);
+
   const submit = async () => {
     if (!toStageId) return toast.error("اختر المرحلة التالية");
     if (requiresTechnician && !technicianId) return toast.error("اختر اسم الفني");
