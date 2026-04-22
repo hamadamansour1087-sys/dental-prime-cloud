@@ -6,10 +6,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar } from "lucide-react";
+import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
+import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -33,6 +34,7 @@ function CaseDetailsPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [labelOpen, setLabelOpen] = useState(false);
 
   const { data: caseRow, isLoading } = useQuery({
     queryKey: ["case-detail", caseId],
@@ -136,13 +138,30 @@ function CaseDetailsPage() {
             </p>
           </div>
         </div>
-        {stage && (
-          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm" style={{ borderColor: stage.color }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.color }} />
-            {stage.name}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {stage && (
+            <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm" style={{ borderColor: stage.color }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.color }} />
+              {stage.name}
+            </span>
+          )}
+          <Button variant="outline" size="sm" onClick={() => setLabelOpen(true)}>
+            <QrCode className="ml-1 h-4 w-4" /> ملصق QR
+          </Button>
+        </div>
       </div>
+
+      <CaseLabelDialog
+        open={labelOpen}
+        onOpenChange={setLabelOpen}
+        caseNumber={caseRow.case_number}
+        caseId={caseRow.id}
+        doctorName={(caseRow as any).doctors?.name}
+        patientName={(caseRow as any).patients?.name}
+        dateReceived={caseRow.date_received}
+        dueDate={caseRow.due_date}
+        stageName={stage?.name}
+      />
 
       {/* Header info */}
       <Card>
