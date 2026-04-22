@@ -181,7 +181,9 @@ export function StageTransitionDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={submit} disabled={submitting}>{submitting ? "جارٍ..." : "نقل"}</Button>
+          <Button onClick={submit} disabled={submitting || !toStageId || (requiresTechnician && !technicianId)}>
+            {submitting ? "جارٍ..." : "نقل"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
