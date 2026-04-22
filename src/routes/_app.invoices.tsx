@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Printer } from "lucide-react";
+import { Printer, FileDown } from "lucide-react";
 import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
+import { exportElementToPdf } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_app/invoices")({
   component: InvoicesPage,
@@ -69,9 +70,22 @@ function InvoicesPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <h1 className="text-2xl font-bold">الفواتير الشهرية</h1>
-        <Button onClick={() => window.print()} disabled={!doctorId}>
-          <Printer className="ml-1 h-4 w-4" /> طباعة
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            disabled={!doctorId}
+            onClick={async () => {
+              const el = document.getElementById("invoice-print");
+              if (!el) return;
+              await exportElementToPdf(el, `invoice-${doctor?.name ?? "doctor"}-${year}-${String(month).padStart(2, "0")}.pdf`);
+            }}
+          >
+            <FileDown className="ml-1 h-4 w-4" /> PDF
+          </Button>
+          <Button onClick={() => window.print()} disabled={!doctorId}>
+            <Printer className="ml-1 h-4 w-4" /> طباعة
+          </Button>
+        </div>
       </div>
 
       <Card className="print:hidden">

@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarIcon, Plus, Printer, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Printer, Trash2, FileDown } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { exportElementToPdf } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_app/statements")({
   component: StatementsPage,
@@ -250,6 +251,17 @@ function StatementsPage() {
               <DialogFooter><Button onClick={submitPayment}>حفظ</Button></DialogFooter>
             </DialogContent>
           </Dialog>
+          <Button
+            variant="outline"
+            disabled={!doctorId}
+            onClick={async () => {
+              const el = document.getElementById("statement-print");
+              if (!el) return;
+              await exportElementToPdf(el, `statement-${doctor?.name ?? "doctor"}-${fromStr}_${toStr}.pdf`);
+            }}
+          >
+            <FileDown className="ml-1 h-4 w-4" /> PDF
+          </Button>
           <Button onClick={() => window.print()} disabled={!doctorId}>
             <Printer className="ml-1 h-4 w-4" /> طباعة
           </Button>
