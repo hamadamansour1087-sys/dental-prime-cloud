@@ -1108,21 +1108,16 @@ export type Database = {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
       }
-      transition_case_stage:
-        | {
-            Args: { _case_id: string; _notes?: string; _to_stage_id: string }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _case_id: string
-              _notes?: string
-              _skipped_stage_ids?: string[]
-              _technician_id?: string
-              _to_stage_id: string
-            }
-            Returns: undefined
-          }
+      transition_case_stage: {
+        Args: {
+          _case_id: string
+          _notes?: string
+          _skipped_stage_ids?: string[]
+          _technician_id?: string
+          _to_stage_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "technician"
