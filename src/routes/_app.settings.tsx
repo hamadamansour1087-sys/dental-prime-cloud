@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Building2, Hash, Palette } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -45,22 +47,50 @@ function SettingsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">الإعدادات</h1>
-      <Card>
-        <CardHeader><CardTitle className="text-base">بيانات المعمل</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <div><Label>اسم المعمل</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>الهاتف</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-            <div><Label>البريد</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} dir="ltr" /></div>
-          </div>
-          <div><Label>العنوان</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>العملة</Label><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></div>
-            <div><Label>بادئة رقم الحالة</Label><Input value={form.case_number_prefix} onChange={(e) => setForm({ ...form, case_number_prefix: e.target.value })} /></div>
-          </div>
-          <Button onClick={save}>حفظ</Button>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="lab" dir="rtl">
+        <TabsList>
+          <TabsTrigger value="lab"><Building2 className="ml-1 h-4 w-4" />بيانات المعمل</TabsTrigger>
+          <TabsTrigger value="numbering"><Hash className="ml-1 h-4 w-4" />الترقيم والعملة</TabsTrigger>
+          <TabsTrigger value="appearance"><Palette className="ml-1 h-4 w-4" />المظهر</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="lab">
+          <Card>
+            <CardHeader><CardTitle className="text-base">بيانات المعمل</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div><Label>اسم المعمل</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>الهاتف</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+                <div><Label>البريد</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} dir="ltr" /></div>
+              </div>
+              <div><Label>العنوان</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
+              <Button onClick={save}>حفظ</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="numbering">
+          <Card>
+            <CardHeader><CardTitle className="text-base">الترقيم والعملة</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>العملة</Label><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></div>
+                <div><Label>بادئة رقم الحالة</Label><Input value={form.case_number_prefix} onChange={(e) => setForm({ ...form, case_number_prefix: e.target.value })} /></div>
+              </div>
+              <Button onClick={save}>حفظ</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="appearance">
+          <Card>
+            <CardHeader><CardTitle className="text-base">المظهر</CardTitle></CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">يمكنك التبديل بين التصميم الفاتح والداكن من زر القمر/الشمس في الأعلى.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
