@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
+import { CaseAIAnalysis } from "@/components/CaseAIAnalysis";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -219,6 +220,25 @@ function CaseDetailsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* AI Smart Analysis */}
+      <CaseAIAnalysis
+        caseData={{
+          case_number: caseRow.case_number,
+          status: caseRow.status,
+          date_received: caseRow.date_received,
+          due_date: caseRow.due_date,
+          current_stage: stage?.name,
+          doctor: (caseRow as any).doctors?.name,
+          patient: (caseRow as any).patients?.name,
+          units: caseRow.units,
+          price: caseRow.price,
+          notes: caseRow.notes,
+          items_count: items?.length ?? 0,
+          stages_done: stageHistory?.filter((h: any) => h.exited_at).length ?? 0,
+          stages_total: stageHistory?.length ?? 0,
+        }}
+      />
 
       {/* Items table */}
       <Card>
