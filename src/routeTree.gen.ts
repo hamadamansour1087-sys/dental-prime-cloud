@@ -13,6 +13,8 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
+import { Route as ApiAiAnalyzeCaseRouteImport } from './routes/api/ai-analyze-case'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
 import { Route as AppTechniciansRouteImport } from './routes/_app.technicians'
@@ -44,6 +46,16 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiChatRoute = ApiAiChatRouteImport.update({
+  id: '/api/ai-chat',
+  path: '/api/ai-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiAnalyzeCaseRoute = ApiAiAnalyzeCaseRouteImport.update({
+  id: '/api/ai-analyze-case',
+  path: '/api/ai-analyze-case',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
@@ -128,6 +140,8 @@ export interface FileRoutesByFullPath {
   '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
+  '/api/ai-chat': typeof ApiAiChatRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesByTo {
@@ -146,6 +160,8 @@ export interface FileRoutesByTo {
   '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
+  '/api/ai-chat': typeof ApiAiChatRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesById {
@@ -166,6 +182,8 @@ export interface FileRoutesById {
   '/_app/technicians': typeof AppTechniciansRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
+  '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
+  '/api/ai-chat': typeof ApiAiChatRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRouteTypes {
@@ -186,6 +204,8 @@ export interface FileRouteTypes {
     | '/technicians'
     | '/users'
     | '/workflows'
+    | '/api/ai-analyze-case'
+    | '/api/ai-chat'
     | '/cases/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,6 +224,8 @@ export interface FileRouteTypes {
     | '/technicians'
     | '/users'
     | '/workflows'
+    | '/api/ai-analyze-case'
+    | '/api/ai-chat'
     | '/cases/$caseId'
   id:
     | '__root__'
@@ -223,6 +245,8 @@ export interface FileRouteTypes {
     | '/_app/technicians'
     | '/_app/users'
     | '/_app/workflows'
+    | '/api/ai-analyze-case'
+    | '/api/ai-chat'
     | '/_app/cases/$caseId'
   fileRoutesById: FileRoutesById
 }
@@ -231,6 +255,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
+  ApiAiChatRoute: typeof ApiAiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -261,6 +287,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-chat': {
+      id: '/api/ai-chat'
+      path: '/api/ai-chat'
+      fullPath: '/api/ai-chat'
+      preLoaderRoute: typeof ApiAiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-analyze-case': {
+      id: '/api/ai-analyze-case'
+      path: '/api/ai-analyze-case'
+      fullPath: '/api/ai-analyze-case'
+      preLoaderRoute: typeof ApiAiAnalyzeCaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/workflows': {
@@ -406,6 +446,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
+  ApiAiChatRoute: ApiAiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
