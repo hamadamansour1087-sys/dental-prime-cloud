@@ -18,6 +18,7 @@ export function StageTransitionDialog({
   caseId,
   workflowId,
   currentStageId,
+  initialToStageId,
   onTransitioned,
 }: {
   open: boolean;
@@ -25,6 +26,7 @@ export function StageTransitionDialog({
   caseId: string;
   workflowId: string | null;
   currentStageId: string | null;
+  initialToStageId?: string;
   onTransitioned?: () => void;
 }) {
   const { labId } = useAuth();
@@ -86,6 +88,12 @@ export function StageTransitionDialog({
       setNotes("");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setToStageId(initialToStageId ?? "");
+    }
+  }, [open, initialToStageId]);
 
   // Auto-select technician if only one available
   useEffect(() => {
