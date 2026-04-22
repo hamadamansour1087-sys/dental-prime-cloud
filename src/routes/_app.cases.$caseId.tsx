@@ -6,11 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar, QrCode } from "lucide-react";
+import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar, QrCode, ArrowLeftRight, History, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
+import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -35,6 +36,7 @@ function CaseDetailsPage() {
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
+  const [stageOpen, setStageOpen] = useState(false);
 
   const { data: caseRow, isLoading } = useQuery({
     queryKey: ["case-detail", caseId],
@@ -47,6 +49,19 @@ function CaseDetailsPage() {
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: stageHistory } = useQuery({
+    queryKey: ["case-stage-history", caseId],
+    enabled: !!caseId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_stage_history")
+        .select("id, entered_at, exited_at, duration_minutes, skipped, notes, workflow_stages(name, color), technicians(name)")
+        .eq("case_id", caseId)
+        .order("entered_at");
+      return data ?? [];
     },
   });
 
@@ -145,11 +160,24 @@ function CaseDetailsPage() {
               {stage.name}
             </span>
           )}
+          {caseRow.status !== "delivered" && (
+            <Button size="sm" onClick={() => setStageOpen(true)}>
+              <ArrowLeftRight className="ml-1 h-4 w-4" /> نقل المرحلة
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setLabelOpen(true)}>
             <QrCode className="ml-1 h-4 w-4" /> ملصق QR
           </Button>
         </div>
       </div>
+
+      <StageTransitionDialog
+        open={stageOpen}
+        onOpenChange={setStageOpen}
+        caseId={caseRow.id}
+        workflowId={caseRow.workflow_id}
+        currentStageId={caseRow.current_stage_id}
+      />
 
       <CaseLabelDialog
         open={labelOpen}

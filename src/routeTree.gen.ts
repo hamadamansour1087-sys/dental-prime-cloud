@@ -15,6 +15,8 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
+import { Route as AppTechniciansRouteImport } from './routes/_app.technicians'
+import { Route as AppTechnicianReportsRouteImport } from './routes/_app.technician-reports'
 import { Route as AppStatementsRouteImport } from './routes/_app.statements'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
@@ -52,6 +54,16 @@ const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTechniciansRoute = AppTechniciansRouteImport.update({
+  id: '/technicians',
+  path: '/technicians',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTechnicianReportsRoute = AppTechnicianReportsRouteImport.update({
+  id: '/technician-reports',
+  path: '/technician-reports',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStatementsRoute = AppStatementsRouteImport.update({
@@ -112,6 +124,8 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
+  '/technician-reports': typeof AppTechnicianReportsRoute
+  '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -128,6 +142,8 @@ export interface FileRoutesByTo {
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
+  '/technician-reports': typeof AppTechnicianReportsRoute
+  '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
   '/workflows': typeof AppWorkflowsRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -146,6 +162,8 @@ export interface FileRoutesById {
   '/_app/pricing': typeof AppPricingRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/statements': typeof AppStatementsRoute
+  '/_app/technician-reports': typeof AppTechnicianReportsRoute
+  '/_app/technicians': typeof AppTechniciansRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -164,6 +182,8 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/settings'
     | '/statements'
+    | '/technician-reports'
+    | '/technicians'
     | '/users'
     | '/workflows'
     | '/cases/$caseId'
@@ -180,6 +200,8 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/settings'
     | '/statements'
+    | '/technician-reports'
+    | '/technicians'
     | '/users'
     | '/workflows'
     | '/cases/$caseId'
@@ -197,6 +219,8 @@ export interface FileRouteTypes {
     | '/_app/pricing'
     | '/_app/settings'
     | '/_app/statements'
+    | '/_app/technician-reports'
+    | '/_app/technicians'
     | '/_app/users'
     | '/_app/workflows'
     | '/_app/cases/$caseId'
@@ -251,6 +275,20 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/technicians': {
+      id: '/_app/technicians'
+      path: '/technicians'
+      fullPath: '/technicians'
+      preLoaderRoute: typeof AppTechniciansRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/technician-reports': {
+      id: '/_app/technician-reports'
+      path: '/technician-reports'
+      fullPath: '/technician-reports'
+      preLoaderRoute: typeof AppTechnicianReportsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/statements': {
@@ -340,6 +378,8 @@ interface AppRouteChildren {
   AppPricingRoute: typeof AppPricingRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStatementsRoute: typeof AppStatementsRoute
+  AppTechnicianReportsRoute: typeof AppTechnicianReportsRoute
+  AppTechniciansRoute: typeof AppTechniciansRoute
   AppUsersRoute: typeof AppUsersRoute
   AppWorkflowsRoute: typeof AppWorkflowsRoute
 }
@@ -353,6 +393,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppPricingRoute: AppPricingRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStatementsRoute: AppStatementsRoute,
+  AppTechnicianReportsRoute: AppTechnicianReportsRoute,
+  AppTechniciansRoute: AppTechniciansRoute,
   AppUsersRoute: AppUsersRoute,
   AppWorkflowsRoute: AppWorkflowsRoute,
 }
