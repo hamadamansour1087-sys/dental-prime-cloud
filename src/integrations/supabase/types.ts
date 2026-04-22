@@ -189,7 +189,9 @@ export type Database = {
           id: string
           lab_id: string
           notes: string | null
+          skipped: boolean
           stage_id: string | null
+          technician_id: string | null
         }
         Insert: {
           case_id: string
@@ -200,7 +202,9 @@ export type Database = {
           id?: string
           lab_id: string
           notes?: string | null
+          skipped?: boolean
           stage_id?: string | null
+          technician_id?: string | null
         }
         Update: {
           case_id?: string
@@ -211,7 +215,9 @@ export type Database = {
           id?: string
           lab_id?: string
           notes?: string | null
+          skipped?: boolean
           stage_id?: string | null
+          technician_id?: string | null
         }
         Relationships: [
           {
@@ -233,6 +239,13 @@ export type Database = {
             columns: ["stage_id"]
             isOneToOne: false
             referencedRelation: "workflow_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_stage_history_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
             referencedColumns: ["id"]
           },
         ]
@@ -805,6 +818,50 @@ export type Database = {
           },
         ]
       }
+      technicians: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          lab_id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          specialty: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lab_id: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          specialty?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lab_id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          specialty?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technicians_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1051,10 +1108,21 @@ export type Database = {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
       }
-      transition_case_stage: {
-        Args: { _case_id: string; _notes?: string; _to_stage_id: string }
-        Returns: undefined
-      }
+      transition_case_stage:
+        | {
+            Args: { _case_id: string; _notes?: string; _to_stage_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _case_id: string
+              _notes?: string
+              _skipped_stage_ids?: string[]
+              _technician_id?: string
+              _to_stage_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       app_role: "admin" | "manager" | "technician"
