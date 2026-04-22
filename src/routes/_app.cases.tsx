@@ -14,6 +14,7 @@ import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIc
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
+import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
@@ -46,6 +47,8 @@ function CasesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [stageOpen, setStageOpen] = useState(false);
+  const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
   const [form, setForm] = useState({
     doctor_id: "",
     clinic_id: "",
@@ -286,11 +289,9 @@ function CasesPage() {
     }
   };
 
-  const moveCase = async (caseId: string, toStageId: string) => {
-    const { error } = await supabase.rpc("transition_case_stage", { _case_id: caseId, _to_stage_id: toStageId });
-    if (error) return toast.error(error.message);
-    toast.success("تم تغيير المرحلة");
-    qc.invalidateQueries({ queryKey: ["cases"] });
+  const moveCase = async (caseId: string, toStageId: string, workflowId: string | null, currentStageId: string | null) => {
+    setSelectedTransition({ caseId, workflowId, currentStageId, toStageId });
+    setStageOpen(true);
   };
 
   const today = new Date().toISOString().slice(0, 10);
@@ -303,6 +304,21 @@ function CasesPage() {
 
   return (
     <div className="space-y-4">
+      <StageTransitionDialog
+        open={stageOpen}
+        onOpenChange={(open) => {
+          setStageOpen(open);
+          if (!open) setSelectedTransition(null);
+        }}
+        caseId={selectedTransition?.caseId ?? ""}
+        workflowId={selectedTransition?.workflowId ?? null}
+        currentStageId={selectedTransition?.currentStageId ?? null}
+        initialToStageId={selectedTransition?.toStageId}
+        onTransitioned={() => {
+          qc.invalidateQueries({ queryKey: ["cases"] });
+        }}
+      />
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">الحالات</h1>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
@@ -539,7 +555,12 @@ function CasesPage() {
                           )}
                         </Link>
                         {nextStage && !stage.is_end && (
-                          <Button size="sm" variant="outline" className="mt-2 w-full text-xs" onClick={() => moveCase(c.id, nextStage.id)}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mt-2 w-full text-xs"
+                            onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}
+                          >
                             ← {nextStage.name}
                           </Button>
                         )}
