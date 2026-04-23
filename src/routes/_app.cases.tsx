@@ -142,6 +142,9 @@ function CasesPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const goToCase = (caseId: string) => {
+    setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId } }), 0);
+  };
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
@@ -474,7 +477,7 @@ function CasesPage() {
           onCreated={(newCaseId, options) => {
             setFollowup(null);
             if (options.withNewWork) {
-              navigate({ to: "/cases/$caseId", params: { caseId: newCaseId } });
+              goToCase(newCaseId);
             }
           }}
         />
@@ -766,7 +769,7 @@ function CasesPage() {
                 return (
                   <ContextMenu key={c.id}>
                     <ContextMenuTrigger asChild>
-                      <TableRow className="cursor-pointer" onDoubleClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                      <TableRow className="cursor-pointer" onDoubleClick={() => goToCase(c.id)}>
                         <TableCell className="font-mono text-xs">
                           <div className="flex items-center gap-1">
                             {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
@@ -800,7 +803,7 @@ function CasesPage() {
                       </TableRow>
                     </ContextMenuTrigger>
                     <ContextMenuContent className="w-56">
-                      <ContextMenuItem onSelect={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                      <ContextMenuItem onSelect={() => goToCase(c.id)}>
                         <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                       </ContextMenuItem>
                       <ContextMenuSeparator />
@@ -891,7 +894,7 @@ function CasesPage() {
                             <CardContent className="p-3 text-sm">
                               <button
                                 type="button"
-                                onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}
+                                onClick={() => goToCase(c.id)}
                                 className="block w-full text-right"
                               >
                                 <div className="mb-1 flex items-center justify-between">
@@ -922,7 +925,7 @@ function CasesPage() {
                           </Card>
                         </ContextMenuTrigger>
                         <ContextMenuContent className="w-56">
-                          <ContextMenuItem onSelect={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                          <ContextMenuItem onSelect={() => goToCase(c.id)}>
                             <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                           </ContextMenuItem>
                           <ContextMenuSeparator />
