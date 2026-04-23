@@ -400,9 +400,10 @@ function StatementsPage() {
 
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #statement-print, #statement-print * { visibility: visible; }
-          #statement-print { position: absolute; inset: 0; width: 100%; }
+          @page { size: A4; margin: 10mm; }
+          body * { visibility: hidden !important; }
+          #statement-print, #statement-print * { visibility: visible !important; }
+          #statement-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: 0 !important; }
         }
       `}</style>
     </div>
