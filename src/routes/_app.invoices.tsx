@@ -82,14 +82,28 @@ function InvoicesPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            disabled={!doctorId}
+            disabled={!doctorId || !lab}
             onClick={async () => {
-              const el = document.getElementById("invoice-print");
-              if (!el) return;
-              await exportElementToPdf(el, `invoice-${doctor?.name ?? "doctor"}-${year}-${String(month).padStart(2, "0")}.pdf`);
+              if (!lab || !doctor) return;
+              try {
+                toast.loading("جاري إنشاء PDF...", { id: "pdf" });
+                await renderReportToPdf(
+                  <InvoiceReport
+                    lab={lab}
+                    doctor={doctor}
+                    cases={cases ?? []}
+                    periodLabel={`${months[month - 1]} ${year}`}
+                    invoiceNo={`INV-${year}-${String(month).padStart(2, "0")}-${doctor.name?.slice(0, 3).toUpperCase() ?? "DOC"}`}
+                  />,
+                  `invoice-${doctor.name}-${year}-${String(month).padStart(2, "0")}.pdf`
+                );
+                toast.success("تم إنشاء PDF", { id: "pdf" });
+              } catch (e: any) {
+                toast.error(e?.message ?? "فشل إنشاء PDF", { id: "pdf" });
+              }
             }}
           >
-            <FileDown className="ml-1 h-4 w-4" /> PDF
+            <FileDown className="ml-1 h-4 w-4" /> PDF احترافي
           </Button>
           <Button onClick={() => window.print()} disabled={!doctorId}>
             <Printer className="ml-1 h-4 w-4" /> طباعة
