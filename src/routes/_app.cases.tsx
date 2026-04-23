@@ -787,24 +787,17 @@ function CasesPage() {
                         </Link>
                       </ContextMenuItem>
                       <ContextMenuSeparator />
-                      <ContextMenuSub>
-                        <ContextMenuSubTrigger>
-                          <ArrowLeftRight className="ml-2 h-4 w-4" /> نقل إلى مرحلة
-                        </ContextMenuSubTrigger>
-                        <ContextMenuSubContent className="w-48">
-                          {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
-                            <ContextMenuItem
-                              key={s.id}
-                              onClick={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}
-                            >
-                              <span className="ml-2 h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                              {s.name}
-                            </ContextMenuItem>
-                          ))}
-                        </ContextMenuSubContent>
-                      </ContextMenuSub>
+                      {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
+                        <ContextMenuItem
+                          key={s.id}
+                          onSelect={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}
+                        >
+                          <ArrowLeftRight className="ml-2 h-4 w-4" />
+                          نقل إلى: {s.name}
+                        </ContextMenuItem>
+                      ))}
                       {nextStage && (
-                        <ContextMenuItem onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}>
+                        <ContextMenuItem onSelect={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}>
                           <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {nextStage.name}
                         </ContextMenuItem>
                       )}
@@ -906,20 +899,13 @@ function CasesPage() {
                               <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                             </Link>
                           </ContextMenuItem>
-                          <ContextMenuSub>
-                            <ContextMenuSubTrigger>
-                              <ArrowLeftRight className="ml-2 h-4 w-4" /> نقل إلى مرحلة
-                            </ContextMenuSubTrigger>
-                            <ContextMenuSubContent className="w-48">
-                              {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
-                                <ContextMenuItem key={s.id} onClick={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}>
-                                  <span className="ml-2 h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                                  {s.name}
-                                </ContextMenuItem>
-                              ))}
-                            </ContextMenuSubContent>
-                          </ContextMenuSub>
                           <ContextMenuSeparator />
+                          {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
+                            <ContextMenuItem key={s.id} onSelect={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}>
+                              <ArrowLeftRight className="ml-2 h-4 w-4" />
+                              نقل إلى: {s.name}
+                            </ContextMenuItem>
+                          ))}
                           {c.status !== "delivered" && (
                             <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
                               <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
