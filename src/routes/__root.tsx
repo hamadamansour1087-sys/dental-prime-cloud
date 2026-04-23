@@ -36,7 +36,12 @@ export const Route = createRootRoute({
       { title: "H.A.M.D — نظام إدارة معامل الأسنان" },
       { name: "description", content: "نظام متكامل لإدارة معامل تركيبات الأسنان: حالات، أطباء، مراحل إنتاج، تقارير." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
