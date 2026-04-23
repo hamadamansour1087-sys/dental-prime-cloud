@@ -105,6 +105,19 @@ function createSanitizedRenderTarget(element: HTMLElement) {
   };
 }
 
+function stripProblematicStyles(doc: Document) {
+  const stylesheetNodes = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+
+  stylesheetNodes.forEach((node) => {
+    if (node instanceof HTMLLinkElement) {
+      const href = node.href || "";
+      if (/fonts\.googleapis\.com|fonts\.gstatic\.com/i.test(href)) return;
+    }
+
+    node.remove();
+  });
+}
+
 export async function exportElementToPdf(element: HTMLElement, fileName: string) {
   const { target, cleanup } = createSanitizedRenderTarget(element);
 
@@ -114,8 +127,9 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
-      onclone: (_doc, clonedEl) => {
+      onclone: (doc, clonedEl) => {
         try {
+          stripProblematicStyles(doc);
           sanitizeModernColors(clonedEl as HTMLElement);
         } catch {
           /* noop */
