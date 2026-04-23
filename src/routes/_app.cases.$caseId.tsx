@@ -346,52 +346,17 @@ function CaseDetailsPage() {
         </CardContent>
       </Card>
 
-      {/* Stage history */}
+      {/* Stage history timeline */}
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><History className="h-4 w-4" /> سجل المراحل ({stageHistory?.length ?? 0})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <History className="h-4 w-4 text-primary" /> الخط الزمني للمراحل ({stageHistory?.length ?? 0})
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          {!stageHistory?.length ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">لا يوجد سجل بعد</p>
-          ) : (
-            <ol className="relative space-y-3 border-r-2 border-border pr-4">
-              {stageHistory.map((h: any) => {
-                const stg = h.workflow_stages;
-                const techName = h.technicians?.name;
-                const enteredAt = h.entered_at ? format(new Date(h.entered_at), "dd/MM/yyyy HH:mm") : "—";
-                return (
-                  <li key={h.id} className="relative">
-                    <span
-                      className="absolute -right-[22px] top-1.5 h-3 w-3 rounded-full ring-2 ring-background"
-                      style={{ backgroundColor: stg?.color ?? "#999" }}
-                    />
-                    <div className={`rounded-md border p-2 ${h.skipped ? "border-dashed bg-muted/30 opacity-70" : "bg-card"}`}>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{stg?.name ?? "—"}</span>
-                          {h.skipped && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
-                              <SkipForward className="h-3 w-3" /> تم التخطي
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">{enteredAt}</span>
-                      </div>
-                      {techName && (
-                        <p className="mt-1 text-xs text-muted-foreground">الفني: <span className="font-medium text-foreground">{techName}</span></p>
-                      )}
-                      {h.duration_minutes != null && !h.skipped && h.exited_at && (
-                        <p className="text-xs text-muted-foreground">المدة: {Math.max(1, Math.round(h.duration_minutes / 60))} ساعة</p>
-                      )}
-                      {h.notes && <p className="mt-1 whitespace-pre-wrap text-xs">{h.notes}</p>}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+          <CaseTimeline history={stageHistory ?? []} currentStageId={caseRow.current_stage_id} />
         </CardContent>
       </Card>
-
       {/* Image preview overlay */}
       {previewUrl && (
         <div
