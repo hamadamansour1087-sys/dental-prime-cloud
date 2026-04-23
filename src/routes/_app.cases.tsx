@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles } from "lucide-react";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
@@ -42,6 +44,95 @@ const SCAN_EXT = /\.(stl|ply|obj|zip|3mf|dcm)$/i;
 
 function newItem(): CaseItemDraft {
   return { id: crypto.randomUUID(), work_type_id: "", tooth_numbers: "", shade: "", units: "1", unit_price: "" };
+}
+
+function formatArabicDisplayDate(value: string) {
+  if (!value) return "اختر تاريخ التسليم";
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+interface DueDateFieldProps {
+  dueAuto: boolean;
+  dueDate: string;
+  predictedDate: string;
+  predictedDays: number;
+  baseLeadDays: number;
+  extraDays: number;
+  onChange: (value: string) => void;
+  onResetPrediction: () => void;
+}
+
+function DueDateField({
+  dueAuto,
+  dueDate,
+  predictedDate,
+  predictedDays,
+  baseLeadDays,
+  extraDays,
+  onChange,
+  onResetPrediction,
+}: DueDateFieldProps) {
+  const selectedDate = dueDate ? new Date(`${dueDate}T00:00:00`) : undefined;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <Label>تاريخ التسليم</Label>
+        {dueAuto && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
+            <Sparkles className="h-3 w-3" /> توقع تلقائي
+          </span>
+        )}
+      </div>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full justify-between rounded-lg px-3 text-start text-sm font-normal"
+          >
+            <span className={dueDate ? "truncate" : "truncate text-muted-foreground"}>
+              {formatArabicDisplayDate(dueDate)}
+            </span>
+            <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0" dir="rtl">
+          <DateCalendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              if (!date) return;
+              onChange(format(date, "yyyy-MM-dd"));
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <div className="rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+        محسوب من نوع العمل ({baseLeadDays} يوم) + حجم العمل (+{extraDays}) = <span className="font-semibold text-foreground">{predictedDays} يوم</span>
+      </div>
+
+      {!dueAuto && (
+        <button
+          type="button"
+          onClick={onResetPrediction}
+          className="text-[11px] font-medium text-primary hover:underline"
+        >
+          ↺ العودة للتوقع التلقائي ({formatArabicDisplayDate(predictedDate)})
+        </button>
+      )}
+    </div>
+  );
 }
 
 function CasesPage() {
