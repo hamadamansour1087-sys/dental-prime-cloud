@@ -10,11 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
+import { ShadeSelector } from "@/components/ShadeSelector";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
