@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Printer, FileDown } from "lucide-react";
 import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
-import { exportElementToPdf } from "@/lib/pdf";
+import { InvoiceReport } from "@/components/reports/InvoiceReport";
+import { renderReportToPdf } from "@/lib/reportRenderer";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({
   component: InvoicesPage,
