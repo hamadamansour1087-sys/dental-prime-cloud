@@ -430,7 +430,9 @@ export type Database = {
           notes: string | null
           opening_balance: number
           phone: string | null
+          portal_enabled: boolean
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -445,7 +447,9 @@ export type Database = {
           notes?: string | null
           opening_balance?: number
           phone?: string | null
+          portal_enabled?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -460,7 +464,9 @@ export type Database = {
           notes?: string | null
           opening_balance?: number
           phone?: string | null
+          portal_enabled?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1091,6 +1097,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_pending_case: {
+        Args: { _case_id: string; _workflow_id?: string }
+        Returns: string
+      }
+      current_doctor_id: { Args: never; Returns: string }
+      current_doctor_lab_id: { Args: never; Returns: string }
       current_lab_id: { Args: never; Returns: string }
       generate_case_number: { Args: { _lab_id: string }; Returns: string }
       has_role: {
@@ -1104,6 +1116,10 @@ export type Database = {
       is_lab_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_manager_or_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_member: { Args: { _lab_id: string }; Returns: boolean }
+      reject_pending_case: {
+        Args: { _case_id: string; _reason?: string }
+        Returns: undefined
+      }
       resolve_case_price: {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
@@ -1120,8 +1136,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "technician"
-      case_status: "active" | "on_hold" | "delivered" | "cancelled"
+      app_role: "admin" | "manager" | "technician" | "doctor"
+      case_status:
+        | "active"
+        | "on_hold"
+        | "delivered"
+        | "cancelled"
+        | "pending_approval"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1249,8 +1270,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "technician"],
-      case_status: ["active", "on_hold", "delivered", "cancelled"],
+      app_role: ["admin", "manager", "technician", "doctor"],
+      case_status: [
+        "active",
+        "on_hold",
+        "delivered",
+        "cancelled",
+        "pending_approval",
+      ],
     },
   },
 } as const
