@@ -499,7 +499,7 @@ function CasesPage() {
                               <ToothChart value={it.tooth_numbers} onChange={(v) => updateItem(it.id, { tooth_numbers: v })} />
                             </div>
                           </div>
-                          <div className="mt-2 text-left text-xs text-muted-foreground">
+                          <div className="mt-2 text-end text-xs text-muted-foreground">
                             الإجمالي: <span className="font-mono font-semibold text-foreground">{lineTotal.toFixed(2)}</span>
                           </div>
                         </div>
