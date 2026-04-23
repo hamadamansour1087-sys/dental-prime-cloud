@@ -58,8 +58,10 @@ function CasesPage() {
     due_date: "",
     notes: "",
   });
+  const [dueAuto, setDueAuto] = useState(true); // true = auto-predicted
   const [items, setItems] = useState<CaseItemDraft[]>([newItem()]);
   const [files, setFiles] = useState<PendingFile[]>([]);
+  const [activeTab, setActiveTab] = useState("basic");
   const cameraRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const scanRef = useRef<HTMLInputElement>(null);
