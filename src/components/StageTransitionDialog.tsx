@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeftRight } from "lucide-react";
@@ -34,6 +35,11 @@ export function StageTransitionDialog({
   const [toStageId, setToStageId] = useState<string>("");
   const [technicianId, setTechnicianId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [enteredAt, setEnteredAt] = useState<string>(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  });
   const [submitting, setSubmitting] = useState(false);
 
   const { data: stages } = useQuery({
@@ -92,6 +98,9 @@ export function StageTransitionDialog({
   useEffect(() => {
     if (open) {
       setToStageId(initialToStageId ?? "");
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      setEnteredAt(d.toISOString().slice(0, 16));
     }
   }, [open, initialToStageId]);
 
@@ -105,6 +114,7 @@ export function StageTransitionDialog({
   const submit = async () => {
     if (!toStageId) return toast.error("اختر المرحلة التالية");
     if (requiresTechnician && !technicianId) return toast.error("اختر اسم الفني");
+    if (!enteredAt) return toast.error("اختر تاريخ الانتقال");
     setSubmitting(true);
     const { error } = await supabase.rpc("transition_case_stage", {
       _case_id: caseId,
@@ -112,7 +122,8 @@ export function StageTransitionDialog({
       _notes: notes || undefined,
       _technician_id: technicianId || undefined,
       _skipped_stage_ids: skipped.length ? skipped.map((s) => s.id) : undefined,
-    });
+      _entered_at: new Date(enteredAt).toISOString(),
+    } as any);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success("تم نقل المرحلة");
@@ -182,6 +193,18 @@ export function StageTransitionDialog({
               <p className="mt-1 text-xs text-muted-foreground">سيتم تسجيل وحدات هذه الحالة باسمه</p>
             </div>
           )}
+
+          <div>
+            <Label>تاريخ ووقت الانتقال *</Label>
+            <Input
+              type="datetime-local"
+              value={enteredAt}
+              onChange={(e) => setEnteredAt(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              يُسجَّل هذا التاريخ كوقت دخول المرحلة الجديدة وخروج المرحلة الحالية
+            </p>
+          </div>
 
           <div>
             <Label>ملاحظات</Label>

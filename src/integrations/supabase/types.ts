@@ -1757,16 +1757,28 @@ export type Database = {
         Args: { _workflow_id: string }
         Returns: undefined
       }
-      transition_case_stage: {
-        Args: {
-          _case_id: string
-          _notes?: string
-          _skipped_stage_ids?: string[]
-          _technician_id?: string
-          _to_stage_id: string
-        }
-        Returns: undefined
-      }
+      transition_case_stage:
+        | {
+            Args: {
+              _case_id: string
+              _notes?: string
+              _skipped_stage_ids?: string[]
+              _technician_id?: string
+              _to_stage_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _case_id: string
+              _entered_at?: string
+              _notes?: string
+              _skipped_stage_ids?: string[]
+              _technician_id?: string
+              _to_stage_id: string
+            }
+            Returns: undefined
+          }
       update_workflow: {
         Args: {
           _description?: string
