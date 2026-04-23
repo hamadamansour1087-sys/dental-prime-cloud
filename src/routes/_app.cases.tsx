@@ -349,14 +349,14 @@ function CasesPage() {
           <DialogTrigger asChild>
             <Button><Plus className="ml-1 h-4 w-4" />حالة جديدة</Button>
           </DialogTrigger>
-          <DialogContent dir="rtl" className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto sm:w-full">
-            <DialogHeader>
-              <DialogTitle className="flex items-center justify-between gap-2">
-                <span>حالة جديدة</span>
+          <DialogContent dir="rtl" className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto p-4 sm:w-full sm:p-6">
+            <DialogHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2 pe-8">
+                <DialogTitle className="text-base sm:text-lg">حالة جديدة</DialogTitle>
                 {nextCaseNumber && (
-                  <span className="rounded-md bg-primary/10 px-2 py-1 font-mono text-sm text-primary">{nextCaseNumber}</span>
+                  <span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-1 font-mono text-xs text-primary sm:text-sm">{nextCaseNumber}</span>
                 )}
-              </DialogTitle>
+              </div>
             </DialogHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -419,6 +419,8 @@ function CasesPage() {
                     </div>
                     <Input
                       type="date"
+                      dir="ltr"
+                      className="text-right"
                       value={form.due_date}
                       onChange={(e) => {
                         setDueAuto(false);
