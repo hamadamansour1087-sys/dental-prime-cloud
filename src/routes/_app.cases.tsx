@@ -10,11 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
+import { ShadeSelector } from "@/components/ShadeSelector";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
@@ -56,8 +58,10 @@ function CasesPage() {
     due_date: "",
     notes: "",
   });
+  const [dueAuto, setDueAuto] = useState(true); // true = auto-predicted
   const [items, setItems] = useState<CaseItemDraft[]>([newItem()]);
   const [files, setFiles] = useState<PendingFile[]>([]);
+  const [activeTab, setActiveTab] = useState("basic");
   const cameraRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const scanRef = useRef<HTMLInputElement>(null);
@@ -67,6 +71,8 @@ function CasesPage() {
     setItems([newItem()]);
     files.forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl));
     setFiles([]);
+    setDueAuto(true);
+    setActiveTab("basic");
   };
 
   const { data: nextCaseNumber } = useQuery({
@@ -82,7 +88,10 @@ function CasesPage() {
     queryKey: ["stages", labId],
     enabled: !!labId,
     queryFn: async () => {
-      const { data } = await supabase.from("workflow_stages").select("id, name, color, order_index, is_end").order("order_index");
+      const { data } = await supabase
+        .from("workflow_stages")
+        .select("id, name, color, order_index, is_end, estimated_days")
+        .order("order_index");
       return data ?? [];
     },
   });
@@ -302,6 +311,21 @@ function CasesPage() {
     return s + u * p;
   }, 0);
 
+  // Predict due date based on workflow stages estimated_days + workload
+  const baseLeadDays = (stages ?? []).reduce((s, st: any) => s + (Number(st.estimated_days) || 0), 0);
+  const validItemsCount = items.filter((it) => it.work_type_id).length;
+  const totalUnitsForPrediction = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
+  const extraDays = Math.max(0, validItemsCount - 1) + Math.max(0, Math.ceil((totalUnitsForPrediction - 3) / 3));
+  const predictedDays = Math.max(1, baseLeadDays + extraDays);
+  const predictedDate = format(addDays(new Date(), predictedDays), "yyyy-MM-dd");
+
+  // Auto-fill due_date when prediction changes (only if user hasn't manually edited)
+  if (dueAuto && open && form.due_date !== predictedDate) {
+    queueMicrotask(() => {
+      setForm((prev) => (prev.due_date === predictedDate || !dueAuto ? prev : { ...prev, due_date: predictedDate }));
+    });
+  }
+
   return (
     <div className="space-y-4">
       <StageTransitionDialog
@@ -335,78 +359,133 @@ function CasesPage() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {/* Doctor + clinic + patient */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <Label>الطبيب *</Label>
-                  <Select value={form.doctor_id} onValueChange={(v) => setForm({ ...form, doctor_id: v, clinic_id: "" })}>
-                    <SelectTrigger><SelectValue placeholder="اختر طبيبًا" /></SelectTrigger>
-                    <SelectContent>
-                      {doctors?.map((d: any) => (
-                        <SelectItem key={d.id} value={d.id}>{d.name}{d.governorate ? ` — ${d.governorate}` : ""}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedDoctor?.governorate && (
-                    <p className="mt-1 text-xs text-muted-foreground">المحافظة: {selectedDoctor.governorate}</p>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic" className="gap-1.5 text-xs">
+                  <User className="h-3.5 w-3.5" /> أساسي
+                </TabsTrigger>
+                <TabsTrigger value="items" className="gap-1.5 text-xs">
+                  <Briefcase className="h-3.5 w-3.5" /> العناصر
+                  <span className="ml-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{items.length}</span>
+                </TabsTrigger>
+                <TabsTrigger value="files" className="gap-1.5 text-xs">
+                  <Paperclip className="h-3.5 w-3.5" /> الملفات
+                  {files.length > 0 && (
+                    <span className="ml-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{files.length}</span>
                   )}
-                </div>
-                {selectedDoctor?.doctor_clinics?.length > 0 && (
-                  <div>
-                    <Label>العيادة</Label>
-                    <Select value={form.clinic_id} onValueChange={(v) => setForm({ ...form, clinic_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="اختر العيادة" /></SelectTrigger>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* TAB 1: Basic info */}
+              <TabsContent value="basic" className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <Label>الطبيب *</Label>
+                    <Select value={form.doctor_id} onValueChange={(v) => setForm({ ...form, doctor_id: v, clinic_id: "" })}>
+                      <SelectTrigger><SelectValue placeholder="اختر طبيبًا" /></SelectTrigger>
                       <SelectContent>
-                        {selectedDoctor.doctor_clinics.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        {doctors?.map((d: any) => (
+                          <SelectItem key={d.id} value={d.id}>{d.name}{d.governorate ? ` — ${d.governorate}` : ""}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                    {selectedDoctor?.governorate && (
+                      <p className="mt-1 text-xs text-muted-foreground">المحافظة: {selectedDoctor.governorate}</p>
+                    )}
                   </div>
-                )}
-                <div>
-                  <Label>اسم المريض</Label>
-                  <Input value={form.patient_name} onChange={(e) => setForm({ ...form, patient_name: e.target.value })} placeholder="اكتب اسم المريض" />
+                  {selectedDoctor?.doctor_clinics?.length > 0 && (
+                    <div className="sm:col-span-2">
+                      <Label>العيادة</Label>
+                      <Select value={form.clinic_id} onValueChange={(v) => setForm({ ...form, clinic_id: v })}>
+                        <SelectTrigger><SelectValue placeholder="اختر العيادة" /></SelectTrigger>
+                        <SelectContent>
+                          {selectedDoctor.doctor_clinics.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <div>
+                    <Label>اسم المريض</Label>
+                    <Input value={form.patient_name} onChange={(e) => setForm({ ...form, patient_name: e.target.value })} placeholder="اكتب اسم المريض" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Label>تاريخ التسليم</Label>
+                      {dueAuto && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
+                          <Sparkles className="h-3 w-3" /> توقع تلقائي
+                        </span>
+                      )}
+                    </div>
+                    <Input
+                      type="date"
+                      value={form.due_date}
+                      onChange={(e) => {
+                        setDueAuto(false);
+                        setForm({ ...form, due_date: e.target.value });
+                      }}
+                    />
+                    {dueAuto && (
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        محسوب من نوع العمل ({baseLeadDays} يوم) + حجم العمل (+{extraDays}) = {predictedDays} يوم
+                      </p>
+                    )}
+                    {!dueAuto && (
+                      <button
+                        type="button"
+                        onClick={() => { setDueAuto(true); setForm((p) => ({ ...p, due_date: predictedDate })); }}
+                        className="mt-1 text-[11px] text-primary hover:underline"
+                      >
+                        ↺ استخدام التوقع التلقائي ({predictedDate})
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div>
-                  <Label>تاريخ التسليم</Label>
-                  <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                  <Label>ملاحظات</Label>
+                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
                 </div>
-              </div>
-
-              {/* Items */}
-              <div className="rounded-lg border bg-muted/20 p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">عناصر العمل</h3>
-                  <Button type="button" size="sm" variant="outline" onClick={() => setItems((p) => [...p, newItem()])}>
-                    <Plus className="ml-1 h-3.5 w-3.5" /> إضافة عنصر
+                <div className="flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setActiveTab("items")}>
+                    التالي: العناصر ←
                   </Button>
                 </div>
-                <div className="space-y-3">
-                  {items.map((it, idx) => {
-                    const lineTotal = (parseInt(it.units) || 0) * (parseFloat(it.unit_price) || 0);
-                    return (
-                      <div key={it.id} className="rounded-md border bg-background p-3">
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-xs font-semibold text-muted-foreground">عنصر #{idx + 1}</span>
-                          {items.length > 1 && (
-                            <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <div className="sm:col-span-2">
-                            <Label className="text-xs">نوع العمل *</Label>
-                            <Select value={it.work_type_id} onValueChange={(v) => onWorkTypeChange(it.id, v)}>
-                              <SelectTrigger><SelectValue placeholder="اختر النوع" /></SelectTrigger>
-                              <SelectContent>{workTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
-                            </Select>
+              </TabsContent>
+
+              {/* TAB 2: Items */}
+              <TabsContent value="items" className="mt-4">
+                <div className="rounded-lg border bg-muted/20 p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">عناصر العمل</h3>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setItems((p) => [...p, newItem()])}>
+                      <Plus className="ml-1 h-3.5 w-3.5" /> إضافة عنصر
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {items.map((it, idx) => {
+                      const lineTotal = (parseInt(it.units) || 0) * (parseFloat(it.unit_price) || 0);
+                      return (
+                        <div key={it.id} className="rounded-md border bg-background p-3">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-semibold text-muted-foreground">عنصر #{idx + 1}</span>
+                            {items.length > 1 && (
+                              <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={() => setItems((p) => p.filter((x) => x.id !== it.id))}>
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            )}
                           </div>
-                          <div>
-                            <Label className="text-xs">اللون</Label>
-                            <Input value={it.shade} onChange={(e) => updateItem(it.id, { shade: e.target.value })} placeholder="A2" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <div className="sm:col-span-2">
+                              <Label className="text-xs">نوع العمل *</Label>
+                              <Select value={it.work_type_id} onValueChange={(v) => onWorkTypeChange(it.id, v)}>
+                                <SelectTrigger><SelectValue placeholder="اختر النوع" /></SelectTrigger>
+                                <SelectContent>{workTypes?.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label className="text-xs">اللون (يمكن اختيار أكثر من لون)</Label>
+                              <ShadeSelector value={it.shade} onChange={(v) => updateItem(it.id, { shade: v })} />
+                            </div>
                             <div>
                               <Label className="text-xs">الوحدات</Label>
                               <Input type="number" min="1" value={it.units} onChange={(e) => updateItem(it.id, { units: e.target.value })} />
@@ -415,98 +494,84 @@ function CasesPage() {
                               <Label className="text-xs">سعر الوحدة</Label>
                               <Input type="number" step="0.01" value={it.unit_price} onChange={(e) => updateItem(it.id, { unit_price: e.target.value })} />
                             </div>
+                            <div className="sm:col-span-2">
+                              <Label className="text-xs">الأسنان (خاصة بهذا العنصر)</Label>
+                              <ToothChart value={it.tooth_numbers} onChange={(v) => updateItem(it.id, { tooth_numbers: v })} />
+                            </div>
                           </div>
-                          <div className="sm:col-span-2">
-                            <Label className="text-xs">الأسنان (خاصة بهذا العنصر)</Label>
-                            <ToothChart value={it.tooth_numbers} onChange={(v) => updateItem(it.id, { tooth_numbers: v })} />
+                          <div className="mt-2 text-left text-xs text-muted-foreground">
+                            الإجمالي: <span className="font-mono font-semibold text-foreground">{lineTotal.toFixed(2)}</span>
                           </div>
                         </div>
-                        <div className="mt-2 text-left text-xs text-muted-foreground">
-                          الإجمالي: <span className="font-mono font-semibold text-foreground">{lineTotal.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-3 flex items-center justify-between border-t pt-2 text-sm">
-                  <span className="font-semibold">إجمالي الحالة</span>
-                  <span className="font-mono text-base font-bold text-primary">{grandTotal.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Files */}
-              <div className="rounded-lg border bg-muted/20 p-3">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold">صور وملفات الإسكان</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <input
-                      ref={cameraRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      hidden
-                      onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }}
-                    />
-                    <input
-                      ref={photoRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      hidden
-                      onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }}
-                    />
-                    <input
-                      ref={scanRef}
-                      type="file"
-                      accept=".stl,.ply,.obj,.zip,.3mf,.dcm"
-                      multiple
-                      hidden
-                      onChange={(e) => { addFiles(e.target.files, "scan"); e.target.value = ""; }}
-                    />
-                    <Button type="button" size="sm" variant="outline" onClick={() => cameraRef.current?.click()}>
-                      <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()}>
-                      <ImageIcon className="ml-1 h-3.5 w-3.5" /> صور
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => scanRef.current?.click()}>
-                      <FileBox className="ml-1 h-3.5 w-3.5" /> إسكان
-                    </Button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t pt-2 text-sm">
+                    <span className="font-semibold">إجمالي الحالة</span>
+                    <span className="font-mono text-base font-bold text-primary">{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
-                {files.length === 0 ? (
-                  <p className="py-3 text-center text-xs text-muted-foreground">لم يتم إضافة ملفات بعد</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {files.map((f) => (
-                      <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background">
-                        {f.previewUrl ? (
-                          <img src={f.previewUrl} alt={f.file.name} className="h-24 w-full object-cover" />
-                        ) : (
-                          <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
-                            <FileBox className="h-6 w-6 text-muted-foreground" />
-                            <span className="line-clamp-1 text-[10px] text-muted-foreground" dir="ltr">{f.file.name}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center justify-between gap-1 p-1.5">
-                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${f.kind === "scan" ? "bg-blue-500/10 text-blue-700" : "bg-emerald-500/10 text-emerald-700"}`}>
-                            {f.kind === "scan" ? "إسكان" : "صورة"}
-                          </span>
-                          <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeFile(f.id)}>
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <div className="mt-3 flex justify-between">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setActiveTab("basic")}>→ السابق</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setActiveTab("files")}>التالي: الملفات ←</Button>
+                </div>
+              </TabsContent>
 
-              <div>
-                <Label>ملاحظات</Label>
-                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-              </div>
-            </div>
+              {/* TAB 3: Files */}
+              <TabsContent value="files" className="mt-4">
+                <div className="rounded-lg border bg-muted/20 p-3">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold">صور وملفات الإسكان</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden
+                        onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }} />
+                      <input ref={photoRef} type="file" accept="image/*" multiple hidden
+                        onChange={(e) => { addFiles(e.target.files, "photo"); e.target.value = ""; }} />
+                      <input ref={scanRef} type="file" accept=".stl,.ply,.obj,.zip,.3mf,.dcm" multiple hidden
+                        onChange={(e) => { addFiles(e.target.files, "scan"); e.target.value = ""; }} />
+                      <Button type="button" size="sm" variant="outline" onClick={() => cameraRef.current?.click()}>
+                        <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()}>
+                        <ImageIcon className="ml-1 h-3.5 w-3.5" /> صور
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => scanRef.current?.click()}>
+                        <FileBox className="ml-1 h-3.5 w-3.5" /> إسكان
+                      </Button>
+                    </div>
+                  </div>
+                  {files.length === 0 ? (
+                    <p className="py-3 text-center text-xs text-muted-foreground">لم يتم إضافة ملفات بعد</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {files.map((f) => (
+                        <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background">
+                          {f.previewUrl ? (
+                            <img src={f.previewUrl} alt={f.file.name} className="h-24 w-full object-cover" />
+                          ) : (
+                            <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
+                              <FileBox className="h-6 w-6 text-muted-foreground" />
+                              <span className="line-clamp-1 text-[10px] text-muted-foreground" dir="ltr">{f.file.name}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between gap-1 p-1.5">
+                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${f.kind === "scan" ? "bg-blue-500/10 text-blue-700" : "bg-emerald-500/10 text-emerald-700"}`}>
+                              {f.kind === "scan" ? "إسكان" : "صورة"}
+                            </span>
+                            <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeFile(f.id)}>
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-3 flex justify-start">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setActiveTab("items")}>→ السابق</Button>
+                </div>
+              </TabsContent>
+            </Tabs>
 
             <DialogFooter>
               <Button onClick={submit} disabled={submitting}>
