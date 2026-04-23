@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles } from "lucide-react";
@@ -351,6 +351,9 @@ function CasesPage() {
           </DialogTrigger>
           <DialogContent dir="rtl" className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto p-4 sm:w-full sm:p-6">
             <DialogHeader className="pb-2">
+              <DialogDescription className="sr-only">
+                نموذج إنشاء حالة جديدة مع بيانات الطبيب والمريض وتاريخ التسليم والعناصر والملفات.
+              </DialogDescription>
               <div className="flex items-center justify-between gap-2 pe-8">
                 <DialogTitle className="text-base sm:text-lg">حالة جديدة</DialogTitle>
                 {nextCaseNumber && (
