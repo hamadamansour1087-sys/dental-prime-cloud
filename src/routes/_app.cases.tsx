@@ -15,12 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2, RotateCcw, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { ShadeSelector } from "@/components/ShadeSelector";
+import { FollowupCaseDialog } from "@/components/FollowupCaseDialog";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
