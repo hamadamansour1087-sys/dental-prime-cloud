@@ -311,6 +311,21 @@ function CasesPage() {
     return s + u * p;
   }, 0);
 
+  // Predict due date based on workflow stages estimated_days + workload
+  const baseLeadDays = (stages ?? []).reduce((s, st: any) => s + (Number(st.estimated_days) || 0), 0);
+  const validItemsCount = items.filter((it) => it.work_type_id).length;
+  const totalUnitsForPrediction = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
+  const extraDays = Math.max(0, validItemsCount - 1) + Math.max(0, Math.ceil((totalUnitsForPrediction - 3) / 3));
+  const predictedDays = Math.max(1, baseLeadDays + extraDays);
+  const predictedDate = format(addDays(new Date(), predictedDays), "yyyy-MM-dd");
+
+  // Auto-fill due_date when prediction changes (only if user hasn't manually edited)
+  if (dueAuto && open && form.due_date !== predictedDate) {
+    queueMicrotask(() => {
+      setForm((prev) => (prev.due_date === predictedDate || !dueAuto ? prev : { ...prev, due_date: predictedDate }));
+    });
+  }
+
   return (
     <div className="space-y-4">
       <StageTransitionDialog
