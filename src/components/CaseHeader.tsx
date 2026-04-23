@@ -91,6 +91,11 @@ export function CaseHeader({ caseRow, stage, onBack, onMoveStage, onLabel, onPdf
             <Button variant="outline" size="sm" onClick={onLabel}>
               <QrCode className="ml-1 h-4 w-4" /> ملصق QR
             </Button>
+            {onPdf && (
+              <Button variant="outline" size="sm" onClick={onPdf}>
+                <FileDown className="ml-1 h-4 w-4" /> PDF
+              </Button>
+            )}
           </div>
         </div>
 
