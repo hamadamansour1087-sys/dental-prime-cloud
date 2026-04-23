@@ -1097,13 +1097,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_workflow_stage: {
+        Args: {
+          _color?: string
+          _estimated_days?: number
+          _name: string
+          _notify_doctor?: boolean
+          _order_index?: number
+          _workflow_id: string
+        }
+        Returns: string
+      }
       approve_pending_case: {
         Args: { _case_id: string; _workflow_id?: string }
+        Returns: string
+      }
+      create_workflow: {
+        Args: { _description?: string; _name: string }
         Returns: string
       }
       current_doctor_id: { Args: never; Returns: string }
       current_doctor_lab_id: { Args: never; Returns: string }
       current_lab_id: { Args: never; Returns: string }
+      delete_workflow: {
+        Args: { _force?: boolean; _workflow_id: string }
+        Returns: undefined
+      }
+      delete_workflow_stage: { Args: { _stage_id: string }; Returns: undefined }
       generate_case_number: { Args: { _lab_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -1120,9 +1140,17 @@ export type Database = {
         Args: { _case_id: string; _reason?: string }
         Returns: undefined
       }
+      reorder_workflow_stages: {
+        Args: { _ordered_stage_ids: string[]; _workflow_id: string }
+        Returns: undefined
+      }
       resolve_case_price: {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
+      }
+      set_default_workflow: {
+        Args: { _workflow_id: string }
+        Returns: undefined
       }
       transition_case_stage: {
         Args: {
@@ -1131,6 +1159,25 @@ export type Database = {
           _skipped_stage_ids?: string[]
           _technician_id?: string
           _to_stage_id: string
+        }
+        Returns: undefined
+      }
+      update_workflow: {
+        Args: {
+          _description?: string
+          _is_active?: boolean
+          _name: string
+          _workflow_id: string
+        }
+        Returns: undefined
+      }
+      update_workflow_stage: {
+        Args: {
+          _color?: string
+          _estimated_days?: number
+          _name?: string
+          _notify_doctor?: boolean
+          _stage_id: string
         }
         Returns: undefined
       }
