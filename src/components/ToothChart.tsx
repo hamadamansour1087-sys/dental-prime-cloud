@@ -45,7 +45,7 @@ function parseSelected(value: string): Set<string> {
 }
 
 export function ToothChart({ value, onChange }: ToothChartProps) {
-  const [system, setSystem] = useState<System>("FDI");
+  const [system, setSystem] = useState<System>("Quadrant");
   const selected = useMemo(() => parseSelected(value), [value]);
 
   const toggle = (key: string) => {

@@ -145,29 +145,25 @@ function NewCasePortal() {
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>الشيد</Label>
-              <Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} />
-            </div>
-            <div>
-              <Label>عدد الوحدات</Label>
-              <Input
-                type="number"
-                min="1"
-                value={form.units}
-                onChange={(e) => setForm({ ...form, units: e.target.value })}
-              />
-            </div>
+          <div>
+            <Label>الشيد</Label>
+            <Input value={form.shade} onChange={(e) => setForm({ ...form, shade: e.target.value })} />
           </div>
           <div>
             <Label>أرقام الأسنان</Label>
             <div className="mt-1">
               <ToothChart
                 value={form.tooth_numbers}
-                onChange={(v) => setForm({ ...form, tooth_numbers: v })}
+                onChange={(v) => {
+                  const count = v.split(",").map((s) => s.trim()).filter(Boolean).length;
+                  setForm({ ...form, tooth_numbers: v, units: String(Math.max(count, 1)) });
+                }}
               />
             </div>
+          </div>
+          <div>
+            <Label>عدد الوحدات (تلقائي)</Label>
+            <Input type="number" min="1" value={form.units} readOnly className="bg-muted/50" />
           </div>
           <div>
             <Label>تاريخ التسليم المطلوب</Label>
