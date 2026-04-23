@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-insights'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 import { Route as ApiAiAnalyzeCaseRouteImport } from './routes/api/ai-analyze-case'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
@@ -46,6 +47,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiDailyInsightsRoute = ApiAiDailyInsightsRouteImport.update({
+  id: '/api/ai-daily-insights',
+  path: '/api/ai-daily-insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiChatRoute = ApiAiChatRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesByTo {
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesById {
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/_app/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRouteTypes {
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
+    | '/api/ai-daily-insights'
     | '/cases/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
+    | '/api/ai-daily-insights'
     | '/cases/$caseId'
   id:
     | '__root__'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/_app/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
+    | '/api/ai-daily-insights'
     | '/_app/cases/$caseId'
   fileRoutesById: FileRoutesById
 }
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
+  ApiAiDailyInsightsRoute: typeof ApiAiDailyInsightsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-daily-insights': {
+      id: '/api/ai-daily-insights'
+      path: '/api/ai-daily-insights'
+      fullPath: '/api/ai-daily-insights'
+      preLoaderRoute: typeof ApiAiDailyInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai-chat': {
@@ -448,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
   ApiAiChatRoute: ApiAiChatRoute,
+  ApiAiDailyInsightsRoute: ApiAiDailyInsightsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
