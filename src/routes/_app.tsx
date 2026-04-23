@@ -8,6 +8,7 @@ import { ScanLine } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
+import { NotificationsBell } from "@/components/NotificationsBell";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -39,6 +40,7 @@ function AppLayout() {
                 <ScanLine className="h-4 w-4" />
                 <span className="hidden sm:inline">مسح QR</span>
               </Button>
+              <NotificationsBell />
               <ThemeToggle />
             </div>
           </header>
