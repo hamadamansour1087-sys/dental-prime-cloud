@@ -430,7 +430,9 @@ export type Database = {
           notes: string | null
           opening_balance: number
           phone: string | null
+          portal_enabled: boolean
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -445,7 +447,9 @@ export type Database = {
           notes?: string | null
           opening_balance?: number
           phone?: string | null
+          portal_enabled?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -460,7 +464,9 @@ export type Database = {
           notes?: string | null
           opening_balance?: number
           phone?: string | null
+          portal_enabled?: boolean
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1120,8 +1126,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "technician"
-      case_status: "active" | "on_hold" | "delivered" | "cancelled"
+      app_role: "admin" | "manager" | "technician" | "doctor"
+      case_status:
+        | "active"
+        | "on_hold"
+        | "delivered"
+        | "cancelled"
+        | "pending_approval"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1249,8 +1260,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "technician"],
-      case_status: ["active", "on_hold", "delivered", "cancelled"],
+      app_role: ["admin", "manager", "technician", "doctor"],
+      case_status: [
+        "active",
+        "on_hold",
+        "delivered",
+        "cancelled",
+        "pending_approval",
+      ],
     },
   },
 } as const
