@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,6 +141,7 @@ function CasesPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const goToCase = (caseId: string) => {
     setContextMenu(null);
     const targetPath = `/cases/${caseId}`;
@@ -498,6 +499,10 @@ function CasesPage() {
     if (!dueAuto || !open || form.due_date === predictedDate) return;
     setForm((prev) => (prev.due_date === predictedDate ? prev : { ...prev, due_date: predictedDate }));
   }, [dueAuto, open, predictedDate, form.due_date]);
+
+  if (location.pathname !== "/cases") {
+    return <Outlet />;
+  }
 
   return (
     <div className="space-y-4">
