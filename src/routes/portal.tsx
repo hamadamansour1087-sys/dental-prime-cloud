@@ -36,15 +36,19 @@ function PortalLayout() {
     },
   });
 
-  if (loading || (user && docLoading)) {
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/portal/login" });
+    }
+  }, [loading, user, navigate]);
+
+  if (loading || !user || (user && docLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
-
-  if (!user) return <Navigate to="/portal/login" />;
 
   if (!doctor || !doctor.portal_enabled) {
     return (
