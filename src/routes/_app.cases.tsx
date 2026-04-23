@@ -143,7 +143,17 @@ function CasesPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const goToCase = (caseId: string) => {
-    setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId } }), 0);
+    // Use requestAnimationFrame to wait for Radix overlays to fully unmount,
+    // then navigate. Fallback to hard location change if router fails.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          navigate({ to: "/cases/$caseId", params: { caseId } });
+        } catch {
+          window.location.href = `/cases/${caseId}`;
+        }
+      });
+    });
   };
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
