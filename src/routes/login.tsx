@@ -63,6 +63,12 @@ function LoginPage() {
                 أنشئ معمل جديد
               </Link>
             </p>
+            <p className="text-center text-xs text-muted-foreground">
+              طبيب؟{" "}
+              <a href="/portal/login" className="font-medium text-primary hover:underline">
+                ادخل من بورتال الأطباء
+              </a>
+            </p>
           </form>
         </CardContent>
       </Card>
