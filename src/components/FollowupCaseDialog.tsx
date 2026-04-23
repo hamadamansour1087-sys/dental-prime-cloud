@@ -25,7 +25,7 @@ export function FollowupCaseDialog({
   caseId: string;
   caseNumber: string;
   caseType: CaseType;
-  onCreated?: (newCaseId: string) => void;
+  onCreated?: (newCaseId: string, options: { withNewWork: boolean }) => void;
 }) {
   const qc = useQueryClient();
   const [withNewWork, setWithNewWork] = useState<"same" | "new">("same");
@@ -67,7 +67,7 @@ export function FollowupCaseDialog({
     onOpenChange(false);
     qc.invalidateQueries({ queryKey: ["cases"] });
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
-    onCreated?.(data as unknown as string);
+    onCreated?.(data as unknown as string, { withNewWork: withNewWork === "new" });
   };
 
   return (
