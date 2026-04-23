@@ -464,6 +464,16 @@ function CasesPage() {
         }}
       />
 
+      {followup && (
+        <FollowupCaseDialog
+          open={!!followup}
+          onOpenChange={(o) => !o && setFollowup(null)}
+          caseId={followup.caseId}
+          caseNumber={followup.caseNumber}
+          caseType={followup.type}
+        />
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">الحالات</h1>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
