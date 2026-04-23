@@ -797,10 +797,6 @@ function CasesPage() {
                       );
                     })}
                   </div>
-                  <div className="mt-3 flex items-center justify-between border-t pt-2 text-sm">
-                    <span className="font-semibold">إجمالي الحالة</span>
-                    <span className="font-mono text-base font-bold text-primary">{grandTotal.toFixed(2)}</span>
-                  </div>
                 </div>
                 <div className="mt-3 flex justify-between">
                   <Button type="button" variant="ghost" size="sm" onClick={() => setActiveTab("basic")}>→ السابق</Button>
@@ -922,7 +918,6 @@ function CasesPage() {
                 <TableHead className="text-center">الوحدات</TableHead>
                 <TableHead>تاريخ الاستلام</TableHead>
                 <TableHead>تاريخ التسليم</TableHead>
-                <TableHead className="text-end">السعر</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -967,15 +962,12 @@ function CasesPage() {
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
                       {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                     </TableCell>
-                    <TableCell className="text-end font-mono text-xs">
-                      {c.price != null ? Number(c.price).toFixed(2) : "—"}
-                    </TableCell>
                   </TableRow>
                 );
               })}
               {!filteredCases.length && (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
                     لا توجد حالات
                   </TableCell>
                 </TableRow>
