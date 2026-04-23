@@ -148,3 +148,4 @@ function PortalStatement() {
 export const Route = createFileRoute("/portal/statement")({
   component: PortalStatement,
 });
+
