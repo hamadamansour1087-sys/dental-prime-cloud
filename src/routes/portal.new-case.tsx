@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
+import { ToothChart } from "@/components/ToothChart";
 
 export const Route = createFileRoute("/portal/new-case")({
   component: NewCasePortal,
@@ -161,11 +162,12 @@ function NewCasePortal() {
           </div>
           <div>
             <Label>أرقام الأسنان</Label>
-            <Input
-              placeholder="مثال: 11, 12, 13"
-              value={form.tooth_numbers}
-              onChange={(e) => setForm({ ...form, tooth_numbers: e.target.value })}
-            />
+            <div className="mt-1">
+              <ToothChart
+                value={form.tooth_numbers}
+                onChange={(v) => setForm({ ...form, tooth_numbers: v })}
+              />
+            </div>
           </div>
           <div>
             <Label>تاريخ التسليم المطلوب</Label>
