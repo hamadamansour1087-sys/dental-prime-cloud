@@ -140,10 +140,14 @@ function DueDateField({
 function CasesPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
+  const [view, setView] = useState<"table" | "kanban">("table");
+  const [search, setSearch] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
   const [form, setForm] = useState({
     doctor_id: "",
     clinic_id: "",
