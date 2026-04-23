@@ -10,9 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalStatementRouteImport } from './routes/portal.statement'
+import { Route as PortalNewCaseRouteImport } from './routes/portal.new-case'
+import { Route as PortalLoginRouteImport } from './routes/portal.login'
+import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
+import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
 import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-insights'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
@@ -24,6 +31,7 @@ import { Route as AppTechnicianReportsRouteImport } from './routes/_app.technici
 import { Route as AppStatementsRouteImport } from './routes/_app.statements'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
+import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
@@ -34,6 +42,11 @@ import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -48,6 +61,36 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalStatementRoute = PortalStatementRouteImport.update({
+  id: '/statement',
+  path: '/statement',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalNewCaseRoute = PortalNewCaseRouteImport.update({
+  id: '/new-case',
+  path: '/new-case',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalLoginRoute = PortalLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDashboardRoute = PortalDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalCasesRoute = PortalCasesRouteImport.update({
+  id: '/cases',
+  path: '/cases',
+  getParentRoute: () => PortalRoute,
+} as any)
+const ApiCreateDoctorAccountRoute = ApiCreateDoctorAccountRouteImport.update({
+  id: '/api/create-doctor-account',
+  path: '/api/create-doctor-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiPredictDeliveryRoute = ApiAiPredictDeliveryRouteImport.update({
@@ -105,6 +148,11 @@ const AppPricingRoute = AppPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPendingCasesRoute = AppPendingCasesRouteImport.update({
+  id: '/pending-cases',
+  path: '/pending-cases',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPatientsRoute = AppPatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
@@ -139,12 +187,14 @@ const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
+  '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
@@ -156,17 +206,25 @@ export interface FileRoutesByFullPath {
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/portal/cases': typeof PortalCasesRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/login': typeof PortalLoginRoute
+  '/portal/new-case': typeof PortalNewCaseRoute
+  '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
   '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
+  '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
@@ -178,6 +236,12 @@ export interface FileRoutesByTo {
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/portal/cases': typeof PortalCasesRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/login': typeof PortalLoginRoute
+  '/portal/new-case': typeof PortalNewCaseRoute
+  '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRoutesById {
@@ -185,12 +249,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/doctors': typeof AppDoctorsRoute
   '/_app/invoices': typeof AppInvoicesRoute
   '/_app/patients': typeof AppPatientsRoute
+  '/_app/pending-cases': typeof AppPendingCasesRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/statements': typeof AppStatementsRoute
@@ -202,6 +268,12 @@ export interface FileRoutesById {
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/portal/cases': typeof PortalCasesRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/login': typeof PortalLoginRoute
+  '/portal/new-case': typeof PortalNewCaseRoute
+  '/portal/statement': typeof PortalStatementRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
 }
 export interface FileRouteTypes {
@@ -209,12 +281,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/cases'
     | '/dashboard'
     | '/doctors'
     | '/invoices'
     | '/patients'
+    | '/pending-cases'
     | '/pricing'
     | '/settings'
     | '/statements'
@@ -226,17 +300,25 @@ export interface FileRouteTypes {
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-doctor-account'
+    | '/portal/cases'
+    | '/portal/dashboard'
+    | '/portal/login'
+    | '/portal/new-case'
+    | '/portal/statement'
     | '/cases/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/cases'
     | '/dashboard'
     | '/doctors'
     | '/invoices'
     | '/patients'
+    | '/pending-cases'
     | '/pricing'
     | '/settings'
     | '/statements'
@@ -248,18 +330,26 @@ export interface FileRouteTypes {
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-doctor-account'
+    | '/portal/cases'
+    | '/portal/dashboard'
+    | '/portal/login'
+    | '/portal/new-case'
+    | '/portal/statement'
     | '/cases/$caseId'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/login'
+    | '/portal'
     | '/signup'
     | '/_app/cases'
     | '/_app/dashboard'
     | '/_app/doctors'
     | '/_app/invoices'
     | '/_app/patients'
+    | '/_app/pending-cases'
     | '/_app/pricing'
     | '/_app/settings'
     | '/_app/statements'
@@ -271,6 +361,12 @@ export interface FileRouteTypes {
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-doctor-account'
+    | '/portal/cases'
+    | '/portal/dashboard'
+    | '/portal/login'
+    | '/portal/new-case'
+    | '/portal/statement'
     | '/_app/cases/$caseId'
   fileRoutesById: FileRoutesById
 }
@@ -278,11 +374,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
   ApiAiDailyInsightsRoute: typeof ApiAiDailyInsightsRoute
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
+  ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +390,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -313,6 +418,48 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/statement': {
+      id: '/portal/statement'
+      path: '/statement'
+      fullPath: '/portal/statement'
+      preLoaderRoute: typeof PortalStatementRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/new-case': {
+      id: '/portal/new-case'
+      path: '/new-case'
+      fullPath: '/portal/new-case'
+      preLoaderRoute: typeof PortalNewCaseRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/login': {
+      id: '/portal/login'
+      path: '/login'
+      fullPath: '/portal/login'
+      preLoaderRoute: typeof PortalLoginRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/dashboard': {
+      id: '/portal/dashboard'
+      path: '/dashboard'
+      fullPath: '/portal/dashboard'
+      preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/cases': {
+      id: '/portal/cases'
+      path: '/cases'
+      fullPath: '/portal/cases'
+      preLoaderRoute: typeof PortalCasesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/api/create-doctor-account': {
+      id: '/api/create-doctor-account'
+      path: '/api/create-doctor-account'
+      fullPath: '/api/create-doctor-account'
+      preLoaderRoute: typeof ApiCreateDoctorAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai-predict-delivery': {
@@ -392,6 +539,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPricingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pending-cases': {
+      id: '/_app/pending-cases'
+      path: '/pending-cases'
+      fullPath: '/pending-cases'
+      preLoaderRoute: typeof AppPendingCasesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/patients': {
       id: '/_app/patients'
       path: '/patients'
@@ -455,6 +609,7 @@ interface AppRouteChildren {
   AppDoctorsRoute: typeof AppDoctorsRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppPatientsRoute: typeof AppPatientsRoute
+  AppPendingCasesRoute: typeof AppPendingCasesRoute
   AppPricingRoute: typeof AppPricingRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStatementsRoute: typeof AppStatementsRoute
@@ -470,6 +625,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDoctorsRoute: AppDoctorsRoute,
   AppInvoicesRoute: AppInvoicesRoute,
   AppPatientsRoute: AppPatientsRoute,
+  AppPendingCasesRoute: AppPendingCasesRoute,
   AppPricingRoute: AppPricingRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStatementsRoute: AppStatementsRoute,
@@ -481,15 +637,36 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface PortalRouteChildren {
+  PortalCasesRoute: typeof PortalCasesRoute
+  PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalLoginRoute: typeof PortalLoginRoute
+  PortalNewCaseRoute: typeof PortalNewCaseRoute
+  PortalStatementRoute: typeof PortalStatementRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalCasesRoute: PortalCasesRoute,
+  PortalDashboardRoute: PortalDashboardRoute,
+  PortalLoginRoute: PortalLoginRoute,
+  PortalNewCaseRoute: PortalNewCaseRoute,
+  PortalStatementRoute: PortalStatementRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
   ApiAiChatRoute: ApiAiChatRoute,
   ApiAiDailyInsightsRoute: ApiAiDailyInsightsRoute,
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
+  ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

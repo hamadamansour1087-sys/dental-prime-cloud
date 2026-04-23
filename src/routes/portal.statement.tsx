@@ -27,40 +27,44 @@ function PortalStatement() {
   const { data: cases } = useQuery({
     queryKey: ["statement-cases", doctor?.id],
     enabled: !!doctor,
-    queryFn: async () =>
-      (
-        await supabase
-          .from("cases")
-          .select("id, case_number, date_received, price, status")
-          .neq("status", "pending_approval")
-          .neq("status", "cancelled")
-          .order("date_received", { ascending: true })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("cases")
+        .select("id, case_number, date_received, price, status")
+        .neq("status", "pending_approval")
+        .neq("status", "cancelled")
+        .order("date_received", { ascending: true });
+      return data ?? [];
+    },
   });
 
   const { data: payments } = useQuery({
     queryKey: ["statement-payments", doctor?.id],
     enabled: !!doctor,
-    queryFn: async () =>
-      (await supabase.from("payments").select("id, payment_date, amount, method, reference").order("payment_date")).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("payments")
+        .select("id, payment_date, amount, method, reference")
+        .order("payment_date");
+      return data ?? [];
+    },
   });
 
-  type Row = { date: string; desc: string; debit: number; credit: number };
-  const rows: Row[] = [];
+  const rows: Array<{ date: string; desc: string; debit: number; credit: number }> = [];
   if (doctor?.opening_balance) {
     rows.push({ date: "—", desc: "رصيد افتتاحي", debit: Number(doctor.opening_balance), credit: 0 });
   }
-  (cases ?? []).forEach((c: any) =>
-    rows.push({ date: c.date_received, desc: `حالة ${c.case_number}`, debit: Number(c.price ?? 0), credit: 0 })
-  );
-  (payments ?? []).forEach((p: any) =>
+  (cases ?? []).forEach((c: any) => {
+    rows.push({ date: c.date_received, desc: `حالة ${c.case_number}`, debit: Number(c.price ?? 0), credit: 0 });
+  });
+  (payments ?? []).forEach((p: any) => {
     rows.push({
       date: p.payment_date,
       desc: `دفعة${p.method ? ` (${p.method})` : ""}${p.reference ? ` — ${p.reference}` : ""}`,
       debit: 0,
       credit: Number(p.amount),
-    })
-  );
+    });
+  });
   rows.sort((a, b) => (a.date < b.date ? -1 : 1));
 
   let balance = 0;
@@ -81,7 +85,7 @@ function PortalStatement() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">إجمالي المدفوع</p>
-            <p className="mt-1 text-lg font-bold text-green-600">{totalCredit.toFixed(2)}</p>
+            <p className="mt-1 text-lg font-bold text-primary">{totalCredit.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -89,7 +93,7 @@ function PortalStatement() {
             <p className="text-xs text-muted-foreground">الرصيد المتبقي</p>
             <p
               className={`mt-1 text-lg font-bold ${
-                totalDebit - totalCredit > 0 ? "text-destructive" : "text-green-600"
+                totalDebit - totalCredit > 0 ? "text-destructive" : "text-primary"
               }`}
             >
               {(totalDebit - totalCredit).toFixed(2)}
@@ -122,7 +126,7 @@ function PortalStatement() {
                       <td className="p-2 whitespace-nowrap">{r.date}</td>
                       <td className="p-2">{r.desc}</td>
                       <td className="p-2 font-mono">{r.debit ? r.debit.toFixed(2) : "—"}</td>
-                      <td className="p-2 font-mono text-green-600">{r.credit ? r.credit.toFixed(2) : "—"}</td>
+                      <td className="p-2 font-mono text-primary">{r.credit ? r.credit.toFixed(2) : "—"}</td>
                       <td className="p-2 font-mono font-semibold">{balance.toFixed(2)}</td>
                     </tr>
                   );
