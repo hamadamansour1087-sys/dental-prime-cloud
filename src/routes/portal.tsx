@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -22,10 +22,12 @@ function PortalLayout() {
   const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isLoginRoute = location.pathname === "/portal/login";
+  const redirectingRef = useRef(false);
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
-    enabled: !!user,
+    enabled: !!user && !isLoginRoute,
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
@@ -37,12 +39,27 @@ function PortalLayout() {
   });
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate({ to: "/portal/login" });
+    if (!loading && !user && !isLoginRoute && !redirectingRef.current) {
+      redirectingRef.current = true;
+      navigate({ to: "/portal/login", replace: true });
+      return;
     }
-  }, [loading, user, navigate]);
+    redirectingRef.current = false;
+  }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || !user || (user && docLoading)) {
+  if (loading || (!isLoginRoute && user && docLoading)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (isLoginRoute) {
+    return <Outlet />;
+  }
+
+  if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
