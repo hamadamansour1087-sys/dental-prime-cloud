@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +14,6 @@ import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2, RotateCcw, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
@@ -143,23 +142,26 @@ function CasesPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const goToCase = (caseId: string) => {
-    // Use requestAnimationFrame to wait for Radix overlays to fully unmount,
-    // then navigate. Fallback to hard location change if router fails.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        try {
-          navigate({ to: "/cases/$caseId", params: { caseId } });
-        } catch {
-          window.location.href = `/cases/${caseId}`;
+    setContextMenu(null);
+    const targetPath = `/cases/${caseId}`;
+
+    try {
+      navigate({ to: "/cases/$caseId", params: { caseId } });
+      window.setTimeout(() => {
+        if (window.location.pathname !== targetPath) {
+          window.location.assign(targetPath);
         }
-      });
-    });
+      }, 120);
+    } catch {
+      window.location.assign(targetPath);
+    }
   };
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
   const [followup, setFollowup] = useState<{ caseId: string; caseNumber: string; type: "remake" | "repair" } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; caseData: any } | null>(null);
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -411,11 +413,13 @@ function CasesPage() {
   };
 
   const moveCase = async (caseId: string, toStageId: string, workflowId: string | null, currentStageId: string | null) => {
+    setContextMenu(null);
     setSelectedTransition({ caseId, workflowId, currentStageId, toStageId });
     setStageOpen(true);
   };
 
   const updateCaseStatus = async (caseId: string, status: "active" | "on_hold" | "delivered" | "cancelled") => {
+    setContextMenu(null);
     const patch: any = { status };
     if (status === "delivered") patch.date_delivered = new Date().toISOString();
     const { error } = await supabase.from("cases").update(patch).eq("id", caseId);
@@ -425,6 +429,32 @@ function CasesPage() {
   };
 
   const today = new Date().toISOString().slice(0, 10);
+
+  const openCaseContextMenu = (event: ReactMouseEvent<HTMLElement>, caseData: any) => {
+    event.preventDefault();
+    setContextMenu({ x: event.clientX, y: event.clientY, caseData });
+  };
+
+  useEffect(() => {
+    if (!contextMenu) return;
+
+    const closeMenu = () => setContextMenu(null);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMenu();
+    };
+
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("resize", closeMenu);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("resize", closeMenu);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [contextMenu]);
 
   const filteredCases = useMemo(() => {
     let list = cases ?? [];
@@ -446,6 +476,15 @@ function CasesPage() {
     const p = parseFloat(it.unit_price) || 0;
     return s + u * p;
   }, 0);
+
+  const contextStage = contextMenu ? stages?.find((s) => s.id === contextMenu.caseData.current_stage_id) ?? null : null;
+  const contextNextStage = contextStage ? stages?.find((s) => s.order_index === contextStage.order_index + 1) ?? null : null;
+  const contextMenuLeft = contextMenu
+    ? Math.max(8, Math.min(contextMenu.x, (typeof window !== "undefined" ? window.innerWidth : 1280) - 240))
+    : 0;
+  const contextMenuTop = contextMenu
+    ? Math.max(8, Math.min(contextMenu.y, (typeof window !== "undefined" ? window.innerHeight : 720) - 360))
+    : 0;
 
   // Predict due date based on workflow stages estimated_days + workload
   const baseLeadDays = (stages ?? []).reduce((s, st: any) => s + (Number(st.estimated_days) || 0), 0);
@@ -491,6 +530,117 @@ function CasesPage() {
             }
           }}
         />
+      )}
+
+      {contextMenu && (
+        <div
+          dir="rtl"
+          className="fixed z-50 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+          style={{ left: contextMenuLeft, top: contextMenuTop }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={() => goToCase(contextMenu.caseData.id)}
+          >
+            <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+          </button>
+
+          <div className="-mx-1 my-1 h-px bg-border" />
+
+          {stages?.filter((s) => s.id !== contextMenu.caseData.current_stage_id).map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => moveCase(contextMenu.caseData.id, s.id, contextMenu.caseData.workflow_id, contextMenu.caseData.current_stage_id)}
+            >
+              <ArrowLeftRight className="ml-2 h-4 w-4" />
+              نقل إلى: {s.name}
+            </button>
+          ))}
+
+          {contextNextStage && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => moveCase(contextMenu.caseData.id, contextNextStage.id, contextMenu.caseData.workflow_id, contextMenu.caseData.current_stage_id)}
+            >
+              <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {contextNextStage.name}
+            </button>
+          )}
+
+          <div className="-mx-1 my-1 h-px bg-border" />
+
+          {contextMenu.caseData.status !== "delivered" && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => updateCaseStatus(contextMenu.caseData.id, "delivered")}
+            >
+              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
+            </button>
+          )}
+
+          {contextMenu.caseData.status !== "on_hold" && contextMenu.caseData.status !== "delivered" && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => updateCaseStatus(contextMenu.caseData.id, "on_hold")}
+            >
+              <AlertTriangle className="ml-2 h-4 w-4 text-amber-600" /> إيقاف مؤقت
+            </button>
+          )}
+
+          {contextMenu.caseData.status === "on_hold" && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => updateCaseStatus(contextMenu.caseData.id, "active")}
+            >
+              <CheckCircle2 className="ml-2 h-4 w-4" /> إعادة تفعيل
+            </button>
+          )}
+
+          <div className="-mx-1 my-1 h-px bg-border" />
+
+          <button
+            type="button"
+            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={() => {
+              setContextMenu(null);
+              setFollowup({ caseId: contextMenu.caseData.id, caseNumber: contextMenu.caseData.case_number, type: "remake" });
+            }}
+          >
+            <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
+          </button>
+          <button
+            type="button"
+            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={() => {
+              setContextMenu(null);
+              setFollowup({ caseId: contextMenu.caseData.id, caseNumber: contextMenu.caseData.case_number, type: "repair" });
+            }}
+          >
+            <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
+          </button>
+
+          <div className="-mx-1 my-1 h-px bg-border" />
+
+          <button
+            type="button"
+            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-accent hover:text-destructive"
+            onClick={() => {
+              setContextMenu(null);
+              if (confirm(`إلغاء الحالة ${contextMenu.caseData.case_number}؟`)) {
+                updateCaseStatus(contextMenu.caseData.id, "cancelled");
+              }
+            }}
+          >
+            <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
+          </button>
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -775,96 +925,48 @@ function CasesPage() {
               {filteredCases.map((c: any) => {
                 const overdue = c.due_date && c.due_date < today && c.status === "active";
                 const stage = stages?.find((s) => s.id === c.current_stage_id);
-                const nextStage = stage ? stages?.find((s) => s.order_index === stage.order_index + 1) : null;
                 return (
-                  <ContextMenu key={c.id}>
-                    <ContextMenuTrigger asChild>
-                      <TableRow className="cursor-pointer" onDoubleClick={() => goToCase(c.id)}>
-                        <TableCell className="font-mono text-xs">
-                          <div className="flex items-center gap-1">
-                            {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
-                            {c.case_number}
-                          </div>
-                        </TableCell>
-                        <TableCell>{c.doctors?.name ?? "—"}</TableCell>
-                        <TableCell>{c.patients?.name ?? "—"}</TableCell>
-                        <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
-                        <TableCell>
-                          {stage ? (
-                            <span
-                              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
-                              style={{ backgroundColor: `${stage.color}20`, color: stage.color }}
-                            >
-                              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                              {stage.name}
-                            </span>
-                          ) : "—"}
-                        </TableCell>
-                        <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
-                        <TableCell className="text-xs">
-                          {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
-                        </TableCell>
-                        <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
-                          {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
-                        </TableCell>
-                        <TableCell className="text-end font-mono text-xs">
-                          {c.price != null ? Number(c.price).toFixed(2) : "—"}
-                        </TableCell>
-                      </TableRow>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent className="w-56">
-                      <ContextMenuItem onSelect={() => goToCase(c.id)}>
-                        <Eye className="ml-2 h-4 w-4" /> فتح الحالة
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
-                        <ContextMenuItem
-                          key={s.id}
-                          onSelect={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}
-                        >
-                          <ArrowLeftRight className="ml-2 h-4 w-4" />
-                          نقل إلى: {s.name}
-                        </ContextMenuItem>
-                      ))}
-                      {nextStage && (
-                        <ContextMenuItem onSelect={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}>
-                          <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {nextStage.name}
-                        </ContextMenuItem>
-                      )}
-                      <ContextMenuSeparator />
-                      {c.status !== "delivered" && (
-                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "delivered")}>
-                          <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
-                        </ContextMenuItem>
-                      )}
-                      {c.status !== "on_hold" && c.status !== "delivered" && (
-                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "on_hold")}>
-                          <AlertTriangle className="ml-2 h-4 w-4 text-amber-600" /> إيقاف مؤقت
-                        </ContextMenuItem>
-                      )}
-                      {c.status === "on_hold" && (
-                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "active")}>
-                          <CheckCircle2 className="ml-2 h-4 w-4" /> إعادة تفعيل
-                        </ContextMenuItem>
-                      )}
-                      <ContextMenuSeparator />
-                      <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "remake" })}>
-                        <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
-                      </ContextMenuItem>
-                      <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "repair" })}>
-                        <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onSelect={() => {
-                          if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
-                        }}
+                  <TableRow
+                    key={c.id}
+                    className="cursor-pointer"
+                    onDoubleClick={() => goToCase(c.id)}
+                    onContextMenu={(event) => openCaseContextMenu(event, c)}
+                  >
+                    <TableCell className="font-mono text-xs">
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-start transition-colors hover:text-primary"
+                        onClick={() => goToCase(c.id)}
                       >
-                        <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenu>
+                        {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
+                        {c.case_number}
+                      </button>
+                    </TableCell>
+                    <TableCell>{c.doctors?.name ?? "—"}</TableCell>
+                    <TableCell>{c.patients?.name ?? "—"}</TableCell>
+                    <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
+                    <TableCell>
+                      {stage ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                          style={{ backgroundColor: `${stage.color}20`, color: stage.color }}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                          {stage.name}
+                        </span>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
+                    <TableCell className="text-xs">
+                      {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
+                      {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className="text-end font-mono text-xs">
+                      {c.price != null ? Number(c.price).toFixed(2) : "—"}
+                    </TableCell>
+                  </TableRow>
                 );
               })}
               {!filteredCases.length && (
@@ -898,76 +1000,43 @@ function CasesPage() {
                     const overdue = c.due_date && c.due_date < today && c.status === "active";
                     const nextStage = stages?.find((s) => s.order_index === stage.order_index + 1);
                     return (
-                      <ContextMenu key={c.id}>
-                        <ContextMenuTrigger asChild>
-                          <Card className="cursor-pointer transition-colors hover:border-primary">
-                            <CardContent className="p-3 text-sm">
-                              <button
-                                type="button"
-                                onClick={() => goToCase(c.id)}
-                                className="block w-full text-right"
-                              >
-                                <div className="mb-1 flex items-center justify-between">
-                                  <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
-                                  {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
-                                </div>
-                                <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
-                                <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
-                                {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
-                                {c.due_date && (
-                                  <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                                    <Calendar className="h-3 w-3" />
-                                    {format(new Date(c.due_date), "dd/MM/yyyy")}
-                                  </p>
-                                )}
-                              </button>
-                              {nextStage && !stage.is_end && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="mt-2 w-full text-xs"
-                                  onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}
-                                >
-                                  ← {nextStage.name}
-                                </Button>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </ContextMenuTrigger>
-                        <ContextMenuContent className="w-56">
-                          <ContextMenuItem onSelect={() => goToCase(c.id)}>
-                            <Eye className="ml-2 h-4 w-4" /> فتح الحالة
-                          </ContextMenuItem>
-                          <ContextMenuSeparator />
-                          {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
-                            <ContextMenuItem key={s.id} onSelect={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}>
-                              <ArrowLeftRight className="ml-2 h-4 w-4" />
-                              نقل إلى: {s.name}
-                            </ContextMenuItem>
-                          ))}
-                          {c.status !== "delivered" && (
-                            <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "delivered")}>
-                              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
-                            </ContextMenuItem>
-                          )}
-                          <ContextMenuSeparator />
-                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "remake" })}>
-                            <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "repair" })}>
-                            <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
-                          </ContextMenuItem>
-                          <ContextMenuSeparator />
-                          <ContextMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onSelect={() => {
-                              if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
-                            }}
+                      <Card
+                        key={c.id}
+                        className="cursor-pointer transition-colors hover:border-primary"
+                        onContextMenu={(event) => openCaseContextMenu(event, c)}
+                      >
+                        <CardContent className="p-3 text-sm">
+                          <button
+                            type="button"
+                            onClick={() => goToCase(c.id)}
+                            className="block w-full text-right"
                           >
-                            <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
-                          </ContextMenuItem>
-                        </ContextMenuContent>
-                      </ContextMenu>
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
+                              {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                            </div>
+                            <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
+                            <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
+                            {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
+                            {c.due_date && (
+                              <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(c.due_date), "dd/MM/yyyy")}
+                              </p>
+                            )}
+                          </button>
+                          {nextStage && !stage.is_end && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 w-full text-xs"
+                              onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}
+                            >
+                              ← {nextStage.name}
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
                     );
                   })}
                   {!stageCases.length && <p className="py-4 text-center text-xs text-muted-foreground">فارغ</p>}
