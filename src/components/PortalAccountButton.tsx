@@ -44,9 +44,14 @@ export function PortalAccountButton({
     }
     setBusy(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("يجب تسجيل الدخول");
       const res = await fetch("/api/create-doctor-account", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ doctor_id: doctor.id, email, password }),
       });
       const data = await res.json();
