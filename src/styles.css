@@ -50,88 +50,137 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Theme: Blueprint (احترافي عملي) — vellum + charcoal + blueprint blue */
+/* ========================================
+   Theme: Medical Pro (الافتراضي)
+   نقي، طبي، احترافي — شبيه بأنظمة العيادات الحديثة
+   ======================================== */
 :root,
 .theme-blueprint {
-  --radius: 0.5rem;
-  --background: oklch(0.97 0.012 85);
-  --foreground: oklch(0.22 0.02 250);
-  --card: oklch(0.995 0.006 85);
-  --card-foreground: oklch(0.22 0.02 250);
-  --popover: oklch(0.995 0.006 85);
-  --popover-foreground: oklch(0.22 0.02 250);
-  --primary: oklch(0.42 0.13 250);
-  --primary-foreground: oklch(0.98 0.005 85);
-  --secondary: oklch(0.93 0.018 85);
-  --secondary-foreground: oklch(0.25 0.03 250);
-  --muted: oklch(0.94 0.012 85);
-  --muted-foreground: oklch(0.48 0.02 250);
-  --accent: oklch(0.9 0.04 230);
-  --accent-foreground: oklch(0.28 0.1 250);
-  --destructive: oklch(0.58 0.22 28);
+  --radius: 0.75rem;
+
+  /* Surfaces — أبيض نقي مع تلميحة سماوية باردة */
+  --background: oklch(0.985 0.005 220);
+  --foreground: oklch(0.22 0.03 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 240);
+
+  /* Brand — أزرق طبي راقي (Teal-Blue) */
+  --primary: oklch(0.55 0.13 220);
+  --primary-foreground: oklch(0.99 0.005 220);
+  --primary-glow: oklch(0.7 0.14 210);
+
+  --secondary: oklch(0.96 0.012 220);
+  --secondary-foreground: oklch(0.3 0.04 240);
+
+  --muted: oklch(0.965 0.008 220);
+  --muted-foreground: oklch(0.5 0.025 235);
+
+  --accent: oklch(0.93 0.04 195);
+  --accent-foreground: oklch(0.28 0.08 220);
+
+  /* Status colors — هادئة ومتوازنة */
+  --destructive: oklch(0.6 0.21 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.6 0.14 155);
+  --success: oklch(0.62 0.14 160);
   --success-foreground: oklch(0.99 0 0);
-  --warning: oklch(0.75 0.16 75);
-  --warning-foreground: oklch(0.2 0.05 75);
-  --border: oklch(0.86 0.02 85);
-  --input: oklch(0.9 0.015 85);
-  --ring: oklch(0.42 0.13 250);
-  --chart-1: oklch(0.42 0.13 250);
-  --chart-2: oklch(0.6 0.14 155);
-  --chart-3: oklch(0.55 0.18 290);
-  --chart-4: oklch(0.72 0.16 75);
-  --chart-5: oklch(0.58 0.2 25);
-  --sidebar: oklch(0.22 0.02 250);
-  --sidebar-foreground: oklch(0.94 0.012 85);
-  --sidebar-primary: oklch(0.7 0.14 230);
-  --sidebar-primary-foreground: oklch(0.15 0.02 250);
-  --sidebar-accent: oklch(0.28 0.025 250);
-  --sidebar-accent-foreground: oklch(0.94 0.012 85);
-  --sidebar-border: oklch(0.3 0.025 250);
-  --sidebar-ring: oklch(0.7 0.14 230);
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.25 0.05 75);
+
+  --border: oklch(0.92 0.01 220);
+  --input: oklch(0.94 0.008 220);
+  --ring: oklch(0.55 0.13 220);
+
+  /* Charts — لوحة احترافية متناسقة */
+  --chart-1: oklch(0.55 0.13 220);
+  --chart-2: oklch(0.65 0.15 160);
+  --chart-3: oklch(0.62 0.16 290);
+  --chart-4: oklch(0.75 0.16 75);
+  --chart-5: oklch(0.62 0.2 25);
+
+  /* Sidebar — داكن أنيق مع لمسة تقنية */
+  --sidebar: oklch(0.22 0.04 235);
+  --sidebar-foreground: oklch(0.95 0.012 220);
+  --sidebar-primary: oklch(0.7 0.14 210);
+  --sidebar-primary-foreground: oklch(0.18 0.03 235);
+  --sidebar-accent: oklch(0.28 0.045 235);
+  --sidebar-accent-foreground: oklch(0.97 0.012 220);
+  --sidebar-border: oklch(0.32 0.04 235);
+  --sidebar-ring: oklch(0.7 0.14 210);
+
+  /* Design tokens — تدرجات وظلال راقية */
+  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.13 220), oklch(0.7 0.14 195));
+  --gradient-subtle: linear-gradient(180deg, oklch(0.99 0.005 220), oklch(0.96 0.012 220));
+  --gradient-success: linear-gradient(135deg, oklch(0.62 0.14 160), oklch(0.72 0.14 175));
+  --shadow-sm: 0 1px 2px 0 oklch(0.22 0.03 240 / 0.05);
+  --shadow-md: 0 4px 12px -2px oklch(0.22 0.03 240 / 0.08), 0 2px 4px -2px oklch(0.22 0.03 240 / 0.04);
+  --shadow-lg: 0 12px 32px -8px oklch(0.22 0.03 240 / 0.12), 0 4px 8px -4px oklch(0.22 0.03 240 / 0.06);
+  --shadow-glow: 0 0 24px oklch(0.55 0.13 220 / 0.18);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Theme: Cyber (عصري داكن) — deep slate + cyan accents */
+/* ========================================
+   Theme: Medical Dark (الوضع الداكن)
+   ======================================== */
 .dark,
 .theme-cyber {
-  --radius: 0.625rem;
-  --background: oklch(0.16 0.025 250);
-  --foreground: oklch(0.96 0.012 200);
-  --card: oklch(0.21 0.03 250);
-  --card-foreground: oklch(0.96 0.012 200);
-  --popover: oklch(0.21 0.03 250);
-  --popover-foreground: oklch(0.96 0.012 200);
-  --primary: oklch(0.78 0.15 200);
-  --primary-foreground: oklch(0.15 0.025 250);
-  --secondary: oklch(0.27 0.035 250);
-  --secondary-foreground: oklch(0.96 0.012 200);
-  --muted: oklch(0.26 0.03 250);
-  --muted-foreground: oklch(0.72 0.025 210);
-  --accent: oklch(0.32 0.08 200);
-  --accent-foreground: oklch(0.96 0.012 200);
-  --destructive: oklch(0.66 0.22 25);
+  --radius: 0.75rem;
+
+  --background: oklch(0.17 0.025 235);
+  --foreground: oklch(0.96 0.01 220);
+  --card: oklch(0.22 0.03 235);
+  --card-foreground: oklch(0.96 0.01 220);
+  --popover: oklch(0.22 0.03 235);
+  --popover-foreground: oklch(0.96 0.01 220);
+
+  --primary: oklch(0.72 0.14 205);
+  --primary-foreground: oklch(0.16 0.025 235);
+  --primary-glow: oklch(0.78 0.15 195);
+
+  --secondary: oklch(0.27 0.035 235);
+  --secondary-foreground: oklch(0.96 0.01 220);
+
+  --muted: oklch(0.26 0.03 235);
+  --muted-foreground: oklch(0.72 0.022 220);
+
+  --accent: oklch(0.32 0.07 205);
+  --accent-foreground: oklch(0.96 0.01 220);
+
+  --destructive: oklch(0.66 0.21 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.74 0.16 155);
-  --success-foreground: oklch(0.15 0.025 250);
+  --success: oklch(0.72 0.15 160);
+  --success-foreground: oklch(0.16 0.025 235);
   --warning: oklch(0.8 0.16 75);
   --warning-foreground: oklch(0.2 0.05 75);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.78 0.15 200);
-  --chart-1: oklch(0.78 0.15 200);
-  --chart-2: oklch(0.74 0.16 155);
-  --chart-3: oklch(0.75 0.18 290);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.72 0.14 205);
+
+  --chart-1: oklch(0.72 0.14 205);
+  --chart-2: oklch(0.74 0.16 160);
+  --chart-3: oklch(0.72 0.17 290);
   --chart-4: oklch(0.8 0.16 75);
   --chart-5: oklch(0.7 0.2 25);
-  --sidebar: oklch(0.13 0.025 250);
-  --sidebar-foreground: oklch(0.95 0.012 200);
-  --sidebar-primary: oklch(0.78 0.15 200);
-  --sidebar-primary-foreground: oklch(0.15 0.025 250);
-  --sidebar-accent: oklch(0.22 0.035 250);
-  --sidebar-accent-foreground: oklch(0.95 0.012 200);
+
+  --sidebar: oklch(0.13 0.025 235);
+  --sidebar-foreground: oklch(0.95 0.012 220);
+  --sidebar-primary: oklch(0.72 0.14 205);
+  --sidebar-primary-foreground: oklch(0.15 0.025 235);
+  --sidebar-accent: oklch(0.22 0.035 235);
+  --sidebar-accent-foreground: oklch(0.95 0.012 220);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.78 0.15 200);
+  --sidebar-ring: oklch(0.72 0.14 205);
+
+  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.14 215), oklch(0.72 0.15 195));
+  --gradient-subtle: linear-gradient(180deg, oklch(0.22 0.03 235), oklch(0.18 0.025 235));
+  --gradient-success: linear-gradient(135deg, oklch(0.5 0.13 160), oklch(0.65 0.15 175));
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 12px -2px oklch(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 32px -8px oklch(0 0 0 / 0.5);
+  --shadow-glow: 0 0 28px oklch(0.72 0.14 205 / 0.3);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
@@ -145,5 +194,41 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ========================================
+   Utility classes — تأثيرات احترافية
+   ======================================== */
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+  .shadow-elegant {
+    box-shadow: var(--shadow-md);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .transition-smooth {
+    transition: all var(--transition-base);
+  }
+  .card-hover {
+    transition: all var(--transition-base);
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
 }
