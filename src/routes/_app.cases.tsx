@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays } from "lucide-react";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
