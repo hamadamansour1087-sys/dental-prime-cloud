@@ -45,19 +45,97 @@ function sanitizeModernColors(root: HTMLElement) {
   }
 }
 
-export async function exportElementToPdf(element: HTMLElement, fileName: string) {
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    onclone: (_doc, clonedEl) => {
+function inlineResolvedStyles(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
+  const sourceNodes = [sourceRoot, ...Array.from(sourceRoot.querySelectorAll<HTMLElement>("*"))];
+  const cloneNodes = [cloneRoot, ...Array.from(cloneRoot.querySelectorAll<HTMLElement>("*"))];
+
+  sourceNodes.forEach((sourceNode, index) => {
+    const cloneNode = cloneNodes[index];
+    if (!cloneNode) return;
+
+    const computed = getComputedStyle(sourceNode);
+    for (let i = 0; i < computed.length; i += 1) {
+      const prop = computed.item(i);
+      if (!prop) continue;
+      const value = computed.getPropertyValue(prop);
+      const priority = computed.getPropertyPriority(prop);
+      if (!value) continue;
+
       try {
-        sanitizeModernColors(clonedEl as HTMLElement);
+        cloneNode.style.setProperty(prop, value, priority);
       } catch {
         /* noop */
       }
-    },
+    }
+
+    cloneNode.removeAttribute("class");
+
+    if (cloneNode instanceof HTMLInputElement || cloneNode instanceof HTMLTextAreaElement || cloneNode instanceof HTMLSelectElement) {
+      cloneNode.value = sourceNode instanceof HTMLInputElement || sourceNode instanceof HTMLTextAreaElement || sourceNode instanceof HTMLSelectElement
+        ? sourceNode.value
+        : cloneNode.value;
+    }
   });
+}
+
+function createSanitizedRenderTarget(element: HTMLElement) {
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "fixed";
+  wrapper.style.left = "-10000px";
+  wrapper.style.top = "0";
+  wrapper.style.zIndex = "-1";
+  wrapper.style.pointerEvents = "none";
+  wrapper.style.background = "#ffffff";
+
+  const clone = element.cloneNode(true) as HTMLElement;
+  const rect = element.getBoundingClientRect();
+  clone.style.width = `${Math.ceil(rect.width)}px`;
+  clone.style.maxWidth = `${Math.ceil(rect.width)}px`;
+  clone.style.minWidth = `${Math.ceil(rect.width)}px`;
+
+  inlineResolvedStyles(element, clone);
+  sanitizeModernColors(clone);
+
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  return {
+    target: clone,
+    cleanup: () => wrapper.remove(),
+  };
+}
+
+function stripProblematicStyles(doc: Document) {
+  const stylesheetNodes = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+
+  stylesheetNodes.forEach((node) => {
+    if (node instanceof HTMLLinkElement) {
+      const href = node.href || "";
+      if (/fonts\.googleapis\.com|fonts\.gstatic\.com/i.test(href)) return;
+    }
+
+    node.remove();
+  });
+}
+
+export async function exportElementToPdf(element: HTMLElement, fileName: string) {
+  const { target, cleanup } = createSanitizedRenderTarget(element);
+
+  try {
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      onclone: (doc, clonedEl) => {
+        try {
+          stripProblematicStyles(doc);
+          sanitizeModernColors(clonedEl as HTMLElement);
+        } catch {
+          /* noop */
+        }
+      },
+    });
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -89,5 +167,8 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     }
   }
 
-  pdf.save(fileName);
+    pdf.save(fileName);
+  } finally {
+    cleanup();
+  }
 }
