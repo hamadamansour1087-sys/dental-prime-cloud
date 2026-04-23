@@ -1097,6 +1097,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_pending_case: {
+        Args: { _case_id: string; _workflow_id?: string }
+        Returns: string
+      }
+      current_doctor_id: { Args: never; Returns: string }
+      current_doctor_lab_id: { Args: never; Returns: string }
       current_lab_id: { Args: never; Returns: string }
       generate_case_number: { Args: { _lab_id: string }; Returns: string }
       has_role: {
@@ -1110,6 +1116,10 @@ export type Database = {
       is_lab_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_manager_or_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_member: { Args: { _lab_id: string }; Returns: boolean }
+      reject_pending_case: {
+        Args: { _case_id: string; _reason?: string }
+        Returns: undefined
+      }
       resolve_case_price: {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
