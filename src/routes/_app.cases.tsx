@@ -780,7 +780,7 @@ function CasesPage() {
                         </TableCell>
                       </TableRow>
                     </ContextMenuTrigger>
-                    <ContextMenuContent dir="rtl" className="w-56">
+                    <ContextMenuContent className="w-56">
                       <ContextMenuItem onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
                         <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                       </ContextMenuItem>
@@ -901,7 +901,7 @@ function CasesPage() {
                             </CardContent>
                           </Card>
                         </ContextMenuTrigger>
-                        <ContextMenuContent dir="rtl" className="w-56">
+                        <ContextMenuContent className="w-56">
                           <ContextMenuItem onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
                             <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                           </ContextMenuItem>
