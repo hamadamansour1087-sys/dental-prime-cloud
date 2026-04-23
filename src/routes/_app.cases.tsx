@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2, RotateCcw, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
@@ -471,6 +471,12 @@ function CasesPage() {
           caseId={followup.caseId}
           caseNumber={followup.caseNumber}
           caseType={followup.type}
+          onCreated={(newCaseId, options) => {
+            setFollowup(null);
+            if (options.withNewWork) {
+              navigate({ to: "/cases/$caseId", params: { caseId: newCaseId } });
+            }
+          }}
         />
       )}
 
@@ -747,6 +753,7 @@ function CasesPage() {
                 <TableHead>نوع العمل</TableHead>
                 <TableHead>المرحلة</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
+                <TableHead>تاريخ الاستلام</TableHead>
                 <TableHead>تاريخ التسليم</TableHead>
                 <TableHead className="text-end">السعر</TableHead>
               </TableRow>
@@ -759,10 +766,7 @@ function CasesPage() {
                 return (
                   <ContextMenu key={c.id}>
                     <ContextMenuTrigger asChild>
-                      <TableRow
-                        className="cursor-pointer"
-                        onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}
-                      >
+                        <TableRow className="cursor-pointer" onDoubleClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
                         <TableCell className="font-mono text-xs">
                           <div className="flex items-center gap-1">
                             {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
@@ -784,6 +788,9 @@ function CasesPage() {
                           ) : "—"}
                         </TableCell>
                         <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
+                        <TableCell className="text-xs">
+                          {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
+                        </TableCell>
                         <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
                           {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                         </TableCell>
@@ -793,10 +800,8 @@ function CasesPage() {
                       </TableRow>
                     </ContextMenuTrigger>
                     <ContextMenuContent className="w-56">
-                      <ContextMenuItem asChild>
-                        <Link to="/cases/$caseId" params={{ caseId: c.id }} className="flex w-full cursor-pointer items-center">
-                          <Eye className="ml-2 h-4 w-4" /> فتح الحالة
-                        </Link>
+                      <ContextMenuItem onSelect={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                        <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                       </ContextMenuItem>
                       <ContextMenuSeparator />
                       {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
@@ -815,17 +820,17 @@ function CasesPage() {
                       )}
                       <ContextMenuSeparator />
                       {c.status !== "delivered" && (
-                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
+                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "delivered")}>
                           <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
                         </ContextMenuItem>
                       )}
                       {c.status !== "on_hold" && c.status !== "delivered" && (
-                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "on_hold")}>
+                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "on_hold")}>
                           <AlertTriangle className="ml-2 h-4 w-4 text-amber-600" /> إيقاف مؤقت
                         </ContextMenuItem>
                       )}
                       {c.status === "on_hold" && (
-                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "active")}>
+                        <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "active")}>
                           <CheckCircle2 className="ml-2 h-4 w-4" /> إعادة تفعيل
                         </ContextMenuItem>
                       )}
@@ -839,7 +844,7 @@ function CasesPage() {
                       <ContextMenuSeparator />
                       <ContextMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => {
+                        onSelect={() => {
                           if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
                         }}
                       >
@@ -884,7 +889,11 @@ function CasesPage() {
                         <ContextMenuTrigger asChild>
                           <Card className="cursor-pointer transition-colors hover:border-primary">
                             <CardContent className="p-3 text-sm">
-                              <Link to="/cases/$caseId" params={{ caseId: c.id }} className="block">
+                              <button
+                                type="button"
+                                onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}
+                                className="block w-full text-right"
+                              >
                                 <div className="mb-1 flex items-center justify-between">
                                   <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
                                   {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
@@ -898,7 +907,7 @@ function CasesPage() {
                                     {format(new Date(c.due_date), "dd/MM/yyyy")}
                                   </p>
                                 )}
-                              </Link>
+                              </button>
                               {nextStage && !stage.is_end && (
                                 <Button
                                   size="sm"
@@ -913,10 +922,8 @@ function CasesPage() {
                           </Card>
                         </ContextMenuTrigger>
                         <ContextMenuContent className="w-56">
-                          <ContextMenuItem asChild>
-                            <Link to="/cases/$caseId" params={{ caseId: c.id }} className="flex w-full cursor-pointer items-center">
-                              <Eye className="ml-2 h-4 w-4" /> فتح الحالة
-                            </Link>
+                          <ContextMenuItem onSelect={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                            <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                           </ContextMenuItem>
                           <ContextMenuSeparator />
                           {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
@@ -926,7 +933,7 @@ function CasesPage() {
                             </ContextMenuItem>
                           ))}
                           {c.status !== "delivered" && (
-                            <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
+                            <ContextMenuItem onSelect={() => updateCaseStatus(c.id, "delivered")}>
                               <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
                             </ContextMenuItem>
                           )}
@@ -940,7 +947,7 @@ function CasesPage() {
                           <ContextMenuSeparator />
                           <ContextMenuItem
                             className="text-destructive focus:text-destructive"
-                            onClick={() => {
+                            onSelect={() => {
                               if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
                             }}
                           >
