@@ -99,6 +99,19 @@ function CaseDetailsPage() {
     },
   });
 
+  const { data: workflowStages } = useQuery({
+    queryKey: ["case-workflow-stages", (caseRow as any)?.workflow_id],
+    enabled: !!(caseRow as any)?.workflow_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("workflow_stages")
+        .select("id, name, color, order_index, is_end")
+        .eq("workflow_id", (caseRow as any).workflow_id)
+        .order("order_index");
+      return data ?? [];
+    },
+  });
+
   const deleteAttachment = async (id: string, path: string) => {
     if (!confirm("حذف هذا الملف؟")) return;
     const { error: stErr } = await supabase.storage.from("case-media").remove([path]);
