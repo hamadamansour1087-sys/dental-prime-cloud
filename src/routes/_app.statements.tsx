@@ -34,6 +34,46 @@ interface Row {
   paymentId?: string;
 }
 
+function openPrintWindow(element: HTMLElement, title: string) {
+  const printWindow = window.open("", "_blank", "width=1100,height=900");
+  if (!printWindow) {
+    toast.error("تعذر فتح نافذة الطباعة. تأكد من السماح بالنوافذ المنبثقة.");
+    return;
+  }
+
+  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map((node) => node.outerHTML)
+    .join("\n");
+
+  printWindow.document.open();
+  printWindow.document.write(`<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>${title}</title>
+    ${styles}
+    <style>
+      @page { size: A4; margin: 10mm; }
+      body { margin: 0; padding: 0; background: white; }
+      .print-shell { padding: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="print-shell">${element.outerHTML}</div>
+    <script>
+      window.onload = () => {
+        setTimeout(() => {
+          window.focus();
+          window.print();
+          window.close();
+        }, 250);
+      };
+    </script>
+  </body>
+</html>`);
+  printWindow.document.close();
+}
+
 function StatementsPage() {
   const { labId, hasRole } = useAuth();
   const qc = useQueryClient();
@@ -256,13 +296,33 @@ function StatementsPage() {
             disabled={!doctorId}
             onClick={async () => {
               const el = document.getElementById("statement-print");
-              if (!el) return;
-              await exportElementToPdf(el, `statement-${doctor?.name ?? "doctor"}-${fromStr}_${toStr}.pdf`);
+              if (!el) {
+                toast.error("تعذر العثور على كشف الحساب");
+                return;
+              }
+
+              try {
+                toast.loading("جاري إنشاء PDF...", { id: "statement-pdf" });
+                await exportElementToPdf(el, `statement-${doctor?.name ?? "doctor"}-${fromStr}_${toStr}.pdf`);
+                toast.success("تم إنشاء PDF", { id: "statement-pdf" });
+              } catch (error: any) {
+                toast.error(error?.message ?? "فشل إنشاء PDF", { id: "statement-pdf" });
+              }
             }}
           >
             <FileDown className="ml-1 h-4 w-4" /> PDF
           </Button>
-          <Button onClick={() => window.print()} disabled={!doctorId}>
+          <Button
+            disabled={!doctorId}
+            onClick={() => {
+              const el = document.getElementById("statement-print");
+              if (!el) {
+                toast.error("تعذر العثور على كشف الحساب");
+                return;
+              }
+              openPrintWindow(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
+            }}
+          >
             <Printer className="ml-1 h-4 w-4" /> طباعة
           </Button>
         </div>
