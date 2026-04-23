@@ -155,38 +155,13 @@ function CaseDetailsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button size="icon" variant="ghost" onClick={() => router.history.back()}>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">حالة <span className="font-mono text-primary">{caseRow.case_number}</span></h1>
-            <p className="text-sm text-muted-foreground">
-              {format(new Date(caseRow.date_received), "dd/MM/yyyy")}
-              {caseRow.due_date && (
-                <> · <Calendar className="inline h-3 w-3" /> تسليم {format(new Date(caseRow.due_date), "dd/MM/yyyy")}</>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {stage && (
-            <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm" style={{ borderColor: stage.color }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.color }} />
-              {stage.name}
-            </span>
-          )}
-          {caseRow.status !== "delivered" && (
-            <Button size="sm" onClick={() => setStageOpen(true)}>
-              <ArrowLeftRight className="ml-1 h-4 w-4" /> نقل المرحلة
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setLabelOpen(true)}>
-            <QrCode className="ml-1 h-4 w-4" /> ملصق QR
-          </Button>
-        </div>
-      </div>
+      <CaseHeader
+        caseRow={caseRow}
+        stage={stage}
+        onBack={() => router.history.back()}
+        onMoveStage={() => setStageOpen(true)}
+        onLabel={() => setLabelOpen(true)}
+      />
 
       <StageTransitionDialog
         open={stageOpen}
@@ -208,34 +183,37 @@ function CaseDetailsPage() {
         stageName={stage?.name}
       />
 
-      {/* Header info */}
-      <Card>
-        <CardContent className="grid grid-cols-2 gap-3 p-4 text-sm sm:grid-cols-4">
-          <div>
-            <p className="text-xs text-muted-foreground">الطبيب</p>
-            <p className="font-medium">{(caseRow as any).doctors?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">المريض</p>
-            <p className="font-medium">{(caseRow as any).patients?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">إجمالي الوحدات</p>
-            <p className="font-mono font-semibold">{caseRow.units ?? 0}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">الإجمالي</p>
-            <p className="font-mono font-bold text-primary">{Number(caseRow.price ?? itemsTotal).toFixed(2)}</p>
-          </div>
-          {caseRow.notes && (
-            <div className="col-span-2 sm:col-span-4">
-              <p className="text-xs text-muted-foreground">ملاحظات</p>
-              <p className="whitespace-pre-wrap">{caseRow.notes}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Workflow progress bar */}
+      {workflowStages && workflowStages.length > 0 && (
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Activity className="h-4 w-4 text-primary" /> تقدم سير العمل
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CaseProgressBar
+              stages={workflowStages}
+              currentStageId={caseRow.current_stage_id}
+              completedStageIds={new Set((stageHistory ?? []).filter((h: any) => h.exited_at && !h.skipped).map((h: any) => h.stage_id).filter(Boolean))}
+            />
+          </CardContent>
+        </Card>
+      )}
 
+      {caseRow.notes && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-2">
+              <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">ملاحظات الحالة</p>
+                <p className="whitespace-pre-wrap text-sm">{caseRow.notes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* AI Smart Analysis */}
       <CaseAIAnalysis
         caseData={{
