@@ -766,7 +766,7 @@ function CasesPage() {
                 return (
                   <ContextMenu key={c.id}>
                     <ContextMenuTrigger asChild>
-                        <TableRow className="cursor-pointer" onDoubleClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                      <TableRow className="cursor-pointer" onDoubleClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
                         <TableCell className="font-mono text-xs">
                           <div className="flex items-center gap-1">
                             {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
@@ -856,7 +856,7 @@ function CasesPage() {
               })}
               {!filteredCases.length && (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
                     لا توجد حالات
                   </TableCell>
                 </TableRow>
