@@ -35,6 +35,7 @@ import {
   Legend,
 } from "recharts";
 import { format, subDays, startOfDay } from "date-fns";
+import { DailyInsightsWidget } from "@/components/DailyInsightsWidget";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -239,6 +240,20 @@ function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {/* AI Daily Insights */}
+      <DailyInsightsWidget
+        stats={{
+          active_cases: stats?.active ?? 0,
+          overdue_cases: stats?.overdue ?? 0,
+          delivered_today: stats?.deliveredToday ?? 0,
+          active_doctors: stats?.doctors ?? 0,
+          month_cases: stats?.monthCases ?? 0,
+          month_revenue: stats?.monthRevenue ?? 0,
+          stage_distribution: stageStats?.map((s) => ({ stage: s.name, count: s.count })) ?? [],
+          date: format(new Date(), "yyyy-MM-dd"),
+        }}
+      />
 
       <Tabs defaultValue="overview" dir="rtl">
         <TabsList>
