@@ -930,6 +930,14 @@ function CasesPage() {
                               <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
                             </ContextMenuItem>
                           )}
+                          <ContextMenuSeparator />
+                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "remake" })}>
+                            <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "repair" })}>
+                            <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
+                          </ContextMenuItem>
+                          <ContextMenuSeparator />
                           <ContextMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => {
