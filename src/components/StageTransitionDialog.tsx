@@ -98,6 +98,9 @@ export function StageTransitionDialog({
   useEffect(() => {
     if (open) {
       setToStageId(initialToStageId ?? "");
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      setEnteredAt(d.toISOString().slice(0, 16));
     }
   }, [open, initialToStageId]);
 
