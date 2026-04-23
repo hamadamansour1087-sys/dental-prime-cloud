@@ -202,6 +202,7 @@ function DoctorsPage() {
               {Number(d.opening_balance) !== 0 && (
                 <p className="text-xs">رصيد أول المدة: {Number(d.opening_balance).toFixed(2)}</p>
               )}
+              <PortalAccountButton doctor={d} onDone={() => qc.invalidateQueries({ queryKey: ["doctors"] })} />
             </CardContent>
           </Card>
         ))}
