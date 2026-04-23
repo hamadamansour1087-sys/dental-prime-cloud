@@ -192,6 +192,18 @@ export function StageTransitionDialog({
           )}
 
           <div>
+            <Label>تاريخ ووقت الانتقال *</Label>
+            <Input
+              type="datetime-local"
+              value={enteredAt}
+              onChange={(e) => setEnteredAt(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              يُسجَّل هذا التاريخ كوقت دخول المرحلة الجديدة وخروج المرحلة الحالية
+            </p>
+          </div>
+
+          <div>
             <Label>ملاحظات</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
           </div>
