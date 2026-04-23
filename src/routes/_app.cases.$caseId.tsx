@@ -363,6 +363,81 @@ function CaseDetailsPage() {
           </CardContent>
         </Card>
       )}
+
+      {caseRow.parent_case_id && caseRow.case_type !== "new" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Plus className="h-4 w-4 text-primary" /> إضافة شغل جديد للحالة
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>نوع العمل</Label>
+                <Select value={itemDraft.work_type_id} onValueChange={(value) => setItemDraft((prev) => ({ ...prev, work_type_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر نوع العمل" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workTypes?.map((workType) => (
+                      <SelectItem key={workType.id} value={workType.id}>
+                        {workType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>الوحدات</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={itemDraft.units}
+                  onChange={(event) => setItemDraft((prev) => ({ ...prev, units: event.target.value }))}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Label>اللون</Label>
+                <ShadeSelector
+                  value={itemDraft.shade}
+                  onChange={(value) => setItemDraft((prev) => ({ ...prev, shade: value }))}
+                  placeholder="اختر اللون"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Label>الأسنان</Label>
+                <ToothChart
+                  value={itemDraft.tooth_numbers}
+                  onChange={(value) => setItemDraft((prev) => ({ ...prev, tooth_numbers: value }))}
+                />
+              </div>
+
+              <div>
+                <Label>سعر الوحدة</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={itemDraft.unit_price}
+                  onChange={(event) => setItemDraft((prev) => ({ ...prev, unit_price: event.target.value }))}
+                  placeholder="اتركه فارغًا للسعر التلقائي"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <Button onClick={addCaseItem} disabled={addingItem} className="w-full md:w-auto">
+                  <Plus className="h-4 w-4" />
+                  {addingItem ? "جارٍ الإضافة..." : "إضافة الشغل"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* AI Smart Analysis + Delivery Prediction */}
       <div className="grid gap-4 lg:grid-cols-2">
         <CaseAIAnalysis
