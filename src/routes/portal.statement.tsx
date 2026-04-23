@@ -4,9 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const Route = createFileRoute("/portal/statement")({
-  component: PortalStatement,
-});
+type Row = { date: string; desc: string; debit: number; credit: number };
 
 function PortalStatement() {
   const { user } = useAuth();
@@ -27,25 +25,29 @@ function PortalStatement() {
   const { data: cases } = useQuery({
     queryKey: ["statement-cases", doctor?.id],
     enabled: !!doctor,
-    queryFn: async () =>
-      (
-        await supabase
-          .from("cases")
-          .select("id, case_number, date_received, price, status")
-          .neq("status", "pending_approval")
-          .neq("status", "cancelled")
-          .order("date_received", { ascending: true })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("cases")
+        .select("id, case_number, date_received, price, status")
+        .neq("status", "pending_approval")
+        .neq("status", "cancelled")
+        .order("date_received", { ascending: true });
+      return data ?? [];
+    },
   });
 
   const { data: payments } = useQuery({
     queryKey: ["statement-payments", doctor?.id],
     enabled: !!doctor,
-    queryFn: async () =>
-      (await supabase.from("payments").select("id, payment_date, amount, method, reference").order("payment_date")).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("payments")
+        .select("id, payment_date, amount, method, reference")
+        .order("payment_date");
+      return data ?? [];
+    },
   });
 
-  type Row = { date: string; desc: string; debit: number; credit: number };
   const rows: Row[] = [];
   if (doctor?.opening_balance) {
     rows.push({ date: "—", desc: "رصيد افتتاحي", debit: Number(doctor.opening_balance), credit: 0 });
@@ -142,3 +144,7 @@ function PortalStatement() {
     </div>
   );
 }
+
+export const Route = createFileRoute("/portal/statement")({
+  component: PortalStatement,
+});
