@@ -35,6 +35,11 @@ export function StageTransitionDialog({
   const [toStageId, setToStageId] = useState<string>("");
   const [technicianId, setTechnicianId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [enteredAt, setEnteredAt] = useState<string>(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  });
   const [submitting, setSubmitting] = useState(false);
 
   const { data: stages } = useQuery({
