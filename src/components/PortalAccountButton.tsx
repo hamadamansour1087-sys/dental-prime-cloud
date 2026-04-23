@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { KeyRound, UserCheck, UserX } from "lucide-react";
+import { KeyRound, UserCheck, UserX, Copy } from "lucide-react";
 
 interface Doctor {
   id: string;
@@ -36,6 +36,19 @@ export function PortalAccountButton({
   const [password, setPassword] = useState("");
 
   const hasAccount = !!doctor.user_id;
+
+  const portalUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/portal/login` : "/portal/login";
+
+  const copyCredentials = async () => {
+    const text = `بيانات دخول بورتال د. ${doctor.name}\n\nالرابط: ${portalUrl}\nالبريد: ${email}\nكلمة المرور: ${password}\n\nيرجى تغيير كلمة المرور بعد أول تسجيل دخول.`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("تم نسخ بيانات الدخول");
+    } catch {
+      toast.error("فشل النسخ");
+    }
+  };
 
   const createAccount = async () => {
     if (!email || password.length < 6) {
@@ -155,7 +168,13 @@ export function PortalAccountButton({
                 أرسل هذه البيانات للطبيب ليستخدمها في تسجيل الدخول على البورتال.
               </p>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-2">
+              {email && password.length >= 6 && (
+                <Button type="button" variant="outline" onClick={copyCredentials}>
+                  <Copy className="ml-1 h-4 w-4" />
+                  نسخ البيانات
+                </Button>
+              )}
               <Button onClick={createAccount} disabled={busy}>
                 {busy ? "جارٍ الإنشاء..." : "إنشاء الحساب"}
               </Button>
