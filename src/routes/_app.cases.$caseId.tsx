@@ -7,13 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar, QrCode, ArrowLeftRight, History, SkipForward, ListChecks, Paperclip } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { CaseAIAnalysis } from "@/components/CaseAIAnalysis";
+import { CaseHeader } from "@/components/CaseHeader";
+import { CaseTimeline } from "@/components/CaseTimeline";
+import { CaseProgressBar } from "@/components/CaseProgressBar";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -97,6 +99,19 @@ function CaseDetailsPage() {
     },
   });
 
+  const { data: workflowStages } = useQuery({
+    queryKey: ["case-workflow-stages", (caseRow as any)?.workflow_id],
+    enabled: !!(caseRow as any)?.workflow_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("workflow_stages")
+        .select("id, name, color, order_index, is_end")
+        .eq("workflow_id", (caseRow as any).workflow_id)
+        .order("order_index");
+      return data ?? [];
+    },
+  });
+
   const deleteAttachment = async (id: string, path: string) => {
     if (!confirm("حذف هذا الملف؟")) return;
     const { error: stErr } = await supabase.storage.from("case-media").remove([path]);
@@ -140,38 +155,13 @@ function CaseDetailsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button size="icon" variant="ghost" onClick={() => router.history.back()}>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">حالة <span className="font-mono text-primary">{caseRow.case_number}</span></h1>
-            <p className="text-sm text-muted-foreground">
-              {format(new Date(caseRow.date_received), "dd/MM/yyyy")}
-              {caseRow.due_date && (
-                <> · <Calendar className="inline h-3 w-3" /> تسليم {format(new Date(caseRow.due_date), "dd/MM/yyyy")}</>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {stage && (
-            <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm" style={{ borderColor: stage.color }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.color }} />
-              {stage.name}
-            </span>
-          )}
-          {caseRow.status !== "delivered" && (
-            <Button size="sm" onClick={() => setStageOpen(true)}>
-              <ArrowLeftRight className="ml-1 h-4 w-4" /> نقل المرحلة
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setLabelOpen(true)}>
-            <QrCode className="ml-1 h-4 w-4" /> ملصق QR
-          </Button>
-        </div>
-      </div>
+      <CaseHeader
+        caseRow={caseRow}
+        stage={stage}
+        onBack={() => router.history.back()}
+        onMoveStage={() => setStageOpen(true)}
+        onLabel={() => setLabelOpen(true)}
+      />
 
       <StageTransitionDialog
         open={stageOpen}
@@ -193,34 +183,37 @@ function CaseDetailsPage() {
         stageName={stage?.name}
       />
 
-      {/* Header info */}
-      <Card>
-        <CardContent className="grid grid-cols-2 gap-3 p-4 text-sm sm:grid-cols-4">
-          <div>
-            <p className="text-xs text-muted-foreground">الطبيب</p>
-            <p className="font-medium">{(caseRow as any).doctors?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">المريض</p>
-            <p className="font-medium">{(caseRow as any).patients?.name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">إجمالي الوحدات</p>
-            <p className="font-mono font-semibold">{caseRow.units ?? 0}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">الإجمالي</p>
-            <p className="font-mono font-bold text-primary">{Number(caseRow.price ?? itemsTotal).toFixed(2)}</p>
-          </div>
-          {caseRow.notes && (
-            <div className="col-span-2 sm:col-span-4">
-              <p className="text-xs text-muted-foreground">ملاحظات</p>
-              <p className="whitespace-pre-wrap">{caseRow.notes}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Workflow progress bar */}
+      {workflowStages && workflowStages.length > 0 && (
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Activity className="h-4 w-4 text-primary" /> تقدم سير العمل
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CaseProgressBar
+              stages={workflowStages}
+              currentStageId={caseRow.current_stage_id}
+              completedStageIds={new Set((stageHistory ?? []).filter((h: any) => h.exited_at && !h.skipped).map((h: any) => h.stage_id).filter(Boolean))}
+            />
+          </CardContent>
+        </Card>
+      )}
 
+      {caseRow.notes && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-2">
+              <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">ملاحظات الحالة</p>
+                <p className="whitespace-pre-wrap text-sm">{caseRow.notes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* AI Smart Analysis */}
       <CaseAIAnalysis
         caseData={{
@@ -353,52 +346,17 @@ function CaseDetailsPage() {
         </CardContent>
       </Card>
 
-      {/* Stage history */}
+      {/* Stage history timeline */}
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><History className="h-4 w-4" /> سجل المراحل ({stageHistory?.length ?? 0})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <History className="h-4 w-4 text-primary" /> الخط الزمني للمراحل ({stageHistory?.length ?? 0})
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          {!stageHistory?.length ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">لا يوجد سجل بعد</p>
-          ) : (
-            <ol className="relative space-y-3 border-r-2 border-border pr-4">
-              {stageHistory.map((h: any) => {
-                const stg = h.workflow_stages;
-                const techName = h.technicians?.name;
-                const enteredAt = h.entered_at ? format(new Date(h.entered_at), "dd/MM/yyyy HH:mm") : "—";
-                return (
-                  <li key={h.id} className="relative">
-                    <span
-                      className="absolute -right-[22px] top-1.5 h-3 w-3 rounded-full ring-2 ring-background"
-                      style={{ backgroundColor: stg?.color ?? "#999" }}
-                    />
-                    <div className={`rounded-md border p-2 ${h.skipped ? "border-dashed bg-muted/30 opacity-70" : "bg-card"}`}>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{stg?.name ?? "—"}</span>
-                          {h.skipped && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
-                              <SkipForward className="h-3 w-3" /> تم التخطي
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">{enteredAt}</span>
-                      </div>
-                      {techName && (
-                        <p className="mt-1 text-xs text-muted-foreground">الفني: <span className="font-medium text-foreground">{techName}</span></p>
-                      )}
-                      {h.duration_minutes != null && !h.skipped && h.exited_at && (
-                        <p className="text-xs text-muted-foreground">المدة: {Math.max(1, Math.round(h.duration_minutes / 60))} ساعة</p>
-                      )}
-                      {h.notes && <p className="mt-1 whitespace-pre-wrap text-xs">{h.notes}</p>}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+          <CaseTimeline history={stageHistory ?? []} currentStageId={caseRow.current_stage_id} />
         </CardContent>
       </Card>
-
       {/* Image preview overlay */}
       {previewUrl && (
         <div
