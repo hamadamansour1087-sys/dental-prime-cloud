@@ -400,7 +400,31 @@ function CasesPage() {
     setStageOpen(true);
   };
 
+  const updateCaseStatus = async (caseId: string, status: "active" | "on_hold" | "delivered" | "cancelled") => {
+    const patch: any = { status };
+    if (status === "delivered") patch.date_delivered = new Date().toISOString();
+    const { error } = await supabase.from("cases").update(patch).eq("id", caseId);
+    if (error) return toast.error(error.message);
+    toast.success("تم التحديث");
+    qc.invalidateQueries({ queryKey: ["cases"] });
+  };
+
   const today = new Date().toISOString().slice(0, 10);
+
+  const filteredCases = useMemo(() => {
+    let list = cases ?? [];
+    if (stageFilter !== "all") list = list.filter((c) => c.current_stage_id === stageFilter);
+    if (search.trim()) {
+      const s = search.trim().toLowerCase();
+      list = list.filter((c: any) =>
+        c.case_number?.toLowerCase().includes(s) ||
+        c.doctors?.name?.toLowerCase().includes(s) ||
+        c.patients?.name?.toLowerCase().includes(s) ||
+        c.work_types?.name?.toLowerCase().includes(s),
+      );
+    }
+    return list;
+  }, [cases, search, stageFilter]);
 
   const grandTotal = items.reduce((s, it) => {
     const u = parseInt(it.units) || 0;
