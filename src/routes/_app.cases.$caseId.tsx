@@ -23,6 +23,7 @@ import { CaseProgressBar } from "@/components/CaseProgressBar";
 import { CaseReport } from "@/components/reports/CaseReport";
 import { renderReportToPdf } from "@/lib/reportRenderer";
 import { ShadeSelector } from "@/components/ShadeSelector";
+import { ToothChart } from "@/components/ToothChart";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -185,7 +186,7 @@ function CaseDetailsPage() {
         const { data } = await supabase.rpc("resolve_case_price", {
           _lab_id: caseRow.lab_id,
           _work_type_id: itemDraft.work_type_id,
-          _doctor_id: caseRow.doctor_id,
+          _doctor_id: caseRow.doctor_id ?? "00000000-0000-0000-0000-000000000000",
         });
         unitPrice = data ?? 0;
       }
