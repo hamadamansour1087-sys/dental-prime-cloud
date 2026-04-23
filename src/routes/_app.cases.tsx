@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, User, Briefcase, Paperclip, Sparkles } from "lucide-react";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
@@ -42,6 +44,95 @@ const SCAN_EXT = /\.(stl|ply|obj|zip|3mf|dcm)$/i;
 
 function newItem(): CaseItemDraft {
   return { id: crypto.randomUUID(), work_type_id: "", tooth_numbers: "", shade: "", units: "1", unit_price: "" };
+}
+
+function formatArabicDisplayDate(value: string) {
+  if (!value) return "اختر تاريخ التسليم";
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+interface DueDateFieldProps {
+  dueAuto: boolean;
+  dueDate: string;
+  predictedDate: string;
+  predictedDays: number;
+  baseLeadDays: number;
+  extraDays: number;
+  onChange: (value: string) => void;
+  onResetPrediction: () => void;
+}
+
+function DueDateField({
+  dueAuto,
+  dueDate,
+  predictedDate,
+  predictedDays,
+  baseLeadDays,
+  extraDays,
+  onChange,
+  onResetPrediction,
+}: DueDateFieldProps) {
+  const selectedDate = dueDate ? new Date(`${dueDate}T00:00:00`) : undefined;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <Label>تاريخ التسليم</Label>
+        {dueAuto && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
+            <Sparkles className="h-3 w-3" /> توقع تلقائي
+          </span>
+        )}
+      </div>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full justify-between rounded-lg px-3 text-start text-sm font-normal"
+          >
+            <span className={dueDate ? "truncate" : "truncate text-muted-foreground"}>
+              {formatArabicDisplayDate(dueDate)}
+            </span>
+            <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0" dir="rtl">
+          <DateCalendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              if (!date) return;
+              onChange(format(date, "yyyy-MM-dd"));
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <div className="rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+        محسوب من نوع العمل ({baseLeadDays} يوم) + حجم العمل (+{extraDays}) = <span className="font-semibold text-foreground">{predictedDays} يوم</span>
+      </div>
+
+      {!dueAuto && (
+        <button
+          type="button"
+          onClick={onResetPrediction}
+          className="text-[11px] font-medium text-primary hover:underline"
+        >
+          ↺ العودة للتوقع التلقائي ({formatArabicDisplayDate(predictedDate)})
+        </button>
+      )}
+    </div>
+  );
 }
 
 function CasesPage() {
@@ -319,12 +410,10 @@ function CasesPage() {
   const predictedDays = Math.max(1, baseLeadDays + extraDays);
   const predictedDate = format(addDays(new Date(), predictedDays), "yyyy-MM-dd");
 
-  // Auto-fill due_date when prediction changes (only if user hasn't manually edited)
-  if (dueAuto && open && form.due_date !== predictedDate) {
-    queueMicrotask(() => {
-      setForm((prev) => (prev.due_date === predictedDate || !dueAuto ? prev : { ...prev, due_date: predictedDate }));
-    });
-  }
+  useEffect(() => {
+    if (!dueAuto || !open || form.due_date === predictedDate) return;
+    setForm((prev) => (prev.due_date === predictedDate ? prev : { ...prev, due_date: predictedDate }));
+  }, [dueAuto, open, predictedDate, form.due_date]);
 
   return (
     <div className="space-y-4">
@@ -363,29 +452,29 @@ function CasesPage() {
             </DialogHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic" className="gap-1.5 text-xs">
-                  <User className="h-3.5 w-3.5" /> أساسي
+              <TabsList className="grid h-auto w-full grid-cols-3 gap-2 rounded-xl bg-secondary p-2">
+                <TabsTrigger value="basic" className="h-11 gap-1.5 rounded-lg text-xs sm:text-sm">
+                  <ClipboardList className="h-3.5 w-3.5" /> البيانات
                 </TabsTrigger>
-                <TabsTrigger value="items" className="gap-1.5 text-xs">
+                <TabsTrigger value="items" className="h-11 gap-1.5 rounded-lg text-xs sm:text-sm">
                   <Briefcase className="h-3.5 w-3.5" /> العناصر
-                  <span className="ml-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{items.length}</span>
+                  <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{items.length}</span>
                 </TabsTrigger>
-                <TabsTrigger value="files" className="gap-1.5 text-xs">
+                <TabsTrigger value="files" className="h-11 gap-1.5 rounded-lg text-xs sm:text-sm">
                   <Paperclip className="h-3.5 w-3.5" /> الملفات
                   {files.length > 0 && (
-                    <span className="ml-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{files.length}</span>
+                    <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">{files.length}</span>
                   )}
                 </TabsTrigger>
               </TabsList>
 
               {/* TAB 1: Basic info */}
               <TabsContent value="basic" className="mt-4 space-y-4">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <Label>الطبيب *</Label>
                     <Select value={form.doctor_id} onValueChange={(v) => setForm({ ...form, doctor_id: v, clinic_id: "" })}>
-                      <SelectTrigger><SelectValue placeholder="اختر طبيبًا" /></SelectTrigger>
+                      <SelectTrigger className="h-12 rounded-lg"><SelectValue placeholder="اختر طبيبًا" /></SelectTrigger>
                       <SelectContent>
                         {doctors?.map((d: any) => (
                           <SelectItem key={d.id} value={d.id}>{d.name}{d.governorate ? ` — ${d.governorate}` : ""}</SelectItem>
@@ -400,7 +489,7 @@ function CasesPage() {
                     <div className="sm:col-span-2">
                       <Label>العيادة</Label>
                       <Select value={form.clinic_id} onValueChange={(v) => setForm({ ...form, clinic_id: v })}>
-                        <SelectTrigger><SelectValue placeholder="اختر العيادة" /></SelectTrigger>
+                        <SelectTrigger className="h-12 rounded-lg"><SelectValue placeholder="اختر العيادة" /></SelectTrigger>
                         <SelectContent>
                           {selectedDoctor.doctor_clinics.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
@@ -409,46 +498,28 @@ function CasesPage() {
                   )}
                   <div>
                     <Label>اسم المريض</Label>
-                    <Input value={form.patient_name} onChange={(e) => setForm({ ...form, patient_name: e.target.value })} placeholder="اكتب اسم المريض" />
+                    <Input className="h-12 rounded-lg" value={form.patient_name} onChange={(e) => setForm({ ...form, patient_name: e.target.value })} placeholder="اكتب اسم المريض" />
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label>تاريخ التسليم</Label>
-                      {dueAuto && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
-                          <Sparkles className="h-3 w-3" /> توقع تلقائي
-                        </span>
-                      )}
-                    </div>
-                    <Input
-                      type="date"
-                      dir="ltr"
-                      className="text-right"
-                      value={form.due_date}
-                      onChange={(e) => {
-                        setDueAuto(false);
-                        setForm({ ...form, due_date: e.target.value });
-                      }}
-                    />
-                    {dueAuto && (
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        محسوب من نوع العمل ({baseLeadDays} يوم) + حجم العمل (+{extraDays}) = {predictedDays} يوم
-                      </p>
-                    )}
-                    {!dueAuto && (
-                      <button
-                        type="button"
-                        onClick={() => { setDueAuto(true); setForm((p) => ({ ...p, due_date: predictedDate })); }}
-                        className="mt-1 text-[11px] text-primary hover:underline"
-                      >
-                        ↺ استخدام التوقع التلقائي ({predictedDate})
-                      </button>
-                    )}
-                  </div>
+                  <DueDateField
+                    dueAuto={dueAuto}
+                    dueDate={form.due_date}
+                    predictedDate={predictedDate}
+                    predictedDays={predictedDays}
+                    baseLeadDays={baseLeadDays}
+                    extraDays={extraDays}
+                    onChange={(value) => {
+                      setDueAuto(false);
+                      setForm((prev) => ({ ...prev, due_date: value }));
+                    }}
+                    onResetPrediction={() => {
+                      setDueAuto(true);
+                      setForm((prev) => ({ ...prev, due_date: predictedDate }));
+                    }}
+                  />
                 </div>
                 <div>
                   <Label>ملاحظات</Label>
-                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
+                  <Textarea className="min-h-28 rounded-lg" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
                 </div>
                 <div className="flex justify-end">
                   <Button type="button" variant="outline" size="sm" onClick={() => setActiveTab("items")}>
