@@ -781,10 +781,10 @@ function CasesPage() {
                       </TableRow>
                     </ContextMenuTrigger>
                     <ContextMenuContent className="w-56">
-                      <ContextMenuItem
-                        onSelect={() => setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } }), 0)}
-                      >
-                        <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                      <ContextMenuItem asChild>
+                        <Link to="/cases/$caseId" params={{ caseId: c.id }} className="flex w-full cursor-pointer items-center">
+                          <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                        </Link>
                       </ContextMenuItem>
                       <ContextMenuSeparator />
                       <ContextMenuSub>
@@ -904,10 +904,10 @@ function CasesPage() {
                           </Card>
                         </ContextMenuTrigger>
                         <ContextMenuContent className="w-56">
-                          <ContextMenuItem
-                            onSelect={() => setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } }), 0)}
-                          >
-                            <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                          <ContextMenuItem asChild>
+                            <Link to="/cases/$caseId" params={{ caseId: c.id }} className="flex w-full cursor-pointer items-center">
+                              <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                            </Link>
                           </ContextMenuItem>
                           <ContextMenuSub>
                             <ContextMenuSubTrigger>
