@@ -15,12 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Calendar, AlertTriangle, Trash2, Camera, Upload, FileBox, ImageIcon, Briefcase, Paperclip, Sparkles, ClipboardList, CalendarDays, LayoutGrid, Table as TableIcon, Eye, ArrowLeftRight, Search, XCircle, CheckCircle2, RotateCcw, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ToothChart } from "@/components/ToothChart";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { ShadeSelector } from "@/components/ShadeSelector";
+import { FollowupCaseDialog } from "@/components/FollowupCaseDialog";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
@@ -145,6 +146,7 @@ function CasesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
+  const [followup, setFollowup] = useState<{ caseId: string; caseNumber: string; type: "remake" | "repair" } | null>(null);
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -461,6 +463,16 @@ function CasesPage() {
           qc.invalidateQueries({ queryKey: ["cases"] });
         }}
       />
+
+      {followup && (
+        <FollowupCaseDialog
+          open={!!followup}
+          onOpenChange={(o) => !o && setFollowup(null)}
+          caseId={followup.caseId}
+          caseNumber={followup.caseNumber}
+          caseType={followup.type}
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">الحالات</h1>
@@ -818,6 +830,13 @@ function CasesPage() {
                         </ContextMenuItem>
                       )}
                       <ContextMenuSeparator />
+                      <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "remake" })}>
+                        <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
+                      </ContextMenuItem>
+                      <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "repair" })}>
+                        <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
                       <ContextMenuItem
                         className="text-destructive focus:text-destructive"
                         onClick={() => {
@@ -911,6 +930,14 @@ function CasesPage() {
                               <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
                             </ContextMenuItem>
                           )}
+                          <ContextMenuSeparator />
+                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "remake" })}>
+                            <RotateCcw className="ml-2 h-4 w-4 text-blue-600" /> إعادة الحالة
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => setFollowup({ caseId: c.id, caseNumber: c.case_number, type: "repair" })}>
+                            <Wrench className="ml-2 h-4 w-4 text-amber-600" /> تصليح الحالة
+                          </ContextMenuItem>
+                          <ContextMenuSeparator />
                           <ContextMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => {
