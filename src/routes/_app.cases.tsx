@@ -71,6 +71,8 @@ function CasesPage() {
     setItems([newItem()]);
     files.forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl));
     setFiles([]);
+    setDueAuto(true);
+    setActiveTab("basic");
   };
 
   const { data: nextCaseNumber } = useQuery({
