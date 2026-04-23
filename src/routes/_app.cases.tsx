@@ -575,11 +575,14 @@ function CasesPage() {
               </TabsContent>
             </Tabs>
 
-            <DialogFooter>
-              <Button onClick={submit} disabled={submitting}>
+            <DialogFooter className="mt-4 border-t pt-3">
+              <Button type="button" variant="ghost" onClick={() => { setOpen(false); resetForm(); }} className="sm:min-w-24">
+                إلغاء
+              </Button>
+              <Button onClick={submit} disabled={submitting} className="sm:min-w-32">
                 {submitting ? (
-                  <><Upload className="ml-1 h-4 w-4 animate-pulse" /> جاري الحفظ...</>
-                ) : "حفظ"}
+                  <><Upload className="me-1 h-4 w-4 animate-pulse" /> جاري الحفظ...</>
+                ) : "حفظ الحالة"}
               </Button>
             </DialogFooter>
           </DialogContent>
