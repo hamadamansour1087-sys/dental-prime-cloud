@@ -4,9 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-type Row = { date: string; desc: string; debit: number; credit: number };
-
 function PortalStatement() {
+  type Row = { date: string; desc: string; debit: number; credit: number };
   const { user } = useAuth();
 
   const { data: doctor } = useQuery({
