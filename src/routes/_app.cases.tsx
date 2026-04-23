@@ -142,6 +142,9 @@ function CasesPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const goToCase = (caseId: string) => {
+    setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId } }), 0);
+  };
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
