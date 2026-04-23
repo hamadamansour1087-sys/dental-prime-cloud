@@ -779,20 +779,19 @@ function CasesPage() {
                               <ShadeSelector value={it.shade} onChange={(v) => updateItem(it.id, { shade: v })} />
                             </div>
                             <div>
-                              <Label className="text-xs">الوحدات</Label>
-                              <Input type="number" min="1" value={it.units} onChange={(e) => updateItem(it.id, { units: e.target.value })} />
-                            </div>
-                            <div>
-                              <Label className="text-xs">سعر الوحدة</Label>
-                              <Input type="number" step="0.01" value={it.unit_price} onChange={(e) => updateItem(it.id, { unit_price: e.target.value })} />
+                              <Label className="text-xs">الوحدات (تلقائي حسب الأسنان)</Label>
+                              <Input type="number" min="1" value={it.units} readOnly className="bg-muted/50" />
                             </div>
                             <div className="sm:col-span-2">
                               <Label className="text-xs">الأسنان (خاصة بهذا العنصر)</Label>
-                              <ToothChart value={it.tooth_numbers} onChange={(v) => updateItem(it.id, { tooth_numbers: v })} />
+                              <ToothChart
+                                value={it.tooth_numbers}
+                                onChange={(v) => {
+                                  const count = v.split(",").map((s) => s.trim()).filter(Boolean).length;
+                                  updateItem(it.id, { tooth_numbers: v, units: String(Math.max(count, 1)) });
+                                }}
+                              />
                             </div>
-                          </div>
-                          <div className="mt-2 text-end text-xs text-muted-foreground">
-                            الإجمالي: <span className="font-mono font-semibold text-foreground">{lineTotal.toFixed(2)}</span>
                           </div>
                         </div>
                       );
