@@ -84,7 +84,10 @@ function CasesPage() {
     queryKey: ["stages", labId],
     enabled: !!labId,
     queryFn: async () => {
-      const { data } = await supabase.from("workflow_stages").select("id, name, color, order_index, is_end").order("order_index");
+      const { data } = await supabase
+        .from("workflow_stages")
+        .select("id, name, color, order_index, is_end, estimated_days")
+        .order("order_index");
       return data ?? [];
     },
   });
