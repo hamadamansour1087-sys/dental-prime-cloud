@@ -693,61 +693,256 @@ function CasesPage() {
         </Dialog>
       </div>
 
-      {/* Kanban */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {stages?.map((stage) => {
-          const stageCases = cases?.filter((c) => c.current_stage_id === stage.id) ?? [];
-          return (
-            <div key={stage.id} className="rounded-lg border bg-card p-3">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: stage.color }} />
-                  <span className="font-semibold">{stage.name}</span>
-                </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{stageCases.length}</span>
-              </div>
-              <div className="space-y-2">
-                {stageCases.map((c) => {
-                  const overdue = c.due_date && c.due_date < today && c.status === "active";
-                  const nextStage = stages?.find((s) => s.order_index === stage.order_index + 1);
-                  return (
-                    <Card key={c.id} className="cursor-pointer transition-colors hover:border-primary">
-                      <CardContent className="p-3 text-sm">
-                        <Link to="/cases/$caseId" params={{ caseId: c.id }} className="block">
-                          <div className="mb-1 flex items-center justify-between">
-                            <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
-                            {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
-                          </div>
-                          <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
-                          <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
-                          {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
-                          {c.due_date && (
-                            <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(c.due_date), "dd/MM/yyyy")}
-                            </p>
-                          )}
-                        </Link>
-                        {nextStage && !stage.is_end && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="mt-2 w-full text-xs"
-                            onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}
-                          >
-                            ← {nextStage.name}
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-                {!stageCases.length && <p className="py-4 text-center text-xs text-muted-foreground">فارغ</p>}
-              </div>
-            </div>
-          );
-        })}
+      {/* Toolbar: search + filter + view toggle */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="بحث برقم الحالة، الطبيب، المريض، نوع العمل..."
+            className="pr-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select value={stageFilter} onValueChange={setStageFilter}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="كل المراحل" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">كل المراحل</SelectItem>
+            {stages?.map((s) => (
+              <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-muted-foreground">{filteredCases.length} حالة</span>
+        <div className="ms-auto flex gap-1 rounded-md border p-0.5">
+          <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8">
+            <TableIcon className="ml-1 h-3.5 w-3.5" /> جدول
+          </Button>
+          <Button size="sm" variant={view === "kanban" ? "default" : "ghost"} onClick={() => setView("kanban")} className="h-8">
+            <LayoutGrid className="ml-1 h-3.5 w-3.5" /> بطاقات
+          </Button>
+        </div>
       </div>
+
+      {view === "table" ? (
+        <div className="rounded-lg border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[110px]">رقم الحالة</TableHead>
+                <TableHead>الطبيب</TableHead>
+                <TableHead>المريض</TableHead>
+                <TableHead>نوع العمل</TableHead>
+                <TableHead>المرحلة</TableHead>
+                <TableHead className="text-center">الوحدات</TableHead>
+                <TableHead>تاريخ التسليم</TableHead>
+                <TableHead className="text-end">السعر</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCases.map((c: any) => {
+                const overdue = c.due_date && c.due_date < today && c.status === "active";
+                const stage = stages?.find((s) => s.id === c.current_stage_id);
+                const currentIdx = stage?.order_index;
+                return (
+                  <ContextMenu key={c.id}>
+                    <ContextMenuTrigger asChild>
+                      <TableRow
+                        className="cursor-pointer"
+                        onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}
+                      >
+                        <TableCell className="font-mono text-xs">
+                          <div className="flex items-center gap-1">
+                            {overdue && <AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
+                            {c.case_number}
+                          </div>
+                        </TableCell>
+                        <TableCell>{c.doctors?.name ?? "—"}</TableCell>
+                        <TableCell>{c.patients?.name ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
+                        <TableCell>
+                          {stage ? (
+                            <span
+                              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                              style={{ backgroundColor: `${stage.color}20`, color: stage.color }}
+                            >
+                              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                              {stage.name}
+                            </span>
+                          ) : "—"}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
+                        <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
+                          {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                        </TableCell>
+                        <TableCell className="text-end font-mono text-xs">
+                          {c.price != null ? Number(c.price).toFixed(2) : "—"}
+                        </TableCell>
+                      </TableRow>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent dir="rtl" className="w-56">
+                      <ContextMenuItem onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                        <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuSub>
+                        <ContextMenuSubTrigger>
+                          <ArrowLeftRight className="ml-2 h-4 w-4" /> نقل إلى مرحلة
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent className="w-48">
+                          {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
+                            <ContextMenuItem
+                              key={s.id}
+                              onClick={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}
+                            >
+                              <span className="ml-2 h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                              {s.name}
+                            </ContextMenuItem>
+                          ))}
+                        </ContextMenuSubContent>
+                      </ContextMenuSub>
+                      {currentIdx != null && (() => {
+                        const next = stages?.find((s) => s.order_index === currentIdx + 1);
+                        return next ? (
+                          <ContextMenuItem onClick={() => moveCase(c.id, next.id, c.workflow_id, c.current_stage_id)}>
+                            <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {next.name}
+                          </ContextMenuItem>
+                        ) : null;
+                      })()}
+                      <ContextMenuSeparator />
+                      {c.status !== "delivered" && (
+                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
+                          <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
+                        </ContextMenuItem>
+                      )}
+                      {c.status !== "on_hold" && c.status !== "delivered" && (
+                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "on_hold")}>
+                          <AlertTriangle className="ml-2 h-4 w-4 text-amber-600" /> إيقاف مؤقت
+                        </ContextMenuItem>
+                      )}
+                      {c.status === "on_hold" && (
+                        <ContextMenuItem onClick={() => updateCaseStatus(c.id, "active")}>
+                          <CheckCircle2 className="ml-2 h-4 w-4" /> إعادة تفعيل
+                        </ContextMenuItem>
+                      )}
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
+                        }}
+                      >
+                        <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
+                );
+              })}
+              {!filteredCases.length && (
+                <TableRow>
+                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                    لا توجد حالات
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <p className="border-t bg-muted/30 px-3 py-1.5 text-[11px] text-muted-foreground">
+            💡 اضغط بالزر الأيمن على أي حالة لعرض القائمة السريعة
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {stages?.map((stage) => {
+            const stageCases = filteredCases.filter((c) => c.current_stage_id === stage.id) ?? [];
+            return (
+              <div key={stage.id} className="rounded-lg border bg-card p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: stage.color }} />
+                    <span className="font-semibold">{stage.name}</span>
+                  </div>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{stageCases.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {stageCases.map((c) => {
+                    const overdue = c.due_date && c.due_date < today && c.status === "active";
+                    const nextStage = stages?.find((s) => s.order_index === stage.order_index + 1);
+                    return (
+                      <ContextMenu key={c.id}>
+                        <ContextMenuTrigger asChild>
+                          <Card className="cursor-pointer transition-colors hover:border-primary">
+                            <CardContent className="p-3 text-sm">
+                              <Link to="/cases/$caseId" params={{ caseId: c.id }} className="block">
+                                <div className="mb-1 flex items-center justify-between">
+                                  <span className="font-mono text-xs text-muted-foreground">{c.case_number}</span>
+                                  {overdue && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                                </div>
+                                <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
+                                <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
+                                {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
+                                {c.due_date && (
+                                  <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                                    <Calendar className="h-3 w-3" />
+                                    {format(new Date(c.due_date), "dd/MM/yyyy")}
+                                  </p>
+                                )}
+                              </Link>
+                              {nextStage && !stage.is_end && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="mt-2 w-full text-xs"
+                                  onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}
+                                >
+                                  ← {nextStage.name}
+                                </Button>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent dir="rtl" className="w-56">
+                          <ContextMenuItem onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                            <Eye className="ml-2 h-4 w-4" /> فتح الحالة
+                          </ContextMenuItem>
+                          <ContextMenuSub>
+                            <ContextMenuSubTrigger>
+                              <ArrowLeftRight className="ml-2 h-4 w-4" /> نقل إلى مرحلة
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent className="w-48">
+                              {stages?.filter((s) => s.id !== c.current_stage_id).map((s) => (
+                                <ContextMenuItem key={s.id} onClick={() => moveCase(c.id, s.id, c.workflow_id, c.current_stage_id)}>
+                                  <span className="ml-2 h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                  {s.name}
+                                </ContextMenuItem>
+                              ))}
+                            </ContextMenuSubContent>
+                          </ContextMenuSub>
+                          <ContextMenuSeparator />
+                          {c.status !== "delivered" && (
+                            <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
+                              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
+                            </ContextMenuItem>
+                          )}
+                          <ContextMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => {
+                              if (confirm(`إلغاء الحالة ${c.case_number}؟`)) updateCaseStatus(c.id, "cancelled");
+                            }}
+                          >
+                            <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                    );
+                  })}
+                  {!stageCases.length && <p className="py-4 text-center text-xs text-muted-foreground">فارغ</p>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
