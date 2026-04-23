@@ -781,11 +781,11 @@ function CasesPage() {
                       </TableRow>
                     </ContextMenuTrigger>
                     <ContextMenuContent className="w-56">
-                      <ContextMenuItem onClick={() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } })}>
+                      <ContextMenuItem
+                        onSelect={() => setTimeout(() => navigate({ to: "/cases/$caseId", params: { caseId: c.id } }), 0)}
+                      >
                         <Eye className="ml-2 h-4 w-4" /> فتح الحالة
                       </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuSub>
                         <ContextMenuSubTrigger>
                           <ArrowLeftRight className="ml-2 h-4 w-4" /> نقل إلى مرحلة
                         </ContextMenuSubTrigger>
