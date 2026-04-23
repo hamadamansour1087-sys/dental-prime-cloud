@@ -32,6 +32,7 @@ type NavItem = { title: string; url: string; icon: typeof LayoutDashboard; admin
 const items: NavItem[] = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الحالات", url: "/cases", icon: ClipboardList },
+  { title: "طلبات الأطباء", url: "/pending-cases", icon: ClipboardList },
   { title: "الأطباء", url: "/doctors", icon: Stethoscope },
   { title: "الفنيون", url: "/technicians", icon: HardHat },
   { title: "تقرير الإنتاج", url: "/technician-reports", icon: BarChart3 },

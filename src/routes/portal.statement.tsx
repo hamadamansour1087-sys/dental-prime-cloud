@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/portal/statement")({
-  component: PortalStatement;
+  component: PortalStatement,
 });
 
 function PortalStatement() {
