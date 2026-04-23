@@ -25,17 +25,23 @@ import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-in
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 import { Route as ApiAiAnalyzeCaseRouteImport } from './routes/api/ai-analyze-case'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
+import { Route as AppVouchersRouteImport } from './routes/_app.vouchers'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
 import { Route as AppTechniciansRouteImport } from './routes/_app.technicians'
 import { Route as AppTechnicianReportsRouteImport } from './routes/_app.technician-reports'
+import { Route as AppSuppliersRouteImport } from './routes/_app.suppliers'
 import { Route as AppStatementsRouteImport } from './routes/_app.statements'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
+import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
+import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
@@ -118,6 +124,11 @@ const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
   path: '/workflows',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVouchersRoute = AppVouchersRouteImport.update({
+  id: '/vouchers',
+  path: '/vouchers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -133,6 +144,11 @@ const AppTechnicianReportsRoute = AppTechnicianReportsRouteImport.update({
   path: '/technician-reports',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSuppliersRoute = AppSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStatementsRoute = AppStatementsRouteImport.update({
   id: '/statements',
   path: '/statements',
@@ -141,6 +157,11 @@ const AppStatementsRoute = AppStatementsRouteImport.update({
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPurchasesRoute = AppPurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPricingRoute = AppPricingRouteImport.update({
@@ -163,6 +184,16 @@ const AppInvoicesRoute = AppInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryRoute = AppInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpensesRoute = AppExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDoctorsRoute = AppDoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
@@ -171,6 +202,11 @@ const AppDoctorsRoute = AppDoctorsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCashAccountsRoute = AppCashAccountsRouteImport.update({
+  id: '/cash-accounts',
+  path: '/cash-accounts',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCasesRoute = AppCasesRouteImport.update({
@@ -190,17 +226,23 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/cases': typeof AppCasesRouteWithChildren
+  '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
+  '/expenses': typeof AppExpensesRoute
+  '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
+  '/purchases': typeof AppPurchasesRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
+  '/suppliers': typeof AppSuppliersRoute
   '/technician-reports': typeof AppTechnicianReportsRoute
   '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
+  '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
@@ -220,17 +262,23 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/cases': typeof AppCasesRouteWithChildren
+  '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
   '/doctors': typeof AppDoctorsRoute
+  '/expenses': typeof AppExpensesRoute
+  '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
+  '/purchases': typeof AppPurchasesRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
+  '/suppliers': typeof AppSuppliersRoute
   '/technician-reports': typeof AppTechnicianReportsRoute
   '/technicians': typeof AppTechniciansRoute
   '/users': typeof AppUsersRoute
+  '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
@@ -252,17 +300,23 @@ export interface FileRoutesById {
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
+  '/_app/cash-accounts': typeof AppCashAccountsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/doctors': typeof AppDoctorsRoute
+  '/_app/expenses': typeof AppExpensesRoute
+  '/_app/inventory': typeof AppInventoryRoute
   '/_app/invoices': typeof AppInvoicesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
   '/_app/pricing': typeof AppPricingRoute
+  '/_app/purchases': typeof AppPurchasesRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/statements': typeof AppStatementsRoute
+  '/_app/suppliers': typeof AppSuppliersRoute
   '/_app/technician-reports': typeof AppTechnicianReportsRoute
   '/_app/technicians': typeof AppTechniciansRoute
   '/_app/users': typeof AppUsersRoute
+  '/_app/vouchers': typeof AppVouchersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
@@ -284,17 +338,23 @@ export interface FileRouteTypes {
     | '/portal'
     | '/signup'
     | '/cases'
+    | '/cash-accounts'
     | '/dashboard'
     | '/doctors'
+    | '/expenses'
+    | '/inventory'
     | '/invoices'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
+    | '/purchases'
     | '/settings'
     | '/statements'
+    | '/suppliers'
     | '/technician-reports'
     | '/technicians'
     | '/users'
+    | '/vouchers'
     | '/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
@@ -314,17 +374,23 @@ export interface FileRouteTypes {
     | '/portal'
     | '/signup'
     | '/cases'
+    | '/cash-accounts'
     | '/dashboard'
     | '/doctors'
+    | '/expenses'
+    | '/inventory'
     | '/invoices'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
+    | '/purchases'
     | '/settings'
     | '/statements'
+    | '/suppliers'
     | '/technician-reports'
     | '/technicians'
     | '/users'
+    | '/vouchers'
     | '/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
@@ -345,17 +411,23 @@ export interface FileRouteTypes {
     | '/portal'
     | '/signup'
     | '/_app/cases'
+    | '/_app/cash-accounts'
     | '/_app/dashboard'
     | '/_app/doctors'
+    | '/_app/expenses'
+    | '/_app/inventory'
     | '/_app/invoices'
     | '/_app/patients'
     | '/_app/pending-cases'
     | '/_app/pricing'
+    | '/_app/purchases'
     | '/_app/settings'
     | '/_app/statements'
+    | '/_app/suppliers'
     | '/_app/technician-reports'
     | '/_app/technicians'
     | '/_app/users'
+    | '/_app/vouchers'
     | '/_app/workflows'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
@@ -497,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkflowsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/vouchers': {
+      id: '/_app/vouchers'
+      path: '/vouchers'
+      fullPath: '/vouchers'
+      preLoaderRoute: typeof AppVouchersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/users': {
       id: '/_app/users'
       path: '/users'
@@ -518,6 +597,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTechnicianReportsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/suppliers': {
+      id: '/_app/suppliers'
+      path: '/suppliers'
+      fullPath: '/suppliers'
+      preLoaderRoute: typeof AppSuppliersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/statements': {
       id: '/_app/statements'
       path: '/statements'
@@ -530,6 +616,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/purchases': {
+      id: '/_app/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof AppPurchasesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/pricing': {
@@ -560,6 +653,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInvoicesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory': {
+      id: '/_app/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AppInventoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expenses': {
+      id: '/_app/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof AppExpensesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/doctors': {
       id: '/_app/doctors'
       path: '/doctors'
@@ -572,6 +679,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cash-accounts': {
+      id: '/_app/cash-accounts'
+      path: '/cash-accounts'
+      fullPath: '/cash-accounts'
+      preLoaderRoute: typeof AppCashAccountsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/cases': {
@@ -605,33 +719,45 @@ const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppCasesRoute: typeof AppCasesRouteWithChildren
+  AppCashAccountsRoute: typeof AppCashAccountsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
+  AppExpensesRoute: typeof AppExpensesRoute
+  AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
   AppPricingRoute: typeof AppPricingRoute
+  AppPurchasesRoute: typeof AppPurchasesRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStatementsRoute: typeof AppStatementsRoute
+  AppSuppliersRoute: typeof AppSuppliersRoute
   AppTechnicianReportsRoute: typeof AppTechnicianReportsRoute
   AppTechniciansRoute: typeof AppTechniciansRoute
   AppUsersRoute: typeof AppUsersRoute
+  AppVouchersRoute: typeof AppVouchersRoute
   AppWorkflowsRoute: typeof AppWorkflowsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCasesRoute: AppCasesRouteWithChildren,
+  AppCashAccountsRoute: AppCashAccountsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDoctorsRoute: AppDoctorsRoute,
+  AppExpensesRoute: AppExpensesRoute,
+  AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
   AppPricingRoute: AppPricingRoute,
+  AppPurchasesRoute: AppPurchasesRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStatementsRoute: AppStatementsRoute,
+  AppSuppliersRoute: AppSuppliersRoute,
   AppTechnicianReportsRoute: AppTechnicianReportsRoute,
   AppTechniciansRoute: AppTechniciansRoute,
   AppUsersRoute: AppUsersRoute,
+  AppVouchersRoute: AppVouchersRoute,
   AppWorkflowsRoute: AppWorkflowsRoute,
 }
 
@@ -671,3 +797,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
