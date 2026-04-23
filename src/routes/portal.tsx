@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,6 +23,7 @@ function PortalLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/portal/login";
+  const redirectingRef = useRef(false);
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
@@ -38,9 +39,12 @@ function PortalLayout() {
   });
 
   useEffect(() => {
-    if (!loading && !user && !isLoginRoute) {
+    if (!loading && !user && !isLoginRoute && !redirectingRef.current) {
+      redirectingRef.current = true;
       navigate({ to: "/portal/login", replace: true });
+      return;
     }
+    redirectingRef.current = false;
   }, [loading, user, isLoginRoute, navigate]);
 
   if (loading || (!isLoginRoute && user && docLoading)) {
