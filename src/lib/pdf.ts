@@ -57,9 +57,13 @@ function inlineResolvedStyles(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
     for (let i = 0; i < computed.length; i += 1) {
       const prop = computed.item(i);
       if (!prop) continue;
+      // Skip CSS custom properties — they may carry oklch() values that html2canvas can't parse
+      if (prop.startsWith("--")) continue;
       const value = computed.getPropertyValue(prop);
       const priority = computed.getPropertyPriority(prop);
       if (!value) continue;
+      // Skip any value that still contains modern color functions
+      if (/oklch|oklab|color\(|color-mix/i.test(value)) continue;
 
       try {
         cloneNode.style.setProperty(prop, value, priority);
