@@ -743,7 +743,7 @@ function CasesPage() {
               {filteredCases.map((c: any) => {
                 const overdue = c.due_date && c.due_date < today && c.status === "active";
                 const stage = stages?.find((s) => s.id === c.current_stage_id);
-                const currentIdx = stage?.order_index;
+                const nextStage = stage ? stages?.find((s) => s.order_index === stage.order_index + 1) : null;
                 return (
                   <ContextMenu key={c.id}>
                     <ContextMenuTrigger asChild>
@@ -803,14 +803,11 @@ function CasesPage() {
                           ))}
                         </ContextMenuSubContent>
                       </ContextMenuSub>
-                      {currentIdx != null && (() => {
-                        const next = stages?.find((s) => s.order_index === currentIdx + 1);
-                        return next ? (
-                          <ContextMenuItem onClick={() => moveCase(c.id, next.id, c.workflow_id, c.current_stage_id)}>
-                            <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {next.name}
-                          </ContextMenuItem>
-                        ) : null;
-                      })()}
+                      {nextStage && (
+                        <ContextMenuItem onClick={() => moveCase(c.id, nextStage.id, c.workflow_id, c.current_stage_id)}>
+                          <ArrowLeftRight className="ml-2 h-4 w-4" /> المرحلة التالية: {nextStage.name}
+                        </ContextMenuItem>
+                      )}
                       <ContextMenuSeparator />
                       {c.status !== "delivered" && (
                         <ContextMenuItem onClick={() => updateCaseStatus(c.id, "delivered")}>
