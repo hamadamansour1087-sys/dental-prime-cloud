@@ -22,10 +22,11 @@ function PortalLayout() {
   const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isLoginRoute = location.pathname === "/portal/login";
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
-    enabled: !!user,
+    enabled: !!user && !isLoginRoute,
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
@@ -37,12 +38,24 @@ function PortalLayout() {
   });
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate({ to: "/portal/login" });
+    if (!loading && !user && !isLoginRoute) {
+      navigate({ to: "/portal/login", replace: true });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || !user || (user && docLoading)) {
+  if (loading || (!isLoginRoute && user && docLoading)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (isLoginRoute) {
+    return <Outlet />;
+  }
+
+  if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
