@@ -13,6 +13,7 @@ import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { CaseAIAnalysis } from "@/components/CaseAIAnalysis";
+import { CaseDeliveryPrediction } from "@/components/CaseDeliveryPrediction";
 import { CaseHeader } from "@/components/CaseHeader";
 import { CaseTimeline } from "@/components/CaseTimeline";
 import { CaseProgressBar } from "@/components/CaseProgressBar";
@@ -214,24 +215,46 @@ function CaseDetailsPage() {
           </CardContent>
         </Card>
       )}
-      {/* AI Smart Analysis */}
-      <CaseAIAnalysis
-        caseData={{
-          case_number: caseRow.case_number,
-          status: caseRow.status,
-          date_received: caseRow.date_received,
-          due_date: caseRow.due_date,
-          current_stage: stage?.name,
-          doctor: (caseRow as any).doctors?.name,
-          patient: (caseRow as any).patients?.name,
-          units: caseRow.units,
-          price: caseRow.price,
-          notes: caseRow.notes,
-          items_count: items?.length ?? 0,
-          stages_done: stageHistory?.filter((h: any) => h.exited_at).length ?? 0,
-          stages_total: stageHistory?.length ?? 0,
-        }}
-      />
+      {/* AI Smart Analysis + Delivery Prediction */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CaseAIAnalysis
+          caseData={{
+            case_number: caseRow.case_number,
+            status: caseRow.status,
+            date_received: caseRow.date_received,
+            due_date: caseRow.due_date,
+            current_stage: stage?.name,
+            doctor: (caseRow as any).doctors?.name,
+            patient: (caseRow as any).patients?.name,
+            units: caseRow.units,
+            price: caseRow.price,
+            notes: caseRow.notes,
+            items_count: items?.length ?? 0,
+            stages_done: stageHistory?.filter((h: any) => h.exited_at).length ?? 0,
+            stages_total: stageHistory?.length ?? 0,
+          }}
+        />
+        <CaseDeliveryPrediction
+          caseData={{
+            case_number: caseRow.case_number,
+            date_received: caseRow.date_received,
+            due_date: caseRow.due_date,
+            current_stage: stage?.name,
+            current_stage_entered_at: caseRow.stage_entered_at,
+            workflow_stages: workflowStages?.map((s: any) => ({
+              name: s.name,
+              order: s.order_index,
+              estimated_days: s.estimated_days,
+              is_end: s.is_end,
+            })) ?? [],
+            stages_completed: (stageHistory ?? []).filter((h: any) => h.exited_at && !h.skipped).length,
+            stages_total: workflowStages?.length ?? 0,
+            avg_stage_duration_minutes:
+              (stageHistory ?? []).filter((h: any) => h.duration_minutes).reduce((s: number, h: any) => s + h.duration_minutes, 0) /
+                Math.max(1, (stageHistory ?? []).filter((h: any) => h.duration_minutes).length) || 0,
+          }}
+        />
+      </div>
 
       {/* Items table */}
       <Card>
