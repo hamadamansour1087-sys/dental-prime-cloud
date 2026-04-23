@@ -5,9 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
@@ -19,6 +22,7 @@ import { CaseTimeline } from "@/components/CaseTimeline";
 import { CaseProgressBar } from "@/components/CaseProgressBar";
 import { CaseReport } from "@/components/reports/CaseReport";
 import { renderReportToPdf } from "@/lib/reportRenderer";
+import { ShadeSelector } from "@/components/ShadeSelector";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -44,6 +48,14 @@ function CaseDetailsPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
+  const [addingItem, setAddingItem] = useState(false);
+  const [itemDraft, setItemDraft] = useState({
+    work_type_id: "",
+    shade: "",
+    tooth_numbers: "",
+    units: "1",
+    unit_price: "",
+  });
 
   const { data: caseRow, isLoading } = useQuery({
     queryKey: ["case-detail", caseId],
@@ -115,6 +127,19 @@ function CaseDetailsPage() {
     },
   });
 
+  const { data: workTypes } = useQuery({
+    queryKey: ["work-types-detail", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("work_types")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      return data ?? [];
+    },
+  });
+
   const deleteAttachment = async (id: string, path: string) => {
     if (!confirm("حذف هذا الملف؟")) return;
     const { error: stErr } = await supabase.storage.from("case-media").remove([path]);
@@ -136,6 +161,104 @@ function CaseDetailsPage() {
       URL.revokeObjectURL(a.href);
     } catch {
       window.open(url, "_blank");
+    }
+  };
+
+  const resetItemDraft = () => {
+    setItemDraft({
+      work_type_id: "",
+      shade: "",
+      tooth_numbers: "",
+      units: "1",
+      unit_price: "",
+    });
+  };
+
+  const addCaseItem = async () => {
+    if (!caseRow || !labId) return;
+    if (!itemDraft.work_type_id) return toast.error("اختر نوع العمل أولاً");
+
+    setAddingItem(true);
+    try {
+      let unitPrice = itemDraft.unit_price ? Number(itemDraft.unit_price) : null;
+      if (unitPrice == null) {
+        const { data } = await supabase.rpc("resolve_case_price", {
+          _lab_id: caseRow.lab_id,
+          _work_type_id: itemDraft.work_type_id,
+          _doctor_id: caseRow.doctor_id,
+        });
+        unitPrice = data ?? 0;
+      }
+
+      const units = Math.max(1, Number(itemDraft.units) || 1);
+      const totalPrice = Number(unitPrice ?? 0) * units;
+
+      const { error: itemError } = await supabase.from("case_items").insert({
+        case_id: caseRow.id,
+        lab_id: caseRow.lab_id,
+        work_type_id: itemDraft.work_type_id,
+        tooth_numbers: itemDraft.tooth_numbers || null,
+        shade: itemDraft.shade || null,
+        units,
+        unit_price: unitPrice,
+        total_price: totalPrice,
+        position: items?.length ?? 0,
+      });
+
+      if (itemError) throw itemError;
+
+      const mergedItems = [
+        ...(items ?? []).map((item: any) => ({
+          work_type_id: item.work_type_id,
+          tooth_numbers: item.tooth_numbers,
+          shade: item.shade,
+          units: Number(item.units) || 0,
+          total_price: Number(item.total_price) || 0,
+        })),
+        {
+          work_type_id: itemDraft.work_type_id,
+          tooth_numbers: itemDraft.tooth_numbers,
+          shade: itemDraft.shade,
+          units,
+          total_price: totalPrice,
+        },
+      ];
+
+      const allTeeth = Array.from(
+        new Set(
+          mergedItems.flatMap((item) =>
+            String(item.tooth_numbers ?? "")
+              .split(",")
+              .map((value) => value.trim())
+              .filter(Boolean),
+          ),
+        ),
+      ).join(",");
+
+      const allShades = Array.from(
+        new Set(mergedItems.map((item) => String(item.shade ?? "").trim()).filter(Boolean)),
+      ).join(", ");
+
+      await supabase
+        .from("cases")
+        .update({
+          work_type_id: mergedItems[0]?.work_type_id ?? itemDraft.work_type_id,
+          tooth_numbers: allTeeth || null,
+          shade: allShades || null,
+          units: mergedItems.reduce((sum, item) => sum + (Number(item.units) || 0), 0),
+          price: mergedItems.reduce((sum, item) => sum + (Number(item.total_price) || 0), 0),
+        })
+        .eq("id", caseRow.id);
+
+      toast.success("تمت إضافة الشغل الجديد وتحديث التكلفة");
+      resetItemDraft();
+      qc.invalidateQueries({ queryKey: ["case-items", caseId] });
+      qc.invalidateQueries({ queryKey: ["case-detail", caseId] });
+      qc.invalidateQueries({ queryKey: ["cases"] });
+    } catch (error: any) {
+      toast.error(error.message ?? "تعذر إضافة الشغل الجديد");
+    } finally {
+      setAddingItem(false);
     }
   };
 
