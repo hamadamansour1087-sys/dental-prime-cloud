@@ -111,6 +111,7 @@ export function StageTransitionDialog({
   const submit = async () => {
     if (!toStageId) return toast.error("اختر المرحلة التالية");
     if (requiresTechnician && !technicianId) return toast.error("اختر اسم الفني");
+    if (!enteredAt) return toast.error("اختر تاريخ الانتقال");
     setSubmitting(true);
     const { error } = await supabase.rpc("transition_case_stage", {
       _case_id: caseId,
@@ -118,7 +119,8 @@ export function StageTransitionDialog({
       _notes: notes || undefined,
       _technician_id: technicianId || undefined,
       _skipped_stage_ids: skipped.length ? skipped.map((s) => s.id) : undefined,
-    });
+      _entered_at: new Date(enteredAt).toISOString(),
+    } as any);
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success("تم نقل المرحلة");
