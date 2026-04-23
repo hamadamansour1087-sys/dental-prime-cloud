@@ -7,13 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Download, Trash2, FileBox, ImageIcon, Calendar, QrCode, ArrowLeftRight, History, SkipForward, ListChecks, Paperclip } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { CaseAIAnalysis } from "@/components/CaseAIAnalysis";
+import { CaseHeader } from "@/components/CaseHeader";
+import { CaseTimeline } from "@/components/CaseTimeline";
+import { CaseProgressBar } from "@/components/CaseProgressBar";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
