@@ -45,5 +45,19 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     }
   }
 
-  pdf.save(fileName);
+  // Open in a new tab so the browser's PDF viewer shows it (download works from there).
+  // Using save() inside an iframe preview is often silently blocked.
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  if (!win) {
+    // Popup blocked — fall back to direct download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
