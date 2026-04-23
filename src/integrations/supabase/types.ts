@@ -253,6 +253,8 @@ export type Database = {
       cases: {
         Row: {
           case_number: string
+          case_type: string
+          charge_mode: string
           created_at: string
           created_by: string | null
           current_stage_id: string | null
@@ -263,6 +265,7 @@ export type Database = {
           id: string
           lab_id: string
           notes: string | null
+          parent_case_id: string | null
           patient_id: string | null
           price: number | null
           shade: string | null
@@ -276,6 +279,8 @@ export type Database = {
         }
         Insert: {
           case_number: string
+          case_type?: string
+          charge_mode?: string
           created_at?: string
           created_by?: string | null
           current_stage_id?: string | null
@@ -286,6 +291,7 @@ export type Database = {
           id?: string
           lab_id: string
           notes?: string | null
+          parent_case_id?: string | null
           patient_id?: string | null
           price?: number | null
           shade?: string | null
@@ -299,6 +305,8 @@ export type Database = {
         }
         Update: {
           case_number?: string
+          case_type?: string
+          charge_mode?: string
           created_at?: string
           created_by?: string | null
           current_stage_id?: string | null
@@ -309,6 +317,7 @@ export type Database = {
           id?: string
           lab_id?: string
           notes?: string | null
+          parent_case_id?: string | null
           patient_id?: string | null
           price?: number | null
           shade?: string | null
@@ -340,6 +349,13 @@ export type Database = {
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_parent_case_id_fkey"
+            columns: ["parent_case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
             referencedColumns: ["id"]
           },
           {
@@ -1715,6 +1731,18 @@ export type Database = {
       }
       approve_pending_case: {
         Args: { _case_id: string; _workflow_id?: string }
+        Returns: string
+      }
+      create_followup_case: {
+        Args: {
+          _case_type: string
+          _charge_mode?: string
+          _custom_price?: number
+          _due_date?: string
+          _notes?: string
+          _parent_case_id: string
+          _with_new_work?: boolean
+        }
         Returns: string
       }
       create_workflow: {
