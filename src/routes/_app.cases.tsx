@@ -146,6 +146,7 @@ function CasesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
+  const [followup, setFollowup] = useState<{ caseId: string; caseNumber: string; type: "remake" | "repair" } | null>(null);
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
