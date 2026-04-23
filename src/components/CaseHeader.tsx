@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { format, differenceInDays } from "date-fns";
 import { ar } from "date-fns/locale";
-import { ArrowRight, Calendar, Clock, AlertTriangle, CheckCircle2, ArrowLeftRight, QrCode, User, Stethoscope } from "lucide-react";
+import { ArrowRight, Calendar, Clock, AlertTriangle, CheckCircle2, ArrowLeftRight, QrCode, User, Stethoscope, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +11,10 @@ interface CaseHeaderProps {
   onBack: () => void;
   onMoveStage: () => void;
   onLabel: () => void;
+  onPdf?: () => void;
 }
 
-export function CaseHeader({ caseRow, stage, onBack, onMoveStage, onLabel }: CaseHeaderProps) {
+export function CaseHeader({ caseRow, stage, onBack, onMoveStage, onLabel, onPdf }: CaseHeaderProps) {
   const isDelivered = caseRow.status === "delivered";
   const dueDate = caseRow.due_date ? new Date(caseRow.due_date) : null;
   const daysToDue = dueDate ? differenceInDays(dueDate, new Date()) : null;
@@ -90,6 +91,11 @@ export function CaseHeader({ caseRow, stage, onBack, onMoveStage, onLabel }: Cas
             <Button variant="outline" size="sm" onClick={onLabel}>
               <QrCode className="ml-1 h-4 w-4" /> ملصق QR
             </Button>
+            {onPdf && (
+              <Button variant="outline" size="sm" onClick={onPdf}>
+                <FileDown className="ml-1 h-4 w-4" /> PDF
+              </Button>
+            )}
           </div>
         </div>
 

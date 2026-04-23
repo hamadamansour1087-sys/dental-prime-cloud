@@ -17,6 +17,8 @@ import { CaseDeliveryPrediction } from "@/components/CaseDeliveryPrediction";
 import { CaseHeader } from "@/components/CaseHeader";
 import { CaseTimeline } from "@/components/CaseTimeline";
 import { CaseProgressBar } from "@/components/CaseProgressBar";
+import { CaseReport } from "@/components/reports/CaseReport";
+import { renderReportToPdf } from "@/lib/reportRenderer";
 
 export const Route = createFileRoute("/_app/cases/$caseId")({
   component: CaseDetailsPage,
@@ -162,6 +164,28 @@ function CaseDetailsPage() {
         onBack={() => router.history.back()}
         onMoveStage={() => setStageOpen(true)}
         onLabel={() => setLabelOpen(true)}
+        onPdf={async () => {
+          try {
+            toast.loading("جاري إنشاء PDF...", { id: "pdf" });
+            const { data: lab } = await supabase
+              .from("labs")
+              .select("name, phone, address, email, logo_url, currency")
+              .eq("id", labId!)
+              .maybeSingle();
+            await renderReportToPdf(
+              <CaseReport
+                lab={lab ?? { name: "Lab" }}
+                caseRow={caseRow}
+                items={items ?? []}
+                stageHistory={stageHistory ?? []}
+              />,
+              `case-${caseRow.case_number}.pdf`
+            );
+            toast.success("تم إنشاء PDF", { id: "pdf" });
+          } catch (e: any) {
+            toast.error(e?.message ?? "فشل إنشاء PDF", { id: "pdf" });
+          }
+        }}
       />
 
       <StageTransitionDialog

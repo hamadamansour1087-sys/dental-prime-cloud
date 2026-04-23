@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Printer, FileDown } from "lucide-react";
 import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
-import { exportElementToPdf } from "@/lib/pdf";
+import { InvoiceReport } from "@/components/reports/InvoiceReport";
+import { renderReportToPdf } from "@/lib/reportRenderer";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({
   component: InvoicesPage,
@@ -24,11 +26,18 @@ function InvoicesPage() {
   const [year, setYear] = useState<number>(today.getFullYear());
   const [month, setMonth] = useState<number>(today.getMonth() + 1); // 1-12
 
+  const { data: lab } = useQuery({
+    queryKey: ["lab-info", labId],
+    enabled: !!labId,
+    queryFn: async () =>
+      (await supabase.from("labs").select("name, phone, address, email, logo_url, currency").eq("id", labId!).maybeSingle()).data,
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-invoices", labId],
     enabled: !!labId,
     queryFn: async () =>
-      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone").eq("is_active", true).order("name")).data ?? [],
+      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone, clinic_name").eq("is_active", true).order("name")).data ?? [],
   });
 
   const doctor = doctors?.find((d) => d.id === doctorId);
@@ -73,14 +82,28 @@ function InvoicesPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            disabled={!doctorId}
+            disabled={!doctorId || !lab}
             onClick={async () => {
-              const el = document.getElementById("invoice-print");
-              if (!el) return;
-              await exportElementToPdf(el, `invoice-${doctor?.name ?? "doctor"}-${year}-${String(month).padStart(2, "0")}.pdf`);
+              if (!lab || !doctor) return;
+              try {
+                toast.loading("جاري إنشاء PDF...", { id: "pdf" });
+                await renderReportToPdf(
+                  <InvoiceReport
+                    lab={lab}
+                    doctor={doctor}
+                    cases={cases ?? []}
+                    periodLabel={`${months[month - 1]} ${year}`}
+                    invoiceNo={`INV-${year}-${String(month).padStart(2, "0")}-${doctor.name?.slice(0, 3).toUpperCase() ?? "DOC"}`}
+                  />,
+                  `invoice-${doctor.name}-${year}-${String(month).padStart(2, "0")}.pdf`
+                );
+                toast.success("تم إنشاء PDF", { id: "pdf" });
+              } catch (e: any) {
+                toast.error(e?.message ?? "فشل إنشاء PDF", { id: "pdf" });
+              }
             }}
           >
-            <FileDown className="ml-1 h-4 w-4" /> PDF
+            <FileDown className="ml-1 h-4 w-4" /> PDF احترافي
           </Button>
           <Button onClick={() => window.print()} disabled={!doctorId}>
             <Printer className="ml-1 h-4 w-4" /> طباعة
