@@ -1,11 +1,12 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LayoutDashboard, FilePlus2, ClipboardList, Wallet, LogOut, Stethoscope } from "lucide-react";
+import { LayoutDashboard, FilePlus2, ClipboardList, Wallet, LogOut, Stethoscope, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 
 export const Route = createFileRoute("/portal")({
   component: PortalLayout,
@@ -24,6 +25,8 @@ function PortalLayout() {
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/portal/login";
   const redirectingRef = useRef(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  useGlobalSearchHotkey(setSearchOpen);
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
@@ -105,6 +108,18 @@ function PortalLayout() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+              title="بحث (Ctrl+K)"
+            >
+              <Search className="h-4 w-4" />
+              <kbd className="hidden md:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
+                ⌘K
+              </kbd>
+            </Button>
             <ThemeToggle />
             <Button
               variant="ghost"
@@ -146,6 +161,7 @@ function PortalLayout() {
       <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-6">
         <Outlet />
       </main>
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} variant="portal" />
     </div>
   );
 }
