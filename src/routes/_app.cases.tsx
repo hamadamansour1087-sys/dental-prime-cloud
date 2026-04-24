@@ -392,27 +392,33 @@ function CasesPage() {
           });
         }
 
-        // Upload files
-        for (const pf of files) {
-          const safeName = pf.file.name.replace(/[^\w.\-]+/g, "_");
+        // Upload files in parallel (with concurrency cap) for fast saving.
+        const CONCURRENCY = 4;
+        const uploadOne = async (pf: PendingFileMeta) => {
+          const blob = fileBlobsRef.current.get(pf.id);
+          if (!blob) return;
+          const safeName = pf.name.replace(/[^\w.\-]+/g, "_");
           const path = `${labId}/${created.id}/${pf.kind}/${Date.now()}_${safeName}`;
-          const { error: upErr } = await supabase.storage.from("case-media").upload(path, pf.file, {
-            contentType: pf.file.type || undefined,
+          const { error: upErr } = await supabase.storage.from("case-media").upload(path, blob, {
+            contentType: pf.type || undefined,
             upsert: false,
           });
           if (upErr) {
-            toast.error(`فشل رفع ${pf.file.name}: ${upErr.message}`);
-            continue;
+            toast.error(`فشل رفع ${pf.name}: ${upErr.message}`);
+            return;
           }
           await supabase.from("case_attachments").insert({
             lab_id: labId,
             case_id: created.id,
             storage_path: path,
-            file_name: pf.file.name,
-            file_size: pf.file.size,
-            mime_type: pf.file.type || null,
+            file_name: pf.name,
+            file_size: pf.size,
+            mime_type: pf.type || null,
             kind: pf.kind,
           });
+        };
+        for (let i = 0; i < files.length; i += CONCURRENCY) {
+          await Promise.all(files.slice(i, i + CONCURRENCY).map(uploadOne));
         }
       }
 
