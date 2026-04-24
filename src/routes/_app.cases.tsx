@@ -710,10 +710,11 @@ function CasesPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">الحالات</h1>
+        <Button onClick={() => navigate({ to: "/cases/new" })}>
+          <Plus className="ml-1 h-4 w-4" />حالة جديدة
+        </Button>
+        {/* Legacy dialog kept hidden for fallback; new screen lives at /cases/new */}
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="ml-1 h-4 w-4" />حالة جديدة</Button>
-          </DialogTrigger>
           <DialogContent dir="rtl" className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-2xl overflow-y-auto p-4 sm:w-full sm:p-6">
             <DialogHeader className="pb-2">
               <DialogDescription className="sr-only">
