@@ -797,22 +797,70 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                     <Label className="mb-1.5 block text-xs font-semibold">
                       الطبيب <span className="text-destructive">*</span>
                     </Label>
-                    <Select
-                      value={form.doctor_id}
-                      onValueChange={(v) => setForm({ ...form, doctor_id: v, clinic_id: "" })}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg">
-                        <SelectValue placeholder="اختر طبيبًا" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {doctors?.map((d) => (
-                          <SelectItem key={d.id} value={d.id}>
-                            {d.name}
-                            {d.governorate ? ` — ${d.governorate}` : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={doctorPickerOpen} onOpenChange={setDoctorPickerOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={doctorPickerOpen}
+                          className={cn(
+                            "h-11 w-full justify-between rounded-lg font-normal",
+                            !selectedDoctor && "text-muted-foreground",
+                          )}
+                        >
+                          {selectedDoctor
+                            ? `${selectedDoctor.name}${selectedDoctor.governorate ? ` — ${selectedDoctor.governorate}` : ""}`
+                            : "ابحث عن طبيب..."}
+                          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[--radix-popover-trigger-width] min-w-[280px] p-0"
+                        align="start"
+                      >
+                        <Command
+                          filter={(value, search) => {
+                            // value here is the searchValue we set on CommandItem
+                            const v = value.toLowerCase();
+                            const s = search.toLowerCase().trim();
+                            if (!s) return 1;
+                            return v.includes(s) ? 1 : 0;
+                          }}
+                        >
+                          <CommandInput placeholder="ابحث بالاسم أو المحافظة..." className="h-10" />
+                          <CommandList>
+                            <CommandEmpty>لا يوجد نتائج</CommandEmpty>
+                            <CommandGroup>
+                              {doctors?.map((d) => {
+                                const searchValue = `${d.name} ${d.governorate ?? ""}`.trim();
+                                return (
+                                  <CommandItem
+                                    key={d.id}
+                                    value={searchValue}
+                                    onSelect={() => {
+                                      setForm({ ...form, doctor_id: d.id, clinic_id: "" });
+                                      setDoctorPickerOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "ml-2 h-4 w-4",
+                                        form.doctor_id === d.id ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    <span className="flex-1">{d.name}</span>
+                                    {d.governorate && (
+                                      <span className="text-xs text-muted-foreground">{d.governorate}</span>
+                                    )}
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 )}
 
