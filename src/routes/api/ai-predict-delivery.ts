@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/ai-predict-delivery")({
             });
           }
 
-          const userPrompt = `استناداً لبيانات الحالة وسير العمل، توقع موعد التسليم:\n\n${JSON.stringify(caseData, null, 2)}`;
+          const userPrompt = `استناداً لبيانات الحالة وفئة نوع العمل وسير العمل، توقع موعد التسليم بدقة. استخدم متوسط أيام التسليم للفئة (avg_delivery_days) كأساس، ثم عدّل بناءً على المرحلة الحالية والمتبقي من المراحل.\n\n${JSON.stringify(caseData, null, 2)}`;
 
           const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/api/ai-predict-delivery")({
                 {
                   role: "system",
                   content:
-                    "أنت خبير تخطيط إنتاج معامل أسنان. توقع موعد التسليم بدقة بناءً على سير العمل والمراحل المتبقية والأيام التقديرية لكل مرحلة. أعد JSON فقط عبر الأداة.",
+                    "أنت خبير تخطيط إنتاج معامل أسنان. توقع موعد التسليم بدقة بناءً على فئة نوع العمل (مثل زيركون/بورسلين/أكريل) ومتوسط أيام التسليم للفئة، إضافة لسير العمل والمراحل المتبقية. أعد JSON فقط عبر الأداة.",
                 },
                 { role: "user", content: userPrompt },
               ],
