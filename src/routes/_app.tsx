@@ -30,10 +30,10 @@ function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-screen w-full bg-background gradient-mesh">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-3 border-b bg-card/80 backdrop-blur px-4">
+        <div className="flex flex-1 flex-col min-w-0">
+          <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border/60 bg-card/75 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65 px-4 shadow-xs">
             <SidebarTrigger />
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="sm" onClick={() => setScanOpen(true)} title="مسح كود حالة">
@@ -44,7 +44,7 @@ function AppLayout() {
               <ThemeToggle />
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-6">
+          <main className="flex-1 p-4 md:p-6 animate-fade-in-up">
             <Outlet />
           </main>
           <QrScannerDialog open={scanOpen} onOpenChange={setScanOpen} />

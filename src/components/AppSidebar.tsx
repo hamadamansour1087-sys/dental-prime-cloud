@@ -88,15 +88,15 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side="right">
+    <Sidebar collapsible="icon" side="right" className="gradient-sidebar">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 p-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-display font-extrabold text-lg shadow-glow">
             H
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <p className="truncate font-semibold text-sidebar-foreground">H.A.M.D</p>
+              <p className="truncate font-display font-bold text-sidebar-foreground tracking-tight">H.A.M.D</p>
               <p className="truncate text-xs text-sidebar-foreground/60">
                 {profile?.full_name ?? "مستخدم"}
               </p>
