@@ -29,6 +29,8 @@ import {
   Briefcase,
   Calendar as CalendarIcon,
   Camera,
+  Check,
+  ChevronsUpDown,
   FileBox,
   ImageIcon,
   Keyboard,
