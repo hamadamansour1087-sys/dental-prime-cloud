@@ -91,7 +91,7 @@ function CaseDetailsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("case_items")
-        .select("*, work_types(name)")
+        .select("*, work_types(name, work_type_categories(name, avg_delivery_days))")
         .eq("case_id", caseId)
         .order("position");
       return data ?? [];
