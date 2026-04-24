@@ -4,11 +4,12 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ScanLine } from "lucide-react";
+import { ScanLine, Search } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
