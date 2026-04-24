@@ -1521,8 +1521,56 @@ export type Database = {
           },
         ]
       }
+      work_type_categories: {
+        Row: {
+          avg_delivery_days: number
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          lab_id: string
+          name: string
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          avg_delivery_days?: number
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id: string
+          name: string
+          order_index?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_delivery_days?: number
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id?: string
+          name?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_type_categories_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_types: {
         Row: {
+          category_id: string | null
           created_at: string
           default_price: number | null
           description: string | null
@@ -1533,6 +1581,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           default_price?: number | null
           description?: string | null
@@ -1543,6 +1592,7 @@ export type Database = {
           name: string
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           default_price?: number | null
           description?: string | null
@@ -1553,6 +1603,13 @@ export type Database = {
           name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "work_type_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "work_types_lab_id_fkey"
             columns: ["lab_id"]
