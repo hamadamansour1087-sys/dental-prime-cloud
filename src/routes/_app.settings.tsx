@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, ArrowLeft, Plus, Trash2, Pencil } from "lucide-react";
+import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { WorkTypeCategoriesTab } from "@/components/WorkTypeCategoriesTab";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -26,6 +28,7 @@ function SettingsPage() {
           <TabsTrigger value="lab"><Building2 className="ml-1 h-4 w-4" />بيانات المعمل</TabsTrigger>
           <TabsTrigger value="numbering"><Hash className="ml-1 h-4 w-4" />الترقيم والعملة</TabsTrigger>
           <TabsTrigger value="work-types"><Briefcase className="ml-1 h-4 w-4" />أنواع العمل</TabsTrigger>
+          <TabsTrigger value="work-type-categories"><Layers className="ml-1 h-4 w-4" />فئات أنواع العمل</TabsTrigger>
           <TabsTrigger value="expense-categories"><Tag className="ml-1 h-4 w-4" />فئات المصروفات</TabsTrigger>
           <TabsTrigger value="workflows"><Workflow className="ml-1 h-4 w-4" />سير العمل</TabsTrigger>
           <TabsTrigger value="users"><Shield className="ml-1 h-4 w-4" />المستخدمون والأدوار</TabsTrigger>
@@ -35,6 +38,7 @@ function SettingsPage() {
         <TabsContent value="lab"><LabInfoTab /></TabsContent>
         <TabsContent value="numbering"><NumberingTab /></TabsContent>
         <TabsContent value="work-types"><WorkTypesTab /></TabsContent>
+        <TabsContent value="work-type-categories"><WorkTypeCategoriesTab /></TabsContent>
         <TabsContent value="expense-categories"><ExpenseCategoriesTab /></TabsContent>
         <TabsContent value="workflows">
           <Card>
