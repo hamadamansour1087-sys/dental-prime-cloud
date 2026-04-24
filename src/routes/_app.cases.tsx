@@ -177,7 +177,11 @@ function CasesPage() {
   });
   const [dueAuto, setDueAuto] = useState(true); // true = auto-predicted
   const [items, setItems] = useState<CaseItemDraft[]>([newItem()]);
-  const [files, setFiles] = useState<PendingFile[]>([]);
+  const [files, setFiles] = useState<PendingFileMeta[]>([]);
+  // Hold the actual File blobs in a ref keyed by metadata id.
+  // Keeping File objects out of React state avoids expensive reconciliations
+  // when the user types in unrelated form fields (essential at 200+ cases/day).
+  const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const [activeTab, setActiveTab] = useState("basic");
   const cameraRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -187,6 +191,7 @@ function CasesPage() {
     setForm({ doctor_id: "", clinic_id: "", patient_name: "", due_date: "", notes: "" });
     setItems([newItem()]);
     files.forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl));
+    fileBlobsRef.current.clear();
     setFiles([]);
     setDueAuto(true);
     setActiveTab("basic");
