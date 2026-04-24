@@ -91,7 +91,7 @@ function CaseDetailsPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("case_items")
-        .select("*, work_types(name)")
+        .select("*, work_types(name, work_type_categories(name, avg_delivery_days))")
         .eq("case_id", caseId)
         .order("position");
       return data ?? [];
@@ -464,6 +464,14 @@ function CaseDetailsPage() {
             due_date: caseRow.due_date,
             current_stage: stage?.name,
             current_stage_entered_at: caseRow.stage_entered_at,
+            categories: Array.from(
+              new Map(
+                (items ?? [])
+                  .map((it: any) => it.work_types?.work_type_categories)
+                  .filter(Boolean)
+                  .map((c: any) => [c.name, c]),
+              ).values(),
+            ),
             workflow_stages: workflowStages?.map((s: any) => ({
               name: s.name,
               order: s.order_index,
