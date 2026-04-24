@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,9 +35,11 @@ interface CaseItemDraft {
   unit_price: string;
 }
 
-interface PendingFile {
+interface PendingFileMeta {
   id: string;
-  file: File;
+  name: string;
+  size: number;
+  type: string;
   kind: "photo" | "scan";
   previewUrl?: string;
 }
@@ -137,6 +139,45 @@ function DueDateField({
   );
 }
 
+/**
+ * Memoized file preview grid. Re-renders only when the files array reference
+ * changes (i.e., when files are added/removed) — not on every keystroke in
+ * the parent form. Critical for keeping the form responsive when handling
+ * many or large scan files.
+ */
+const FileGrid = memo(function FileGrid({
+  files,
+  onRemove,
+}: {
+  files: PendingFileMeta[];
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {files.map((f) => (
+        <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background">
+          {f.previewUrl ? (
+            <img src={f.previewUrl} alt={f.name} loading="lazy" decoding="async" className="h-24 w-full object-cover" />
+          ) : (
+            <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
+              <FileBox className="h-6 w-6 text-muted-foreground" />
+              <span className="line-clamp-1 text-[10px] text-muted-foreground" dir="ltr">{f.name}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-1 p-1.5">
+            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${f.kind === "scan" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-700"}`}>
+              {f.kind === "scan" ? "إسكان" : "صورة"}
+            </span>
+            <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+});
+
 function CasesPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
@@ -175,7 +216,11 @@ function CasesPage() {
   });
   const [dueAuto, setDueAuto] = useState(true); // true = auto-predicted
   const [items, setItems] = useState<CaseItemDraft[]>([newItem()]);
-  const [files, setFiles] = useState<PendingFile[]>([]);
+  const [files, setFiles] = useState<PendingFileMeta[]>([]);
+  // Hold the actual File blobs in a ref keyed by metadata id.
+  // Keeping File objects out of React state avoids expensive reconciliations
+  // when the user types in unrelated form fields (essential at 200+ cases/day).
+  const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const [activeTab, setActiveTab] = useState("basic");
   const cameraRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -185,6 +230,7 @@ function CasesPage() {
     setForm({ doctor_id: "", clinic_id: "", patient_name: "", due_date: "", notes: "" });
     setItems([newItem()]);
     files.forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl));
+    fileBlobsRef.current.clear();
     setFiles([]);
     setDueAuto(true);
     setActiveTab("basic");
@@ -261,29 +307,37 @@ function CasesPage() {
     if (price != null) updateItem(id, { unit_price: String(price) });
   };
 
-  const addFiles = (fileList: FileList | null, defaultKind: "photo" | "scan") => {
+  const addFiles = useCallback((fileList: FileList | null, defaultKind: "photo" | "scan") => {
     if (!fileList) return;
-    const additions: PendingFile[] = Array.from(fileList).map((file) => {
+    const additions: PendingFileMeta[] = Array.from(fileList).map((file) => {
       const isScan = SCAN_EXT.test(file.name);
       const isImg = file.type.startsWith("image/");
       const kind: "photo" | "scan" = isScan ? "scan" : isImg ? "photo" : defaultKind;
+      const id = crypto.randomUUID();
+      // Store the heavy File blob outside React state — only metadata flows
+      // through reconciliation. This keeps the form snappy when handling
+      // multi-MB scan files.
+      fileBlobsRef.current.set(id, file);
       return {
-        id: crypto.randomUUID(),
-        file,
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
         kind,
         previewUrl: isImg ? URL.createObjectURL(file) : undefined,
       };
     });
     setFiles((prev) => [...prev, ...additions]);
-  };
+  }, []);
 
-  const removeFile = (id: string) => {
+  const removeFile = useCallback((id: string) => {
     setFiles((prev) => {
       const f = prev.find((x) => x.id === id);
       if (f?.previewUrl) URL.revokeObjectURL(f.previewUrl);
+      fileBlobsRef.current.delete(id);
       return prev.filter((x) => x.id !== id);
     });
-  };
+  }, []);
 
   const submit = async () => {
     if (!labId || !form.doctor_id) return toast.error("اختر الطبيب");
@@ -377,27 +431,33 @@ function CasesPage() {
           });
         }
 
-        // Upload files
-        for (const pf of files) {
-          const safeName = pf.file.name.replace(/[^\w.\-]+/g, "_");
+        // Upload files in parallel (with concurrency cap) for fast saving.
+        const CONCURRENCY = 4;
+        const uploadOne = async (pf: PendingFileMeta) => {
+          const blob = fileBlobsRef.current.get(pf.id);
+          if (!blob) return;
+          const safeName = pf.name.replace(/[^\w.\-]+/g, "_");
           const path = `${labId}/${created.id}/${pf.kind}/${Date.now()}_${safeName}`;
-          const { error: upErr } = await supabase.storage.from("case-media").upload(path, pf.file, {
-            contentType: pf.file.type || undefined,
+          const { error: upErr } = await supabase.storage.from("case-media").upload(path, blob, {
+            contentType: pf.type || undefined,
             upsert: false,
           });
           if (upErr) {
-            toast.error(`فشل رفع ${pf.file.name}: ${upErr.message}`);
-            continue;
+            toast.error(`فشل رفع ${pf.name}: ${upErr.message}`);
+            return;
           }
           await supabase.from("case_attachments").insert({
             lab_id: labId,
             case_id: created.id,
             storage_path: path,
-            file_name: pf.file.name,
-            file_size: pf.file.size,
-            mime_type: pf.file.type || null,
+            file_name: pf.name,
+            file_size: pf.size,
+            mime_type: pf.type || null,
             kind: pf.kind,
           });
+        };
+        for (let i = 0; i < files.length; i += CONCURRENCY) {
+          await Promise.all(files.slice(i, i + CONCURRENCY).map(uploadOne));
         }
       }
 
@@ -830,28 +890,7 @@ function CasesPage() {
                   {files.length === 0 ? (
                     <p className="py-3 text-center text-xs text-muted-foreground">لم يتم إضافة ملفات بعد</p>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {files.map((f) => (
-                        <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background">
-                          {f.previewUrl ? (
-                            <img src={f.previewUrl} alt={f.file.name} className="h-24 w-full object-cover" />
-                          ) : (
-                            <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
-                              <FileBox className="h-6 w-6 text-muted-foreground" />
-                              <span className="line-clamp-1 text-[10px] text-muted-foreground" dir="ltr">{f.file.name}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between gap-1 p-1.5">
-                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${f.kind === "scan" ? "bg-blue-500/10 text-blue-700" : "bg-emerald-500/10 text-emerald-700"}`}>
-                              {f.kind === "scan" ? "إسكان" : "صورة"}
-                            </span>
-                            <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeFile(f.id)}>
-                              <Trash2 className="h-3 w-3 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <FileGrid files={files} onRemove={removeFile} />
                   )}
                 </div>
                 <div className="mt-3 flex justify-start">
