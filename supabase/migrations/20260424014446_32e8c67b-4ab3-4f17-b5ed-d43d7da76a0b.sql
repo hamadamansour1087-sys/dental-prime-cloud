@@ -1,0 +1,2 @@
+ALTER TABLE public.work_types ADD COLUMN IF NOT EXISTS flat_pricing boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.work_types.flat_pricing IS 'When true, total price equals unit_price regardless of units count (e.g. full denture, half denture, finishing).';

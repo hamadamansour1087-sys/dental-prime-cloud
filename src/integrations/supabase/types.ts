@@ -1526,6 +1526,7 @@ export type Database = {
           created_at: string
           default_price: number | null
           description: string | null
+          flat_pricing: boolean
           id: string
           is_active: boolean
           lab_id: string
@@ -1535,6 +1536,7 @@ export type Database = {
           created_at?: string
           default_price?: number | null
           description?: string | null
+          flat_pricing?: boolean
           id?: string
           is_active?: boolean
           lab_id: string
@@ -1544,6 +1546,7 @@ export type Database = {
           created_at?: string
           default_price?: number | null
           description?: string | null
+          flat_pricing?: boolean
           id?: string
           is_active?: boolean
           lab_id?: string
