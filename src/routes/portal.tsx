@@ -108,6 +108,18 @@ function PortalLayout() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+              title="بحث (Ctrl+K)"
+            >
+              <Search className="h-4 w-4" />
+              <kbd className="hidden md:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
+                ⌘K
+              </kbd>
+            </Button>
             <ThemeToggle />
             <Button
               variant="ghost"
