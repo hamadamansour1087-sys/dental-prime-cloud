@@ -268,29 +268,37 @@ function CasesPage() {
     if (price != null) updateItem(id, { unit_price: String(price) });
   };
 
-  const addFiles = (fileList: FileList | null, defaultKind: "photo" | "scan") => {
+  const addFiles = useCallback((fileList: FileList | null, defaultKind: "photo" | "scan") => {
     if (!fileList) return;
-    const additions: PendingFile[] = Array.from(fileList).map((file) => {
+    const additions: PendingFileMeta[] = Array.from(fileList).map((file) => {
       const isScan = SCAN_EXT.test(file.name);
       const isImg = file.type.startsWith("image/");
       const kind: "photo" | "scan" = isScan ? "scan" : isImg ? "photo" : defaultKind;
+      const id = crypto.randomUUID();
+      // Store the heavy File blob outside React state — only metadata flows
+      // through reconciliation. This keeps the form snappy when handling
+      // multi-MB scan files.
+      fileBlobsRef.current.set(id, file);
       return {
-        id: crypto.randomUUID(),
-        file,
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
         kind,
         previewUrl: isImg ? URL.createObjectURL(file) : undefined,
       };
     });
     setFiles((prev) => [...prev, ...additions]);
-  };
+  }, []);
 
-  const removeFile = (id: string) => {
+  const removeFile = useCallback((id: string) => {
     setFiles((prev) => {
       const f = prev.find((x) => x.id === id);
       if (f?.previewUrl) URL.revokeObjectURL(f.previewUrl);
+      fileBlobsRef.current.delete(id);
       return prev.filter((x) => x.id !== id);
     });
-  };
+  }, []);
 
   const submit = async () => {
     if (!labId || !form.doctor_id) return toast.error("اختر الطبيب");
