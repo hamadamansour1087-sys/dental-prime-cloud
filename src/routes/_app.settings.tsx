@@ -144,11 +144,16 @@ function WorkTypesTab() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ name: "", description: "", default_price: 0, flat_pricing: false });
+  const [form, setForm] = useState({ name: "", description: "", default_price: 0, flat_pricing: false, category_id: "" });
   const { data: items } = useQuery({
     queryKey: ["work_types", labId],
     enabled: !!labId,
-    queryFn: async () => (await supabase.from("work_types").select("*").order("name")).data ?? [],
+    queryFn: async () => (await supabase.from("work_types").select("*, work_type_categories(name, color)").order("name")).data ?? [],
+  });
+  const { data: cats } = useQuery({
+    queryKey: ["work_type_categories", labId],
+    enabled: !!labId,
+    queryFn: async () => (await supabase.from("work_type_categories").select("id, name, color").order("order_index")).data ?? [],
   });
   const save = useMutation({
     mutationFn: async () => {
