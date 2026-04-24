@@ -25,6 +25,8 @@ function PortalLayout() {
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/portal/login";
   const redirectingRef = useRef(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  useGlobalSearchHotkey(setSearchOpen);
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
