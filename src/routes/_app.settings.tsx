@@ -139,7 +139,7 @@ function WorkTypesTab() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ name: "", description: "", default_price: 0 });
+  const [form, setForm] = useState({ name: "", description: "", default_price: 0, flat_pricing: false });
   const { data: items } = useQuery({
     queryKey: ["work_types", labId],
     enabled: !!labId,
@@ -159,7 +159,7 @@ function WorkTypesTab() {
     },
     onSuccess: () => {
       toast.success("تم الحفظ"); qc.invalidateQueries({ queryKey: ["work_types"] });
-      setOpen(false); setEditing(null); setForm({ name: "", description: "", default_price: 0 });
+      setOpen(false); setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -172,7 +172,7 @@ function WorkTypesTab() {
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">أنواع العمل</CardTitle>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ name: "", description: "", default_price: 0 }); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false }); } }}>
           <DialogTrigger asChild><Button size="sm"><Plus className="ml-1 h-4 w-4" /> نوع جديد</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "تعديل نوع عمل" : "نوع عمل جديد"}</DialogTitle></DialogHeader>
@@ -180,6 +180,13 @@ function WorkTypesTab() {
               <div><Label>الاسم</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
               <div><Label>الوصف</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
               <div><Label>السعر الافتراضي</Label><Input type="number" value={form.default_price} onChange={(e) => setForm({ ...form, default_price: Number(e.target.value) })} /></div>
+              <div className="flex items-start justify-between gap-3 rounded-md border bg-muted/40 p-3">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">تسعير ثابت (لا يتأثر بعدد الوحدات)</Label>
+                  <p className="text-xs text-muted-foreground">مناسب للأطقم الكاملة، أنصاف الأطقم، وأعمال Finishing — السعر = السعر الافتراضي بغض النظر عن عدد الوحدات</p>
+                </div>
+                <Switch checked={form.flat_pricing} onCheckedChange={(v) => setForm({ ...form, flat_pricing: v })} />
+              </div>
             </div>
             <DialogFooter><Button onClick={() => save.mutate()} disabled={!form.name}>حفظ</Button></DialogFooter>
           </DialogContent>
@@ -187,15 +194,15 @@ function WorkTypesTab() {
       </CardHeader>
       <CardContent className="space-y-2">
         {items?.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">لا توجد أنواع عمل</p>}
-        {items?.map((it) => (
+        {items?.map((it: any) => (
           <div key={it.id} className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="font-medium">{it.name}</p>
+              <p className="font-medium">{it.name} {it.flat_pricing && <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">سعر ثابت</span>}</p>
               {it.description && <p className="text-xs text-muted-foreground">{it.description}</p>}
             </div>
             <div className="flex items-center gap-2">
               {it.default_price && <span className="text-sm font-mono">{Number(it.default_price).toFixed(2)}</span>}
-              <Button size="icon" variant="ghost" onClick={() => { setEditing(it); setForm({ name: it.name, description: it.description ?? "", default_price: Number(it.default_price ?? 0) }); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+              <Button size="icon" variant="ghost" onClick={() => { setEditing(it); setForm({ name: it.name, description: it.description ?? "", default_price: Number(it.default_price ?? 0), flat_pricing: !!it.flat_pricing }); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
               <Button size="icon" variant="ghost" onClick={() => { if (confirm("حذف نوع العمل؟")) del.mutate(it.id); }}><Trash2 className="h-4 w-4" /></Button>
             </div>
           </div>
