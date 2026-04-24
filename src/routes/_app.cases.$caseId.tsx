@@ -464,6 +464,14 @@ function CaseDetailsPage() {
             due_date: caseRow.due_date,
             current_stage: stage?.name,
             current_stage_entered_at: caseRow.stage_entered_at,
+            categories: Array.from(
+              new Map(
+                (items ?? [])
+                  .map((it: any) => it.work_types?.work_type_categories)
+                  .filter(Boolean)
+                  .map((c: any) => [c.name, c]),
+              ).values(),
+            ),
             workflow_stages: workflowStages?.map((s: any) => ({
               name: s.name,
               order: s.order_index,
