@@ -161,6 +161,7 @@ function PortalLayout() {
       <main className="mx-auto w-full max-w-6xl flex-1 p-4 md:p-6">
         <Outlet />
       </main>
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} variant="portal" />
     </div>
   );
 }
