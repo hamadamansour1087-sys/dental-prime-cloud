@@ -158,7 +158,13 @@ function WorkTypesTab() {
   const save = useMutation({
     mutationFn: async () => {
       if (!labId) throw new Error("No lab");
-      const payload = { ...form, default_price: form.default_price || null };
+      const payload = {
+        name: form.name,
+        description: form.description,
+        default_price: form.default_price || null,
+        flat_pricing: form.flat_pricing,
+        category_id: form.category_id || null,
+      };
       if (editing) {
         const { error } = await supabase.from("work_types").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -169,7 +175,7 @@ function WorkTypesTab() {
     },
     onSuccess: () => {
       toast.success("تم الحفظ"); qc.invalidateQueries({ queryKey: ["work_types"] });
-      setOpen(false); setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false });
+      setOpen(false); setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false, category_id: "" });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -182,12 +188,30 @@ function WorkTypesTab() {
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">أنواع العمل</CardTitle>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false }); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ name: "", description: "", default_price: 0, flat_pricing: false, category_id: "" }); } }}>
           <DialogTrigger asChild><Button size="sm"><Plus className="ml-1 h-4 w-4" /> نوع جديد</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "تعديل نوع عمل" : "نوع عمل جديد"}</DialogTitle></DialogHeader>
             <div className="grid gap-3">
               <div><Label>الاسم</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div>
+                <Label>الفئة</Label>
+                <Select value={form.category_id || "none"} onValueChange={(v) => setForm({ ...form, category_id: v === "none" ? "" : v })}>
+                  <SelectTrigger><SelectValue placeholder="اختر فئة" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">بدون فئة</SelectItem>
+                    {cats?.map((c: any) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-[10px] text-muted-foreground">الفئة تساعد في توقع موعد التسليم بدقة أعلى.</p>
+              </div>
               <div><Label>الوصف</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
               <div><Label>السعر الافتراضي</Label><Input type="number" value={form.default_price} onChange={(e) => setForm({ ...form, default_price: Number(e.target.value) })} /></div>
               <div className="flex items-start justify-between gap-3 rounded-md border bg-muted/40 p-3">
@@ -207,12 +231,20 @@ function WorkTypesTab() {
         {items?.map((it: any) => (
           <div key={it.id} className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="font-medium">{it.name} {it.flat_pricing && <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">سعر ثابت</span>}</p>
+              <p className="font-medium">
+                {it.name}
+                {it.work_type_categories?.name && (
+                  <span className="mr-2 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-white" style={{ backgroundColor: it.work_type_categories.color || "#6B7280" }}>
+                    {it.work_type_categories.name}
+                  </span>
+                )}
+                {it.flat_pricing && <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">سعر ثابت</span>}
+              </p>
               {it.description && <p className="text-xs text-muted-foreground">{it.description}</p>}
             </div>
             <div className="flex items-center gap-2">
               {it.default_price && <span className="text-sm font-mono">{Number(it.default_price).toFixed(2)}</span>}
-              <Button size="icon" variant="ghost" onClick={() => { setEditing(it); setForm({ name: it.name, description: it.description ?? "", default_price: Number(it.default_price ?? 0), flat_pricing: !!it.flat_pricing }); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+              <Button size="icon" variant="ghost" onClick={() => { setEditing(it); setForm({ name: it.name, description: it.description ?? "", default_price: Number(it.default_price ?? 0), flat_pricing: !!it.flat_pricing, category_id: it.category_id ?? "" }); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
               <Button size="icon" variant="ghost" onClick={() => { if (confirm("حذف نوع العمل؟")) del.mutate(it.id); }}><Trash2 className="h-4 w-4" /></Button>
             </div>
           </div>
