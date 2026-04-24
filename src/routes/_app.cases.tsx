@@ -35,9 +35,11 @@ interface CaseItemDraft {
   unit_price: string;
 }
 
-interface PendingFile {
+interface PendingFileMeta {
   id: string;
-  file: File;
+  name: string;
+  size: number;
+  type: string;
   kind: "photo" | "scan";
   previewUrl?: string;
 }
