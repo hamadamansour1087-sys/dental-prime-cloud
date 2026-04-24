@@ -14,7 +14,6 @@
  */
 import {
   type ChangeEvent,
-  type KeyboardEvent as ReactKeyboardEvent,
   memo,
   useCallback,
   useEffect,
@@ -30,7 +29,6 @@ import {
   Briefcase,
   Calendar as CalendarIcon,
   Camera,
-  CheckCircle2,
   ClipboardList,
   FileBox,
   ImageIcon,
@@ -43,7 +41,6 @@ import {
   Trash2,
   Upload,
   User,
-  X,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
