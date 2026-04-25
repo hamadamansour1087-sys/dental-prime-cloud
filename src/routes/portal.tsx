@@ -16,6 +16,7 @@ const items = [
   { to: "/portal/dashboard", label: "الرئيسية", icon: LayoutDashboard },
   { to: "/portal/new-case", label: "حالة جديدة", icon: FilePlus2 },
   { to: "/portal/cases", label: "حالاتي", icon: ClipboardList },
+  { to: "/portal/messages", label: "الرسائل", icon: MessageSquare },
   { to: "/portal/statement", label: "كشف الحساب", icon: Wallet },
 ] as const;
 
