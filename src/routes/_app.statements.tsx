@@ -55,11 +55,18 @@ function StatementsPage() {
     notes: "",
   });
 
+  const { data: lab } = useQuery({
+    queryKey: ["lab-info", labId],
+    enabled: !!labId,
+    queryFn: async () =>
+      (await supabase.from("labs").select("name, phone, address, logo_url, currency").eq("id", labId!).maybeSingle()).data,
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-statements", labId],
     enabled: !!labId,
     queryFn: async () =>
-      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone").eq("is_active", true).order("name")).data ?? [],
+      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone, clinic_name").eq("is_active", true).order("name")).data ?? [],
   });
   const doctor = doctors?.find((d) => d.id === doctorId);
 
