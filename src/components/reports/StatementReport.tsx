@@ -222,14 +222,14 @@ export function StatementReport({
           style={{
             background: "rgba(255,255,255,0.95)",
             color: BRAND_DARK,
-            padding: "8px 18px",
+            padding: "10px 22px",
             borderRadius: "6px",
             textAlign: "center",
-            minWidth: "140px",
+            minWidth: "150px",
           }}
         >
-          <div style={{ fontSize: "16px", fontWeight: 800, letterSpacing: "0.5px" }}>كشف حساب</div>
-          <div style={{ fontSize: "10px", marginTop: "2px", color: "#555" }}>Account Statement</div>
+          <div style={{ fontSize: "18px", fontWeight: 800 }}>كشف حساب</div>
+          <div style={{ fontSize: "10px", marginTop: "3px", color: "#666", letterSpacing: "0.3px" }}>Account Statement</div>
         </div>
       </div>
 
@@ -318,13 +318,9 @@ export function StatementReport({
             <td style={td}>{format(fromDate, "d/M/yyyy")}</td>
             <td style={tdC}>-/-</td>
             <td style={{ ...td, fontStyle: "italic", color: "#555" }}>
-              <div>رصيد مرحل من</div>
-              <div>الفترة السابقة</div>
+              رصيد مرحل من الفترة السابقة
             </td>
-            <td style={tdDiag}>
-              <div style={diagRow}><span style={diagCell}></span><span style={diagCell}></span><span style={diagWork}></span></div>
-              <div style={diagRow}><span style={diagCell}></span><span style={diagCell}></span><span style={diagWork}></span></div>
-            </td>
+            <td style={tdDiag}>—</td>
             <td style={tdNum}>{opening.toFixed(2)}</td>
             <td style={tdNum}>0.00</td>
           </tr>
@@ -342,16 +338,24 @@ export function StatementReport({
               <td style={tdC}>{it.row.patient}</td>
               <td style={td}>{it.row.notes}</td>
               <td style={tdDiag}>
-                <div style={diagRow}>
-                  <span style={diagCell}>{it.row.diagUpper.split(" ")[0] ?? ""}</span>
-                  <span style={diagCell}>{it.row.diagUpper.split(" ").slice(1).join(" ")}</span>
-                  <span style={diagWork}>{it.row.workType}</span>
-                </div>
-                <div style={diagRow}>
-                  <span style={diagCell}>{it.row.diagLower.split(" ")[0] ?? ""}</span>
-                  <span style={diagCell}>{it.row.diagLower.split(" ").slice(1).join(" ")}</span>
-                  <span style={diagWork}></span>
-                </div>
+                {it.row.workType && (
+                  <div style={{ fontWeight: 700, fontSize: "11px", color: BRAND_DARK, marginBottom: "3px" }}>
+                    {it.row.workType}
+                  </div>
+                )}
+                {it.row.diagUpper && (
+                  <div style={diagLine}>
+                    <span style={diagLabel}>علوي:</span>
+                    <span style={diagTeeth}>{it.row.diagUpper}</span>
+                  </div>
+                )}
+                {it.row.diagLower && (
+                  <div style={diagLine}>
+                    <span style={diagLabel}>سفلي:</span>
+                    <span style={diagTeeth}>{it.row.diagLower}</span>
+                  </div>
+                )}
+                {!it.row.workType && !it.row.diagUpper && !it.row.diagLower && "—"}
               </td>
               <td style={tdNum}>{it.row.caseValue ? it.row.caseValue.toFixed(2) : "—"}</td>
               <td style={{ ...tdNum, color: it.row.payment ? "#1d6b3a" : undefined, fontWeight: it.row.payment ? 700 : 400 }}>
@@ -464,34 +468,33 @@ const tdNum: React.CSSProperties = {
 
 const tdDiag: React.CSSProperties = {
   ...td,
-  padding: "4px",
-  textAlign: "center",
+  padding: "6px 8px",
+  textAlign: "right",
 };
 
-const diagRow: React.CSSProperties = {
+const diagLine: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-  gap: "0",
-  minHeight: "20px",
+  justifyContent: "flex-start",
+  gap: "6px",
+  fontSize: "11px",
+  marginTop: "2px",
 };
 
-const diagCell: React.CSSProperties = {
-  flex: "0 0 70px",
-  borderBottom: `1px solid ${BORDER}`,
-  padding: "2px 4px",
+const diagLabel: React.CSSProperties = {
+  fontSize: "10px",
+  color: "#666",
+  fontWeight: 600,
+  minWidth: "32px",
+};
+
+const diagTeeth: React.CSSProperties = {
   fontFamily: "monospace",
-  letterSpacing: "2px",
-  textAlign: "center",
-  margin: "0 2px",
-  minHeight: "16px",
-};
-
-const diagWork: React.CSSProperties = {
-  flex: 1,
-  padding: "2px 6px",
-  textAlign: "center",
-  fontSize: "10.5px",
+  fontSize: "11.5px",
+  fontWeight: 600,
+  color: "#222",
+  direction: "ltr",
+  textAlign: "left",
 };
 
 const summaryBox: React.CSSProperties = {
