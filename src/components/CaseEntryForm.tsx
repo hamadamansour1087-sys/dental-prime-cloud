@@ -376,7 +376,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     } catch {
       /* ignore */
     }
-  }, [fixedDoctorId]);
+  }, [fixedDoctorId, DRAFT_KEY]);
 
   // Save draft (debounced)
   useEffect(() => {
