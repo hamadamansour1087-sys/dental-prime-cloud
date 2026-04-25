@@ -20,15 +20,29 @@ const statusLabels: Record<string, { label: string; variant: "default" | "second
 function PortalCases() {
   const { user } = useAuth();
 
-  const { data: cases } = useQuery({
-    queryKey: ["portal-cases", user?.id],
+  const { data: doctor } = useQuery({
+    queryKey: ["portal-doctor-cases-id", user?.id],
     enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: cases } = useQuery({
+    queryKey: ["portal-cases", doctor?.id],
+    enabled: !!doctor?.id,
     queryFn: async () => {
       const { data } = await supabase
         .from("cases")
         .select(
           "id, case_number, status, date_received, due_date, price, shade, tooth_numbers, notes, work_types(name), workflow_stages!cases_current_stage_id_fkey(name, color)"
         )
+        .eq("doctor_id", doctor!.id)
         .order("created_at", { ascending: false });
       return data ?? [];
     },

@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalStatementRouteImport } from './routes/portal.statement'
 import { Route as PortalNewCaseRouteImport } from './routes/portal.new-case'
+import { Route as PortalMessagesRouteImport } from './routes/portal.messages'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
@@ -38,6 +39,7 @@ import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
+import { Route as AppMessagesRouteImport } from './routes/_app.messages'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
@@ -81,6 +83,11 @@ const PortalStatementRoute = PortalStatementRouteImport.update({
 const PortalNewCaseRoute = PortalNewCaseRouteImport.update({
   id: '/new-case',
   path: '/new-case',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalMessagesRoute = PortalMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalLoginRoute = PortalLoginRouteImport.update({
@@ -193,6 +200,11 @@ const AppPatientsRoute = AppPatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvoicesRoute = AppInvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
@@ -257,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
@@ -279,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -297,6 +311,7 @@ export interface FileRoutesByTo {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
@@ -319,6 +334,7 @@ export interface FileRoutesByTo {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -339,6 +355,7 @@ export interface FileRoutesById {
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/invoices': typeof AppInvoicesRoute
+  '/_app/messages': typeof AppMessagesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
   '/_app/pricing': typeof AppPricingRoute
@@ -361,6 +378,7 @@ export interface FileRoutesById {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -381,6 +399,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/messages'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
@@ -403,6 +422,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/cases/$caseId'
@@ -421,6 +441,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/messages'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
@@ -443,6 +464,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/cases/$caseId'
@@ -462,6 +484,7 @@ export interface FileRouteTypes {
     | '/_app/expenses'
     | '/_app/inventory'
     | '/_app/invoices'
+    | '/_app/messages'
     | '/_app/patients'
     | '/_app/pending-cases'
     | '/_app/pricing'
@@ -484,6 +507,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/_app/cases/$caseId'
@@ -554,6 +578,13 @@ declare module '@tanstack/react-router' {
       path: '/new-case'
       fullPath: '/portal/new-case'
       preLoaderRoute: typeof PortalNewCaseRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/messages': {
+      id: '/portal/messages'
+      path: '/messages'
+      fullPath: '/portal/messages'
+      preLoaderRoute: typeof PortalMessagesRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/login': {
@@ -710,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/messages': {
+      id: '/_app/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/invoices': {
       id: '/_app/invoices'
       path: '/invoices'
@@ -806,6 +844,7 @@ interface AppRouteChildren {
   AppExpensesRoute: typeof AppExpensesRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
+  AppMessagesRoute: typeof AppMessagesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
   AppPricingRoute: typeof AppPricingRoute
@@ -829,6 +868,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppExpensesRoute: AppExpensesRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
+  AppMessagesRoute: AppMessagesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
   AppPricingRoute: AppPricingRoute,
@@ -849,6 +889,7 @@ interface PortalRouteChildren {
   PortalCasesRoute: typeof PortalCasesRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalLoginRoute: typeof PortalLoginRoute
+  PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNewCaseRoute: typeof PortalNewCaseRoute
   PortalStatementRoute: typeof PortalStatementRoute
 }
@@ -857,6 +898,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalCasesRoute: PortalCasesRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalLoginRoute: PortalLoginRoute,
+  PortalMessagesRoute: PortalMessagesRoute,
   PortalNewCaseRoute: PortalNewCaseRoute,
   PortalStatementRoute: PortalStatementRoute,
 }
