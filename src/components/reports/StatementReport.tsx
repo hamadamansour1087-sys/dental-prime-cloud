@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { QuadrantsPrintView } from "@/components/QuadrantsPrintView";
 
 interface Lab {
   name: string;
