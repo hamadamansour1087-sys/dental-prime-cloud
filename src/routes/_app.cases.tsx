@@ -1000,7 +1000,11 @@ function CasesPage() {
                       {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
                     </TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
-                      {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                      {c.date_delivered
+                        ? format(new Date(c.date_delivered), "dd/MM/yyyy")
+                        : c.due_date
+                        ? format(new Date(c.due_date), "dd/MM/yyyy")
+                        : "—"}
                     </TableCell>
                   </TableRow>
                 );
