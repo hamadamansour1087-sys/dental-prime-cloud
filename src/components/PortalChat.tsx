@@ -158,7 +158,7 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
 
   return (
     <div className={`flex flex-col h-full min-h-[400px] ${className ?? ""}`} dir="rtl">
-      <ScrollArea className="flex-1 rounded-md border bg-muted/20" viewportRef={scrollRef as any}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-md border bg-muted/20">
         <div className="space-y-2 p-3">
           {messages.length === 0 && (
             <p className="py-12 text-center text-sm text-muted-foreground">
