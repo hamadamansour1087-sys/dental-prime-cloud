@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_app/doctors")({
   component: DoctorsPage,
 });
 
-type ClinicInput = { name: string; address: string; phone: string };
+
 
 function DoctorsPage() {
   const { labId } = useAuth();
