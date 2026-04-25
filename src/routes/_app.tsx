@@ -1,22 +1,22 @@
-import { createFileRoute, Outlet, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Navigate, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ScanLine, Search } from "lucide-react";
+import { ScanLine, Search, LogOut } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
+import { TopNav } from "@/components/TopNav";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
 function AppLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut, profile } = useAuth();
+  const navigate = useNavigate();
   const [scanOpen, setScanOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
@@ -31,43 +31,67 @@ function AppLayout() {
 
   if (!user) return <Navigate to="/login" />;
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
+
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background gradient-mesh">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col min-w-0">
-          <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border/60 bg-card/75 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65 px-4 shadow-xs">
-            <SidebarTrigger />
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSearchOpen(true)}
-                className="gap-2 text-muted-foreground hover:text-foreground"
-                title="بحث عام (Ctrl+K)"
-              >
-                <Search className="h-4 w-4" />
-                <span className="hidden sm:inline">بحث...</span>
-                <kbd className="hidden md:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  ⌘K
-                </kbd>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setScanOpen(true)} title="مسح كود حالة">
-                <ScanLine className="h-4 w-4" />
-                <span className="hidden sm:inline">مسح QR</span>
-              </Button>
-              <NotificationsBell />
-              <ThemeToggle />
+    <div className="flex min-h-screen w-full flex-col bg-background gradient-mesh">
+      <header className="sticky top-0 z-20 border-b border-border/60 bg-card/75 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65 shadow-xs">
+        <div className="flex h-14 items-center gap-3 px-4">
+          {/* Brand */}
+          <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-display font-extrabold text-base shadow-glow">
+              H
             </div>
-          </header>
-          <main className="flex-1 p-4 md:p-6 animate-fade-in-up">
-            <Outlet />
-          </main>
-          <QrScannerDialog open={scanOpen} onOpenChange={setScanOpen} />
-          <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} variant="admin" />
-          <AIAssistant />
+            <div className="hidden sm:block leading-tight">
+              <p className="font-display font-bold text-foreground tracking-tight text-sm">H.A.M.D</p>
+              <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+                {profile?.full_name ?? "مستخدم"}
+              </p>
+            </div>
+          </Link>
+
+          {/* Primary nav */}
+          <div className="flex-1 min-w-0 flex items-center justify-center">
+            <TopNav />
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+              title="بحث عام (Ctrl+K)"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden lg:inline">بحث...</span>
+              <kbd className="hidden xl:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                ⌘K
+              </kbd>
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setScanOpen(true)} title="مسح كود حالة">
+              <ScanLine className="h-4 w-4" />
+            </Button>
+            <NotificationsBell />
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="تسجيل الخروج">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </header>
+
+      <main className="flex-1 p-4 md:p-6 animate-fade-in-up">
+        <Outlet />
+      </main>
+
+      <QrScannerDialog open={scanOpen} onOpenChange={setScanOpen} />
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} variant="admin" />
+      <AIAssistant />
+    </div>
   );
 }
