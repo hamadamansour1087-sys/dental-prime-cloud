@@ -1088,19 +1088,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                           className="h-10 bg-muted/50 font-mono text-center font-bold"
                         />
                       </div>
-                      {mode === "admin" && (
-                        <div>
-                          <Label className="mb-1 block text-[11px] font-semibold">سعر الوحدة</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={it.unit_price}
-                            onChange={(e) => updateItem(it.id, { unit_price: e.target.value })}
-                            className="h-10 font-mono"
-                          />
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
