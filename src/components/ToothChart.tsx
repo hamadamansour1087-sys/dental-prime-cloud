@@ -67,6 +67,27 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
 
   const rows = system === "FDI" ? FDI : system === "Universal" ? UNIV : QUAD;
 
+  const setSelection = (keys: (string | number)[]) => {
+    const arr = keys.map(String);
+    arr.sort((a, b) => {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    });
+    onChange(arr.join(", "));
+  };
+
+  const selectAllUpper = () => setSelection([...rows.upperRight, ...rows.upperLeft]);
+  const selectAllLower = () => setSelection([...rows.lowerRight, ...rows.lowerLeft]);
+  const selectAll = () =>
+    setSelection([
+      ...rows.upperRight,
+      ...rows.upperLeft,
+      ...rows.lowerRight,
+      ...rows.lowerLeft,
+    ]);
+
   const Tooth = ({ value: v }: { value: string | number }) => {
     const key = String(v);
     const isOn = selected.has(key);
@@ -77,7 +98,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
         type="button"
         onClick={() => toggle(key)}
         className={cn(
-          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs",
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded border text-[9px] font-semibold transition-colors sm:h-9 sm:w-9 sm:rounded-md sm:border sm:text-xs",
           isOn
             ? "border-primary bg-primary text-primary-foreground"
             : "border-border bg-card hover:bg-accent",
@@ -115,12 +136,43 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
         </div>
       </div>
 
+      {/* Quick-select buttons */}
+      <div className="flex flex-wrap gap-1" dir="rtl">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={selectAllUpper}
+          className="h-7 px-2 text-xs"
+        >
+          فك علوي كامل
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={selectAllLower}
+          className="h-7 px-2 text-xs"
+        >
+          فك سفلي كامل
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={selectAll}
+          className="h-7 px-2 text-xs"
+        >
+          كل الأسنان
+        </Button>
+      </div>
+
       {/* Upper jaw */}
       <div className="space-y-1">
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Upper</p>
-        <div className="flex justify-center gap-0.5 sm:gap-1">
+        <div className="flex justify-center gap-px sm:gap-1">
           {rows.upperRight.map((n) => <Tooth key={String(n)} value={n} />)}
-          <div className="mx-0.5 w-px bg-border sm:mx-1" />
+          <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.upperLeft.map((n) => <Tooth key={String(n)} value={n} />)}
         </div>
       </div>
@@ -129,9 +181,9 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
 
       {/* Lower jaw */}
       <div className="space-y-1">
-        <div className="flex justify-center gap-0.5 sm:gap-1">
+        <div className="flex justify-center gap-px sm:gap-1">
           {rows.lowerRight.map((n) => <Tooth key={String(n)} value={n} />)}
-          <div className="mx-0.5 w-px bg-border sm:mx-1" />
+          <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.lowerLeft.map((n) => <Tooth key={String(n)} value={n} />)}
         </div>
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Lower</p>
