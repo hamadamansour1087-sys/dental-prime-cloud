@@ -34,10 +34,8 @@ function PortalDashboard() {
         supabase.from("payments").select("amount").eq("doctor_id", doctor!.id),
       ]);
       const list = cases.data ?? [];
-      // الحالات المُحتسبة على الطبيب: كل ما تم قبوله (مش معلق ومش ملغي)
-      const billable = list.filter(
-        (c: any) => c.status !== "pending_approval" && c.status !== "cancelled",
-      );
+      // الحالات المُحتسبة على الطبيب: الحالات المسلّمة فقط
+      const billable = list.filter((c: any) => c.status === "delivered");
       const totalCharges = billable.reduce((s, c: any) => s + (Number(c.price) || 0), 0);
       const totalPaid = (payments.data ?? []).reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
       const opening = Number(doctor?.opening_balance ?? 0);
