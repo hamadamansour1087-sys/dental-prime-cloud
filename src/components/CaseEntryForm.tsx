@@ -390,7 +390,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
     }, 800);
     return () => window.clearTimeout(timer);
-  }, [form, items]);
+  }, [form, items, DRAFT_KEY]);
 
   // ---------- predicted due date ----------
   const baseLeadDays = (stages ?? []).reduce((s: number, st: { estimated_days: number | null }) => s + (Number(st.estimated_days) || 0), 0) || 5;
