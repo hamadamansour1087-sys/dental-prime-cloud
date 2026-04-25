@@ -8,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil } from "lucide-react";
+import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WorkTypeCategoriesTab } from "@/components/WorkTypeCategoriesTab";
+import { AddDoctorDialog } from "@/components/AddDoctorDialog";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -33,6 +34,7 @@ function SettingsPage() {
           <TabsTrigger value="workflows"><Workflow className="ml-1 h-4 w-4" />سير العمل</TabsTrigger>
           <TabsTrigger value="users"><Shield className="ml-1 h-4 w-4" />المستخدمون والأدوار</TabsTrigger>
           <TabsTrigger value="appearance"><Palette className="ml-1 h-4 w-4" />المظهر</TabsTrigger>
+          <TabsTrigger value="add-doctor"><UserPlus className="ml-1 h-4 w-4" />إضافة طبيب</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lab"><LabInfoTab /></TabsContent>
@@ -63,6 +65,22 @@ function SettingsPage() {
             <CardHeader><CardTitle className="text-base">المظهر</CardTitle></CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">يمكنك التبديل بين التصميم الفاتح والداكن من زر القمر/الشمس في الأعلى.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="add-doctor">
+          <Card>
+            <CardHeader><CardTitle className="text-base">إضافة طبيب جديد</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">أضف طبيباً جديداً مع بياناته وعياداته. يمكنك إدارة الأطباء (تعديل/تعطيل/حذف) من <Link to="/doctors" className="text-primary underline">صفحة الأطباء</Link>.</p>
+              <AddDoctorDialog
+                trigger={
+                  <Button>
+                    <UserPlus className="ml-1 h-4 w-4" />
+                    فتح نموذج إضافة طبيب
+                  </Button>
+                }
+              />
             </CardContent>
           </Card>
         </TabsContent>
