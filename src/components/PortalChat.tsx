@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Paperclip, Send, Loader2, FileText, Image as ImageIcon, X } from "lucide-react";
+import { Paperclip, Send, Loader2, FileText, Image as ImageIcon, X, Check, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { playNotificationSound } from "@/lib/notificationSound";
 
@@ -106,6 +106,16 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
           qc.invalidateQueries({ queryKey });
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "portal_messages", filter },
+        (payload) => {
+          const msg = payload.new as PortalMessage;
+          if (msg.lab_id !== labId || msg.doctor_id !== doctorId) return;
+          if ((caseId ?? null) !== (msg.case_id ?? null)) return;
+          qc.invalidateQueries({ queryKey });
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -178,9 +188,18 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
                   {m.attachment_path && (
                     <AttachmentPreview path={m.attachment_path} name={m.attachment_name ?? "ملف"} mime={m.attachment_mime} />
                   )}
-                  <p className={`mt-1 text-[10px] ${mine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    {new Date(m.created_at).toLocaleString("ar-EG", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
-                  </p>
+                  <div className={`mt-1 flex items-center gap-1 text-[10px] ${mine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    <span>
+                      {new Date(m.created_at).toLocaleString("ar-EG", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+                    </span>
+                    {mine && (
+                      (viewer === "lab" ? m.read_by_doctor : m.read_by_lab) ? (
+                        <CheckCheck className="h-3 w-3 text-sky-300" aria-label="تمت القراءة" />
+                      ) : (
+                        <Check className="h-3 w-3 opacity-70" aria-label="تم الإرسال" />
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             );
