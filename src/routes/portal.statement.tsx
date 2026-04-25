@@ -30,10 +30,10 @@ function PortalStatement() {
     queryFn: async () => {
       const { data } = await supabase
         .from("cases")
-        .select("id, case_number, date_received, price, status")
+        .select("id, case_number, date_received, date_delivered, price, status")
         .eq("doctor_id", doctor!.id)
-        .in("status", ["active", "on_hold", "delivered"])
-        .order("date_received", { ascending: true });
+        .eq("status", "delivered")
+        .order("date_delivered", { ascending: true });
       return data ?? [];
     },
   });
@@ -56,7 +56,12 @@ function PortalStatement() {
     rows.push({ date: "—", desc: "رصيد افتتاحي", debit: Number(doctor.opening_balance), credit: 0 });
   }
   (cases ?? []).forEach((c: any) => {
-    rows.push({ date: c.date_received, desc: `حالة ${c.case_number}`, debit: Number(c.price ?? 0), credit: 0 });
+    rows.push({
+      date: c.date_delivered ? String(c.date_delivered).slice(0, 10) : c.date_received,
+      desc: `حالة ${c.case_number}`,
+      debit: Number(c.price ?? 0),
+      credit: 0,
+    });
   });
   (payments ?? []).forEach((p: any) => {
     rows.push({
