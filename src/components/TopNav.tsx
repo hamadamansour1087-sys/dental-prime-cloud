@@ -38,6 +38,7 @@ const primary: NavItem[] = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الحالات", url: "/cases", icon: ClipboardList },
   { title: "طلبات الأطباء", url: "/pending-cases", icon: ClipboardList },
+  { title: "التقارير", url: "/reports", icon: BarChart3 },
   { title: "الرسائل", url: "/messages", icon: MessageSquare },
 ];
 
