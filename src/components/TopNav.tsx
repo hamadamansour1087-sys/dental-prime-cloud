@@ -16,6 +16,8 @@ import {
   Package,
   ShoppingCart,
   Settings,
+  Users,
+  Database,
   ChevronDown,
   Menu,
   X,
@@ -72,6 +74,8 @@ const groups: NavGroup[] = [
     label: "النظام",
     icon: Settings,
     items: [
+      { title: "المستخدمون", url: "/users", icon: Users, adminOnly: true },
+      { title: "النسخ الاحتياطي", url: "/backup", icon: Database, adminOnly: true },
       { title: "الإعدادات", url: "/settings", icon: Settings, adminOnly: true },
     ],
   },

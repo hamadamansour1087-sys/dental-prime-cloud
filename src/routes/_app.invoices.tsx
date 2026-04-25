@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ToothChartMini } from "@/components/ToothChartMini";
 import { InvoiceReport } from "@/components/reports/InvoiceReport";
 import { renderReportToPdf } from "@/lib/reportRenderer";
+import { printReactElement } from "@/lib/print";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({
@@ -105,7 +106,27 @@ function InvoicesPage() {
           >
             <FileDown className="ml-1 h-4 w-4" /> PDF احترافي
           </Button>
-          <Button onClick={() => window.print()} disabled={!doctorId}>
+          <Button
+            disabled={!doctorId || !lab}
+            onClick={async () => {
+              if (!lab || !doctor) return;
+              try {
+                await printReactElement(
+                  <InvoiceReport
+                    lab={lab}
+                    doctor={doctor}
+                    cases={cases ?? []}
+                    periodLabel={`${months[month - 1]} ${year}`}
+                    invoiceNo={`INV-${year}-${String(month).padStart(2, "0")}-${doctor.name?.slice(0, 3).toUpperCase() ?? "DOC"}`}
+                  />,
+                  `فاتورة ${doctor.name} - ${months[month - 1]} ${year}`,
+                );
+              } catch (e) {
+                const msg = e instanceof Error ? e.message : "فشل الطباعة";
+                toast.error(msg);
+              }
+            }}
+          >
             <Printer className="ml-1 h-4 w-4" /> طباعة
           </Button>
         </div>

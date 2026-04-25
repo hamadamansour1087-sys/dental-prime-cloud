@@ -17,6 +17,7 @@ import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { exportElementToPdf } from "@/lib/pdf";
+import { printElement } from "@/lib/print";
 
 export const Route = createFileRoute("/_app/statements")({
   component: StatementsPage,
@@ -34,45 +35,7 @@ interface Row {
   paymentId?: string;
 }
 
-function openPrintWindow(element: HTMLElement, title: string) {
-  const printWindow = window.open("", "_blank", "width=1100,height=900");
-  if (!printWindow) {
-    toast.error("تعذر فتح نافذة الطباعة. تأكد من السماح بالنوافذ المنبثقة.");
-    return;
-  }
-
-  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-    .map((node) => node.outerHTML)
-    .join("\n");
-
-  printWindow.document.open();
-  printWindow.document.write(`<!doctype html>
-<html lang="ar" dir="rtl">
-  <head>
-    <meta charset="utf-8" />
-    <title>${title}</title>
-    ${styles}
-    <style>
-      @page { size: A4; margin: 10mm; }
-      body { margin: 0; padding: 0; background: white; }
-      .print-shell { padding: 0; }
-    </style>
-  </head>
-  <body>
-    <div class="print-shell">${element.outerHTML}</div>
-    <script>
-      window.onload = () => {
-        setTimeout(() => {
-          window.focus();
-          window.print();
-          window.close();
-        }, 250);
-      };
-    </script>
-  </body>
-</html>`);
-  printWindow.document.close();
-}
+// Print helper now lives in src/lib/print.ts (printElement)
 
 function StatementsPage() {
   const { labId, hasRole } = useAuth();
@@ -320,7 +283,7 @@ function StatementsPage() {
                 toast.error("تعذر العثور على كشف الحساب");
                 return;
               }
-              openPrintWindow(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
+              printElement(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
             }}
           >
             <Printer className="ml-1 h-4 w-4" /> طباعة

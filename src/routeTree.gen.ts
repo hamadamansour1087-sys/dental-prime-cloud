@@ -19,6 +19,7 @@ import { Route as PortalNewCaseRouteImport } from './routes/portal.new-case'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
 import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-insights'
@@ -43,6 +44,7 @@ import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
+import { Route as AppBackupRouteImport } from './routes/_app.backup'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
@@ -94,6 +96,11 @@ const PortalCasesRoute = PortalCasesRouteImport.update({
   id: '/cases',
   path: '/cases',
   getParentRoute: () => PortalRoute,
+} as any)
+const ApiManageUserRoute = ApiManageUserRouteImport.update({
+  id: '/api/manage-user',
+  path: '/api/manage-user',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCreateDoctorAccountRoute = ApiCreateDoctorAccountRouteImport.update({
   id: '/api/create-doctor-account',
@@ -215,6 +222,11 @@ const AppCasesRoute = AppCasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBackupRoute = AppBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCasesNewRoute = AppCasesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -231,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -255,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/manage-user': typeof ApiManageUserRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -268,6 +282,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -292,6 +307,7 @@ export interface FileRoutesByTo {
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/manage-user': typeof ApiManageUserRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -307,6 +323,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/cash-accounts': typeof AppCashAccountsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -331,6 +348,7 @@ export interface FileRoutesById {
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/manage-user': typeof ApiManageUserRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -346,6 +364,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/backup'
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
@@ -370,6 +389,7 @@ export interface FileRouteTypes {
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
+    | '/api/manage-user'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -383,6 +403,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/backup'
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
@@ -407,6 +428,7 @@ export interface FileRouteTypes {
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
+    | '/api/manage-user'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -421,6 +443,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/_app/backup'
     | '/_app/cases'
     | '/_app/cash-accounts'
     | '/_app/dashboard'
@@ -445,6 +468,7 @@ export interface FileRouteTypes {
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
+    | '/api/manage-user'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -465,6 +489,7 @@ export interface RootRouteChildren {
   ApiAiDailyInsightsRoute: typeof ApiAiDailyInsightsRoute
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
+  ApiManageUserRoute: typeof ApiManageUserRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -538,6 +563,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/cases'
       preLoaderRoute: typeof PortalCasesRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/api/manage-user': {
+      id: '/api/manage-user'
+      path: '/api/manage-user'
+      fullPath: '/api/manage-user'
+      preLoaderRoute: typeof ApiManageUserRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/create-doctor-account': {
       id: '/api/create-doctor-account'
@@ -707,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCasesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/backup': {
+      id: '/_app/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof AppBackupRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cases/new': {
       id: '/_app/cases/new'
       path: '/new'
@@ -739,6 +778,7 @@ const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppBackupRoute: typeof AppBackupRoute
   AppCasesRoute: typeof AppCasesRouteWithChildren
   AppCashAccountsRoute: typeof AppCashAccountsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -761,6 +801,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBackupRoute: AppBackupRoute,
   AppCasesRoute: AppCasesRouteWithChildren,
   AppCashAccountsRoute: AppCashAccountsRoute,
   AppDashboardRoute: AppDashboardRoute,
@@ -814,6 +855,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiDailyInsightsRoute: ApiAiDailyInsightsRoute,
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
+  ApiManageUserRoute: ApiManageUserRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
