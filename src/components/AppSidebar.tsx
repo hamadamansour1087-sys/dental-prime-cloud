@@ -45,6 +45,7 @@ const groups: NavGroup[] = [
       { title: "طلبات الأطباء", url: "/pending-cases", icon: ClipboardList },
       { title: "الفنيون", url: "/technicians", icon: HardHat },
       { title: "تقرير الإنتاج", url: "/technician-reports", icon: BarChart3 },
+      { title: "التقارير والتحليلات", url: "/reports", icon: BarChart3 },
     ],
   },
   {
