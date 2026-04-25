@@ -186,7 +186,7 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
 
       {file && (
         <div className="mt-2 flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs">
