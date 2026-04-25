@@ -166,6 +166,13 @@ export function PortalNotificationsBell({ variant }: Props) {
       );
       channel.on(
         "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "portal_messages", filter: `doctor_id=eq.${doctorId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["portal-notifications"] });
+        }
+      );
+      channel.on(
+        "postgres_changes",
         { event: "UPDATE", schema: "public", table: "cases", filter: `doctor_id=eq.${doctorId}` },
         () => {
           qc.invalidateQueries({ queryKey: ["portal-cases"] });
