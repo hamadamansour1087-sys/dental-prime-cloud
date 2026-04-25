@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { exportElementToPdf } from "@/lib/pdf";
 import { printElement } from "@/lib/print";
+import { ReceiptVoucherDialog } from "@/components/ReceiptVoucherDialog";
+import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/_app/statements")({
   component: StatementsPage,
@@ -211,6 +213,14 @@ function StatementsPage() {
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <h1 className="text-2xl font-bold">كشف حساب الطبيب</h1>
         <div className="flex gap-2">
+          <ReceiptVoucherDialog
+            defaultDoctorId={doctorId || undefined}
+            trigger={
+              <Button variant="default">
+                <Receipt className="ml-1 h-4 w-4" /> سند قبض
+              </Button>
+            }
+          />
           <Dialog open={payOpen} onOpenChange={setPayOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" disabled={!doctorId}>
