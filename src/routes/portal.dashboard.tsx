@@ -12,13 +12,26 @@ export const Route = createFileRoute("/portal/dashboard")({
 function PortalDashboard() {
   const { user } = useAuth();
 
-  const { data } = useQuery({
-    queryKey: ["portal-stats", user?.id],
+  const { data: doctor } = useQuery({
+    queryKey: ["portal-doctor-stats-id", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      const { data } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data } = useQuery({
+    queryKey: ["portal-stats", doctor?.id],
+    enabled: !!doctor?.id,
+    queryFn: async () => {
       const [cases, payments] = await Promise.all([
-        supabase.from("cases").select("id, status, price"),
-        supabase.from("payments").select("amount"),
+        supabase.from("cases").select("id, status, price").eq("doctor_id", doctor!.id),
+        supabase.from("payments").select("amount").eq("doctor_id", doctor!.id),
       ]);
       const list = cases.data ?? [];
       const totalCharges = list.reduce((s, c: any) => s + (Number(c.price) || 0), 0);
