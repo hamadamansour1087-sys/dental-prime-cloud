@@ -951,6 +951,76 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_messages: {
+        Row: {
+          attachment_mime: string | null
+          attachment_name: string | null
+          attachment_path: string | null
+          body: string | null
+          case_id: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          lab_id: string
+          read_by_doctor: boolean
+          read_by_lab: boolean
+          sender_type: string
+          sender_user_id: string | null
+        }
+        Insert: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          body?: string | null
+          case_id?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          lab_id: string
+          read_by_doctor?: boolean
+          read_by_lab?: boolean
+          sender_type: string
+          sender_user_id?: string | null
+        }
+        Update: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          body?: string | null
+          case_id?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          lab_id?: string
+          read_by_doctor?: boolean
+          read_by_lab?: boolean
+          sender_type?: string
+          sender_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_messages_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_messages_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_messages_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_lists: {
         Row: {
           created_at: string
