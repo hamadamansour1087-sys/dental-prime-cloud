@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil } from "lucide-react";
+import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
