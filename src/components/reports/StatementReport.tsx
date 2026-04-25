@@ -468,8 +468,8 @@ const tdNum: React.CSSProperties = {
 
 const tdDiag: React.CSSProperties = {
   ...td,
-  padding: "4px",
-  textAlign: "center",
+  padding: "6px 8px",
+  textAlign: "right",
 };
 
 const diagLine: React.CSSProperties = {
