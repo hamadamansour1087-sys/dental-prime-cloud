@@ -222,14 +222,14 @@ export function StatementReport({
           style={{
             background: "rgba(255,255,255,0.95)",
             color: BRAND_DARK,
-            padding: "8px 18px",
+            padding: "10px 22px",
             borderRadius: "6px",
             textAlign: "center",
-            minWidth: "140px",
+            minWidth: "150px",
           }}
         >
-          <div style={{ fontSize: "16px", fontWeight: 800, letterSpacing: "0.5px" }}>كشف حساب</div>
-          <div style={{ fontSize: "10px", marginTop: "2px", color: "#555" }}>Account Statement</div>
+          <div style={{ fontSize: "18px", fontWeight: 800 }}>كشف حساب</div>
+          <div style={{ fontSize: "10px", marginTop: "3px", color: "#666", letterSpacing: "0.3px" }}>Account Statement</div>
         </div>
       </div>
 
