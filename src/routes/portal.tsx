@@ -122,6 +122,7 @@ function PortalLayout() {
                 ⌘K
               </kbd>
             </Button>
+            <PortalNotificationsBell variant="doctor" />
             <ThemeToggle />
             <Button
               variant="ghost"
