@@ -35,6 +35,7 @@ import { Route as AppTechnicianReportsRouteImport } from './routes/_app.technici
 import { Route as AppSuppliersRouteImport } from './routes/_app.suppliers'
 import { Route as AppStatementsRouteImport } from './routes/_app.statements'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppReportsRouteImport } from './routes/_app.reports'
 import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
@@ -180,6 +181,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPurchasesRoute = AppPurchasesRouteImport.update({
   id: '/purchases',
   path: '/purchases',
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
+  '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
   '/suppliers': typeof AppSuppliersRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
+  '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
   '/statements': typeof AppStatementsRoute
   '/suppliers': typeof AppSuppliersRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/_app/pending-cases': typeof AppPendingCasesRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/purchases': typeof AppPurchasesRoute
+  '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/statements': typeof AppStatementsRoute
   '/_app/suppliers': typeof AppSuppliersRoute
@@ -404,6 +413,7 @@ export interface FileRouteTypes {
     | '/pending-cases'
     | '/pricing'
     | '/purchases'
+    | '/reports'
     | '/settings'
     | '/statements'
     | '/suppliers'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/pending-cases'
     | '/pricing'
     | '/purchases'
+    | '/reports'
     | '/settings'
     | '/statements'
     | '/suppliers'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/_app/pending-cases'
     | '/_app/pricing'
     | '/_app/purchases'
+    | '/_app/reports'
     | '/_app/settings'
     | '/_app/statements'
     | '/_app/suppliers'
@@ -713,6 +725,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/purchases': {
       id: '/_app/purchases'
       path: '/purchases'
@@ -849,6 +868,7 @@ interface AppRouteChildren {
   AppPendingCasesRoute: typeof AppPendingCasesRoute
   AppPricingRoute: typeof AppPricingRoute
   AppPurchasesRoute: typeof AppPurchasesRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStatementsRoute: typeof AppStatementsRoute
   AppSuppliersRoute: typeof AppSuppliersRoute
@@ -873,6 +893,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPendingCasesRoute: AppPendingCasesRoute,
   AppPricingRoute: AppPricingRoute,
   AppPurchasesRoute: AppPurchasesRoute,
+  AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStatementsRoute: AppStatementsRoute,
   AppSuppliersRoute: AppSuppliersRoute,
