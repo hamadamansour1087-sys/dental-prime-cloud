@@ -318,13 +318,9 @@ export function StatementReport({
             <td style={td}>{format(fromDate, "d/M/yyyy")}</td>
             <td style={tdC}>-/-</td>
             <td style={{ ...td, fontStyle: "italic", color: "#555" }}>
-              <div>رصيد مرحل من</div>
-              <div>الفترة السابقة</div>
+              رصيد مرحل من الفترة السابقة
             </td>
-            <td style={tdDiag}>
-              <div style={diagRow}><span style={diagCell}></span><span style={diagCell}></span><span style={diagWork}></span></div>
-              <div style={diagRow}><span style={diagCell}></span><span style={diagCell}></span><span style={diagWork}></span></div>
-            </td>
+            <td style={tdDiag}>—</td>
             <td style={tdNum}>{opening.toFixed(2)}</td>
             <td style={tdNum}>0.00</td>
           </tr>
@@ -342,16 +338,24 @@ export function StatementReport({
               <td style={tdC}>{it.row.patient}</td>
               <td style={td}>{it.row.notes}</td>
               <td style={tdDiag}>
-                <div style={diagRow}>
-                  <span style={diagCell}>{it.row.diagUpper.split(" ")[0] ?? ""}</span>
-                  <span style={diagCell}>{it.row.diagUpper.split(" ").slice(1).join(" ")}</span>
-                  <span style={diagWork}>{it.row.workType}</span>
-                </div>
-                <div style={diagRow}>
-                  <span style={diagCell}>{it.row.diagLower.split(" ")[0] ?? ""}</span>
-                  <span style={diagCell}>{it.row.diagLower.split(" ").slice(1).join(" ")}</span>
-                  <span style={diagWork}></span>
-                </div>
+                {it.row.workType && (
+                  <div style={{ fontWeight: 700, fontSize: "11px", color: BRAND_DARK, marginBottom: "3px" }}>
+                    {it.row.workType}
+                  </div>
+                )}
+                {it.row.diagUpper && (
+                  <div style={diagLine}>
+                    <span style={diagLabel}>علوي:</span>
+                    <span style={diagTeeth}>{it.row.diagUpper}</span>
+                  </div>
+                )}
+                {it.row.diagLower && (
+                  <div style={diagLine}>
+                    <span style={diagLabel}>سفلي:</span>
+                    <span style={diagTeeth}>{it.row.diagLower}</span>
+                  </div>
+                )}
+                {!it.row.workType && !it.row.diagUpper && !it.row.diagLower && "—"}
               </td>
               <td style={tdNum}>{it.row.caseValue ? it.row.caseValue.toFixed(2) : "—"}</td>
               <td style={{ ...tdNum, color: it.row.payment ? "#1d6b3a" : undefined, fontWeight: it.row.payment ? 700 : 400 }}>
