@@ -989,12 +989,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                   <div className="text-[10px] text-muted-foreground">ملفات</div>
                 </div>
               </div>
-              {grandTotal > 0 && mode === "admin" && (
-                <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-2">
-                  <span className="text-xs font-semibold">الإجمالي</span>
-                  <span className="font-mono text-base font-bold text-primary">{grandTotal.toFixed(2)}</span>
-                </div>
-              )}
             </div>
 
             {/* Keyboard hints (desktop only) */}
