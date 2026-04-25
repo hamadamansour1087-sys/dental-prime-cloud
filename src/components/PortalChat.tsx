@@ -194,9 +194,9 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
                     </span>
                     {mine && (
                       (viewer === "lab" ? m.read_by_doctor : m.read_by_lab) ? (
-                        <CheckCheck className="h-3 w-3 text-sky-300" aria-label="تمت القراءة" />
+                        <CheckCheck className="h-3 w-3 opacity-100" aria-label="تمت القراءة" />
                       ) : (
-                        <Check className="h-3 w-3 opacity-70" aria-label="تم الإرسال" />
+                        <Check className="h-3 w-3 opacity-60" aria-label="تم الإرسال" />
                       )
                     )}
                   </div>
