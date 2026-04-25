@@ -85,6 +85,15 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="backup">
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Database className="h-4 w-4 text-primary" />النسخ الاحتياطي والتصدير</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">صدّر نسخة كاملة من بيانات معملك (JSON) أو جدولًا واحدًا (Excel/CSV) لحفظها في مكان آمن.</p>
+              <Button asChild><Link to="/backup"><ArrowLeft className="ml-1 h-4 w-4" />فتح صفحة النسخ الاحتياطي</Link></Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
