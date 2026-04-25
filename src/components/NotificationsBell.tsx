@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, AlertTriangle, Clock, CalendarClock } from "lucide-react";
+import { Bell, AlertTriangle, Clock, CalendarClock, CheckCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +13,58 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+const STORAGE_KEY_PREFIX = "notif_read:";
+
+function loadRead(labId: string | null): Set<string> {
+  if (!labId || typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_PREFIX + labId);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw) as string[];
+    return new Set(arr);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveRead(labId: string | null, ids: Set<string>) {
+  if (!labId || typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      STORAGE_KEY_PREFIX + labId,
+      JSON.stringify(Array.from(ids)),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
 export function NotificationsBell() {
   const { labId } = useAuth();
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadIds(loadRead(labId));
+  }, [labId]);
+
+  const markRead = (id: string) => {
+    setReadIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      saveRead(labId, next);
+      return next;
+    });
+  };
+
+  const markAllRead = (ids: string[]) => {
+    setReadIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.add(id));
+      saveRead(labId, next);
+      return next;
+    });
+  };
 
   const { data } = useQuery({
     queryKey: ["notifications", labId],
@@ -48,9 +99,23 @@ export function NotificationsBell() {
     },
   });
 
-  const overdueCount = data?.overdue.length ?? 0;
-  const soonCount = data?.dueSoon.length ?? 0;
+  const overdue = useMemo(
+    () => (data?.overdue ?? []).filter((c) => !readIds.has(c.id)),
+    [data, readIds],
+  );
+  const dueSoon = useMemo(
+    () => (data?.dueSoon ?? []).filter((c) => !readIds.has(c.id)),
+    [data, readIds],
+  );
+
+  const overdueCount = overdue.length;
+  const soonCount = dueSoon.length;
   const total = overdueCount + soonCount;
+
+  const allVisibleIds = useMemo(
+    () => [...overdue.map((c) => c.id), ...dueSoon.map((c) => c.id)],
+    [overdue, dueSoon],
+  );
 
   return (
     <Popover>
@@ -65,11 +130,25 @@ export function NotificationsBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0" dir="rtl">
-        <div className="border-b p-3">
-          <h3 className="text-sm font-semibold">الإشعارات الذكية</h3>
-          <p className="text-xs text-muted-foreground">
-            تنبيهات فورية بشأن الحالات
-          </p>
+        <div className="flex items-start justify-between border-b p-3">
+          <div>
+            <h3 className="text-sm font-semibold">الإشعارات الذكية</h3>
+            <p className="text-xs text-muted-foreground">
+              تنبيهات فورية بشأن الحالات
+            </p>
+          </div>
+          {total > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 px-2 text-xs"
+              onClick={() => markAllRead(allVisibleIds)}
+              title="تعليم الكل كمقروء"
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              قراءة الكل
+            </Button>
+          )}
         </div>
         <ScrollArea className="max-h-96">
           <div className="p-2">
@@ -96,7 +175,7 @@ export function NotificationsBell() {
                     {overdueCount}
                   </Badge>
                 </div>
-                {data?.overdue.map((c) => (
+                {overdue.map((c) => (
                   <NotifItem
                     key={c.id}
                     caseId={c.id}
@@ -104,6 +183,7 @@ export function NotificationsBell() {
                     doctorName={(c.doctors as { name?: string } | null)?.name}
                     dueDate={c.due_date}
                     variant="overdue"
+                    onRead={() => markRead(c.id)}
                   />
                 ))}
               </div>
@@ -120,7 +200,7 @@ export function NotificationsBell() {
                     {soonCount}
                   </Badge>
                 </div>
-                {data?.dueSoon.map((c) => (
+                {dueSoon.map((c) => (
                   <NotifItem
                     key={c.id}
                     caseId={c.id}
@@ -128,6 +208,7 @@ export function NotificationsBell() {
                     doctorName={(c.doctors as { name?: string } | null)?.name}
                     dueDate={c.due_date}
                     variant="soon"
+                    onRead={() => markRead(c.id)}
                   />
                 ))}
               </div>
@@ -150,33 +231,51 @@ function NotifItem({
   doctorName,
   dueDate,
   variant,
+  onRead,
 }: {
   caseId: string;
   caseNumber: string;
   doctorName?: string;
   dueDate: string | null;
   variant: "overdue" | "soon";
+  onRead: () => void;
 }) {
   return (
-    <Link
-      to="/cases/$caseId"
-      params={{ caseId }}
-      className="flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-smooth hover:bg-accent"
-    >
-      <Clock
-        className={`h-3.5 w-3.5 shrink-0 ${variant === "overdue" ? "text-destructive" : "text-warning"}`}
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{caseNumber}</p>
-        {doctorName && (
-          <p className="truncate text-xs text-muted-foreground">{doctorName}</p>
+    <div className="group flex items-center gap-1">
+      <Link
+        to="/cases/$caseId"
+        params={{ caseId }}
+        onClick={onRead}
+        className="flex flex-1 items-center gap-2 rounded-md px-2 py-2 text-sm transition-smooth hover:bg-accent"
+      >
+        <Clock
+          className={`h-3.5 w-3.5 shrink-0 ${variant === "overdue" ? "text-destructive" : "text-warning"}`}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{caseNumber}</p>
+          {doctorName && (
+            <p className="truncate text-xs text-muted-foreground">{doctorName}</p>
+          )}
+        </div>
+        {dueDate && (
+          <span className="shrink-0 text-[10px] text-muted-foreground">
+            {dueDate}
+          </span>
         )}
-      </div>
-      {dueDate && (
-        <span className="shrink-0 text-[10px] text-muted-foreground">
-          {dueDate}
-        </span>
-      )}
-    </Link>
+      </Link>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 w-7 shrink-0 p-0 opacity-60 hover:opacity-100"
+        title="تعليم كمقروء"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onRead();
+        }}
+      >
+        <CheckCheck className="h-3.5 w-3.5" />
+      </Button>
+    </div>
   );
 }
