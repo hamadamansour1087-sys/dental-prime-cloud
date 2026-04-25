@@ -32,17 +32,6 @@ function DoctorsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    governorate: "",
-    address: "",
-    notes: "",
-    opening_balance: "0",
-  });
-  const [clinics, setClinics] = useState<ClinicInput[]>([{ name: "", address: "", phone: "" }]);
 
   const { data: doctors } = useQuery({
     queryKey: ["doctors", labId, search, showInactive],
