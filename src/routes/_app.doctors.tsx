@@ -51,20 +51,42 @@ function DoctorsPage() {
   const [clinics, setClinics] = useState<ClinicInput[]>([{ name: "", address: "", phone: "" }]);
 
   const { data: doctors } = useQuery({
-    queryKey: ["doctors", labId, search],
+    queryKey: ["doctors", labId, search, showInactive],
     enabled: !!labId,
     queryFn: async () => {
       let q = supabase
         .from("doctors")
         .select("*, doctor_clinics(id, name, address, phone)")
-        .eq("is_active", true)
         .order("created_at", { ascending: false });
+      if (!showInactive) q = q.eq("is_active", true);
       if (search) q = q.ilike("name", `%${search}%`);
       const { data, error } = await q;
       if (error) throw error;
       return data;
     },
   });
+
+  const toggleActive = async (id: string, current: boolean) => {
+    const { error } = await supabase.from("doctors").update({ is_active: !current }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(current ? "تم تعطيل الطبيب" : "تم تفعيل الطبيب");
+    qc.invalidateQueries({ queryKey: ["doctors"] });
+  };
+
+  const deleteDoctor = async (id: string) => {
+    const { count } = await supabase
+      .from("cases")
+      .select("id", { count: "exact", head: true })
+      .eq("doctor_id", id);
+    if (count && count > 0) {
+      toast.error(`لا يمكن الحذف - يوجد ${count} حالة مرتبطة. يمكنك تعطيل الطبيب بدلاً من ذلك.`);
+      return;
+    }
+    const { error } = await supabase.from("doctors").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("تم حذف الطبيب");
+    qc.invalidateQueries({ queryKey: ["doctors"] });
+  };
 
   const reset = () => {
     setForm({ name: "", phone: "", email: "", governorate: "", address: "", notes: "", opening_balance: "0" });
