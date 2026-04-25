@@ -34,6 +34,12 @@ function AppLayout() {
 
   if (!user) return <Navigate to="/login" />;
 
+  // Doctors (portal users) don't have a lab profile — redirect them to the portal
+  // to prevent session leakage between the portal and the main lab app.
+  if (!profile || !labId) {
+    return <Navigate to="/portal/dashboard" />;
+  }
+
   const performLogout = async () => {
     await signOut();
     navigate({ to: "/login" });
