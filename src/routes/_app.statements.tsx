@@ -72,7 +72,7 @@ function StatementsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("id, date_received, price, status")
+        .select("id, case_number, date_received, price, status, notes, tooth_numbers, patients(name), work_types(name)")
         .eq("doctor_id", doctorId)
         .gte("date_received", fromStr)
         .lte("date_received", toStr)
