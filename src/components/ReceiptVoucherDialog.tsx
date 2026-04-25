@@ -202,29 +202,69 @@ export function ReceiptVoucherDialog({
 
   const handleExcel = () => {
     if (!preview) return;
-    const rows = preview.lines.map((l, i) => ({
-      "م": i + 1,
-      "اسم الطبيب": l.doctorName,
-      "المحافظة": l.governorate ?? "",
-      "طريقة الدفع":
-        l.method === "cash" ? "نقدي" : l.method === "transfer" ? "تحويل" : l.method === "cheque" ? "شيك" : l.method,
-      "المرجع": l.reference ?? "",
-      "المبلغ": Number(l.amount.toFixed(2)),
-      "ملاحظات": l.notes ?? "",
-    }));
-    const total = preview.lines.reduce((s, l) => s + l.amount, 0);
-    rows.push({
-      "م": "" as any,
-      "اسم الطبيب": "الإجمالي",
-      "المحافظة": "",
-      "طريقة الدفع": "",
-      "المرجع": "",
-      "المبلغ": Number(total.toFixed(2)),
-      "ملاحظات": "",
+    const currency = preview.lab?.currency || "EGP";
+    const labName = preview.lab?.name || "المعمل";
+    const dateFmt = (() => {
+      try { return format(new Date(preview.voucherDate), "dd/MM/yyyy"); } catch { return preview.voucherDate; }
+    })();
+
+    // Build AOA (array of arrays) for full control over header & layout
+    const aoa: any[][] = [];
+    aoa.push([labName]);
+    if (preview.lab?.phone) aoa.push([`هاتف: ${preview.lab.phone}`]);
+    if (preview.lab?.address) aoa.push([preview.lab.address]);
+    aoa.push([]);
+    aoa.push(["سند قبض"]);
+    aoa.push(["رقم السند", preview.voucherNumber, "", "التاريخ", dateFmt]);
+    if (preview.cashAccountName) aoa.push(["الخزنة المستلمة", preview.cashAccountName]);
+    aoa.push([]);
+    // table header
+    const headers = ["م", "اسم الطبيب", "المحافظة", "طريقة الدفع", "المرجع", `المبلغ (${currency})`, "ملاحظات"];
+    aoa.push(headers);
+    const dataStartRow = aoa.length; // 1-based for next push
+    preview.lines.forEach((l, i) => {
+      aoa.push([
+        i + 1,
+        l.doctorName,
+        l.governorate ?? "",
+        l.method === "cash" ? "نقدي" : l.method === "transfer" ? "تحويل" : l.method === "cheque" ? "شيك" : l.method === "card" ? "بطاقة" : l.method,
+        l.reference ?? "",
+        Number(l.amount.toFixed(2)),
+        l.notes ?? "",
+      ]);
     });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [{ wch: 4 }, { wch: 24 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 24 }];
+    const total = preview.lines.reduce((s, l) => s + l.amount, 0);
+    aoa.push(["", "الإجمالي", "", "", "", Number(total.toFixed(2)), ""]);
+    if (preview.notes) {
+      aoa.push([]);
+      aoa.push(["ملاحظات", preview.notes]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    // RTL sheet view
+    (ws as any)["!views"] = [{ RTL: true }];
+    // Column widths
+    ws["!cols"] = [
+      { wch: 5 }, { wch: 26 }, { wch: 14 }, { wch: 14 },
+      { wch: 20 }, { wch: 14 }, { wch: 28 },
+    ];
+    // Merge title rows across columns
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, // lab name
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 6 } }, // سند قبض
+    ];
+    // Format amount column as number with 2 decimals
+    const amountCol = 5;
+    for (let r = dataStartRow; r < aoa.length; r++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c: amountCol });
+      if (ws[cellRef] && typeof ws[cellRef].v === "number") {
+        ws[cellRef].z = "#,##0.00";
+      }
+    }
+
     const wb = XLSX.utils.book_new();
+    if (!wb.Workbook) wb.Workbook = {};
+    wb.Workbook.Views = [{ RTL: true }];
     XLSX.utils.book_append_sheet(wb, ws, "سند قبض");
     XLSX.writeFile(wb, `receipt-${preview.voucherNumber}.xlsx`);
   };
