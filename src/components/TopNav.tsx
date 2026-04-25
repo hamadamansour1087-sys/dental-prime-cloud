@@ -72,6 +72,8 @@ const groups: NavGroup[] = [
     label: "النظام",
     icon: Settings,
     items: [
+      { title: "المستخدمون", url: "/users", icon: Stethoscope, adminOnly: true },
+      { title: "النسخ الاحتياطي", url: "/backup", icon: DollarSign, adminOnly: true },
       { title: "الإعدادات", url: "/settings", icon: Settings, adminOnly: true },
     ],
   },
