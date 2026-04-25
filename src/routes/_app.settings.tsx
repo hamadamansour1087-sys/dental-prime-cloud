@@ -68,6 +68,22 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="add-doctor">
+          <Card>
+            <CardHeader><CardTitle className="text-base">إضافة طبيب جديد</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">أضف طبيباً جديداً مع بياناته وعياداته. يمكنك إدارة الأطباء (تعديل/تعطيل/حذف) من <Link to="/doctors" className="text-primary underline">صفحة الأطباء</Link>.</p>
+              <AddDoctorDialog
+                trigger={
+                  <Button>
+                    <UserPlus className="ml-1 h-4 w-4" />
+                    فتح نموذج إضافة طبيب
+                  </Button>
+                }
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
