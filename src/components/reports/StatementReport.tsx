@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { QuadrantsPrintView } from "@/components/QuadrantsPrintView";
 
 interface Lab {
   name: string;
@@ -41,31 +42,14 @@ interface Row {
   code: string;
   patient: string;
   notes: string;
-  diagUpper: string;
-  diagLower: string;
+  teeth: string;
   workType: string;
   caseValue: number;
   payment: number;
 }
 
-function splitTeeth(t?: string | null): { upper: string; lower: string } {
-  if (!t) return { upper: "", lower: "" };
-  const tokens = t.split(/[,\s]+/).filter(Boolean);
-  const upper: string[] = [];
-  const lower: string[] = [];
-  for (const tok of tokens) {
-    const m = tok.match(/^(\d{2})$/);
-    if (m) {
-      const q = parseInt(tok[0], 10);
-      if (q === 1 || q === 2) upper.push(tok);
-      else if (q === 3 || q === 4) lower.push(tok);
-      else upper.push(tok);
-    } else {
-      upper.push(tok);
-    }
-  }
-  return { upper: upper.join(" "), lower: lower.join(" ") };
-}
+// (quadrant rendering handled by QuadrantsPrintView)
+
 
 // Brand palette
 const BRAND = "#8a7a5c"; // warm bronze
@@ -97,7 +81,6 @@ export function StatementReport({
   const items: Item[] = [];
 
   cases.forEach((c) => {
-    const teeth = splitTeeth(c.tooth_numbers);
     items.push({
       sortKey: `${c.date_received}-1-${c.case_number}`,
       row: {
@@ -105,8 +88,7 @@ export function StatementReport({
         code: c.case_number,
         patient: c.patient_name ? `د/ ${c.patient_name}` : "-/-",
         notes: c.notes ?? "-",
-        diagUpper: teeth.upper,
-        diagLower: teeth.lower,
+        teeth: c.tooth_numbers ?? "",
         workType: c.work_type_name ?? "—",
         caseValue: Number(c.price ?? 0),
         payment: 0,
@@ -122,8 +104,7 @@ export function StatementReport({
         code: "",
         patient: "-/-",
         notes: p.reference ? `دفعات بإيصال رقم ${p.reference}` : p.notes || "دفعة",
-        diagUpper: "",
-        diagLower: "",
+        teeth: "",
         workType: "",
         caseValue: 0,
         payment: Number(p.amount ?? 0),
@@ -339,23 +320,15 @@ export function StatementReport({
               <td style={td}>{it.row.notes}</td>
               <td style={tdDiag}>
                 {it.row.workType && (
-                  <div style={{ fontWeight: 700, fontSize: "11px", color: BRAND_DARK, marginBottom: "3px" }}>
+                  <div style={{ fontWeight: 700, fontSize: "11px", color: BRAND_DARK, marginBottom: "4px", textAlign: "center" }}>
                     {it.row.workType}
                   </div>
                 )}
-                {it.row.diagUpper && (
-                  <div style={diagLine}>
-                    <span style={diagLabel}>علوي:</span>
-                    <span style={diagTeeth}>{it.row.diagUpper}</span>
-                  </div>
+                {it.row.teeth ? (
+                  <QuadrantsPrintView selected={it.row.teeth} size="sm" />
+                ) : (
+                  !it.row.workType && "—"
                 )}
-                {it.row.diagLower && (
-                  <div style={diagLine}>
-                    <span style={diagLabel}>سفلي:</span>
-                    <span style={diagTeeth}>{it.row.diagLower}</span>
-                  </div>
-                )}
-                {!it.row.workType && !it.row.diagUpper && !it.row.diagLower && "—"}
               </td>
               <td style={tdNum}>{it.row.caseValue ? it.row.caseValue.toFixed(2) : "—"}</td>
               <td style={{ ...tdNum, color: it.row.payment ? "#1d6b3a" : undefined, fontWeight: it.row.payment ? 700 : 400 }}>
