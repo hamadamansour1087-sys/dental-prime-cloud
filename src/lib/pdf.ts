@@ -45,13 +45,42 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     }
   }
 
-  // Open in a new tab so the browser's PDF viewer shows it (download works from there).
-  // Using save() inside an iframe preview is often silently blocked.
   const blob = pdf.output("blob");
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+
+  // On mobile: try Web Share API first (works on iOS/Android), then fall back to direct download.
+  if (isMobile) {
+    try {
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const nav = navigator as Navigator & {
+        canShare?: (data: { files: File[] }) => boolean;
+        share?: (data: { files: File[]; title?: string }) => Promise<void>;
+      };
+      if (nav.canShare && nav.share && nav.canShare({ files: [file] })) {
+        await nav.share({ files: [file], title: fileName });
+        return;
+      }
+    } catch {
+      /* fall through to download */
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return;
+  }
+
+  // Desktop: open in new tab so the browser's PDF viewer shows it.
   const url = URL.createObjectURL(blob);
   const win = window.open(url, "_blank");
   if (!win) {
-    // Popup blocked — fall back to direct download
     const a = document.createElement("a");
     a.href = url;
     a.download = fileName;
