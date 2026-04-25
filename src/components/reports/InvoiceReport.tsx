@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { InvoiceToothDiagram } from "@/components/InvoiceToothDiagram";
+import { QuadrantsPrintView } from "@/components/QuadrantsPrintView";
 
 interface Lab {
   name: string;
@@ -152,7 +152,7 @@ export function InvoiceReport({
               <td style={{ ...td, textAlign: "center", width: "150px" }}>
                 {c.tooth_numbers ? (
                   <div style={{ display: "inline-flex", justifyContent: "center" }}>
-                    <InvoiceToothDiagram selected={c.tooth_numbers} size={140} />
+                    <QuadrantsPrintView selected={c.tooth_numbers} />
                   </div>
                 ) : "—"}
               </td>

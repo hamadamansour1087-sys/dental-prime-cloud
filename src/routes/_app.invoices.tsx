@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Printer, FileDown } from "lucide-react";
 import { format } from "date-fns";
-import { ToothChartMini } from "@/components/ToothChartMini";
+import { QuadrantsView } from "@/components/QuadrantsView";
 import { InvoiceReport } from "@/components/reports/InvoiceReport";
 import { renderReportToPdf } from "@/lib/reportRenderer";
 import { printReactElement } from "@/lib/print";
@@ -214,7 +214,7 @@ function InvoicesPage() {
                       <td className="p-2">{(c as any).work_types?.name ?? "—"}</td>
                       <td className="p-2">{c.shade ?? "—"}</td>
                       <td className="p-2">{c.units ?? 1}</td>
-                      <td className="p-2 text-center"><div className="flex justify-center"><ToothChartMini selected={c.tooth_numbers} /></div></td>
+                      <td className="p-2 text-center"><div className="flex justify-center"><QuadrantsView selected={c.tooth_numbers} compact /></div></td>
                       <td className="p-2 text-left font-mono">{Number(c.price ?? 0).toFixed(2)}</td>
                     </tr>
                   ))}

@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { ToothChartMini } from "@/components/ToothChartMini";
+import { QuadrantsView } from "@/components/QuadrantsView";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { CaseAIAnalysis } from "@/components/CaseAIAnalysis";
@@ -517,7 +517,7 @@ function CaseDetailsPage() {
                       ) : "—"}
                     </TableCell>
                     <TableCell>
-                      {it.tooth_numbers ? <ToothChartMini selected={it.tooth_numbers} /> : <span className="text-xs text-muted-foreground">—</span>}
+                      {it.tooth_numbers ? <QuadrantsView selected={it.tooth_numbers} compact /> : <span className="text-xs text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="text-center font-mono">{it.units}</TableCell>
                     <TableCell className="text-left font-mono">{it.unit_price != null ? Number(it.unit_price).toFixed(2) : "—"}</TableCell>

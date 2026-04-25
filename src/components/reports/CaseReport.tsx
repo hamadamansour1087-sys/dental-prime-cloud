@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ToothChartMini } from "@/components/ToothChartMini";
+import { QuadrantsPrintView } from "@/components/QuadrantsPrintView";
 
 interface Lab {
   name: string;
@@ -111,7 +111,7 @@ export function CaseReport({
                   <td style={{ ...td, fontWeight: 600 }}>{it.work_types?.name ?? "—"}</td>
                   <td style={td}>{it.shade ?? "—"}</td>
                   <td style={{ ...td, textAlign: "center" }}>
-                    {it.tooth_numbers ? <ToothChartMini selected={it.tooth_numbers} /> : "—"}
+                    {it.tooth_numbers ? <QuadrantsPrintView selected={it.tooth_numbers} size="sm" /> : "—"}
                   </td>
                   <td style={{ ...td, textAlign: "center" }}>{it.units}</td>
                   <td style={{ ...td, textAlign: "left", fontFamily: "monospace" }}>{it.unit_price != null ? Number(it.unit_price).toFixed(2) : "—"}</td>
