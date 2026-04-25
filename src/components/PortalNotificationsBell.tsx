@@ -145,6 +145,13 @@ export function PortalNotificationsBell({ variant }: Props) {
           }
         }
       );
+      channel.on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "portal_messages", filter: `lab_id=eq.${effectiveLabId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["portal-notifications"] });
+        }
+      );
     } else {
       channel.on(
         "postgres_changes",
@@ -155,6 +162,13 @@ export function PortalNotificationsBell({ variant }: Props) {
             playNotificationSound({ freq: 660 });
             qc.invalidateQueries({ queryKey: ["portal-notifications"] });
           }
+        }
+      );
+      channel.on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "portal_messages", filter: `doctor_id=eq.${doctorId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["portal-notifications"] });
         }
       );
       channel.on(
