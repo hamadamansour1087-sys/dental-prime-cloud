@@ -37,6 +37,7 @@ function DoctorsPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
