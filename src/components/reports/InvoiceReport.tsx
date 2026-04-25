@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ToothChartMini } from "@/components/ToothChartMini";
+import { InvoiceToothDiagram } from "@/components/InvoiceToothDiagram";
 
 interface Lab {
   name: string;
@@ -149,10 +149,10 @@ export function InvoiceReport({
               <td style={td}>{c.work_types?.name ?? "—"}</td>
               <td style={td}>{c.shade ?? "—"}</td>
               <td style={{ ...td, textAlign: "center" }}>{c.units ?? 1}</td>
-              <td style={{ ...td, textAlign: "center" }}>
+              <td style={{ ...td, textAlign: "center", width: "150px" }}>
                 {c.tooth_numbers ? (
                   <div style={{ display: "inline-flex", justifyContent: "center" }}>
-                    <ToothChartMini selected={c.tooth_numbers} />
+                    <InvoiceToothDiagram selected={c.tooth_numbers} size={140} />
                   </div>
                 ) : "—"}
               </td>
