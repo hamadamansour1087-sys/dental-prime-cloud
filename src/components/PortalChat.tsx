@@ -78,6 +78,7 @@ export function PortalChat({ labId, doctorId, caseId, viewer, currentUserId, cla
     const patch = viewer === "lab" ? { read_by_lab: true } : { read_by_doctor: true };
     supabase.from("portal_messages").update(patch).in("id", ids).then(() => {
       qc.invalidateQueries({ queryKey: ["portal-unread"] });
+      qc.invalidateQueries({ queryKey: ["portal-notifications"] });
     });
   }, [messages, viewer, qc]);
 
