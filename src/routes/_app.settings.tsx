@@ -107,9 +107,16 @@ function LabInfoTab() {
     enabled: !!labId,
     queryFn: async () => (await supabase.from("labs").select("*").eq("id", labId!).single()).data,
   });
-  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", logo_url: "" });
+  const [uploading, setUploading] = useState(false);
   useEffect(() => {
-    if (lab) setForm({ name: lab.name, phone: lab.phone ?? "", email: lab.email ?? "", address: lab.address ?? "" });
+    if (lab) setForm({
+      name: lab.name,
+      phone: lab.phone ?? "",
+      email: lab.email ?? "",
+      address: lab.address ?? "",
+      logo_url: lab.logo_url ?? "",
+    });
   }, [lab]);
   const save = async () => {
     if (!labId) return;
@@ -117,11 +124,73 @@ function LabInfoTab() {
     if (error) return toast.error(error.message);
     toast.success("تم الحفظ");
     qc.invalidateQueries({ queryKey: ["lab"] });
+    qc.invalidateQueries({ queryKey: ["lab-info"] });
+  };
+  const handleLogoUpload = async (file: File) => {
+    if (!labId) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error("حجم الصورة يجب أن يكون أقل من 2 ميجا");
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${labId}/logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("lab-logos").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("lab-logos").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: updErr } = await supabase.from("labs").update({ logo_url: url }).eq("id", labId);
+      if (updErr) throw updErr;
+      setForm((f) => ({ ...f, logo_url: url }));
+      qc.invalidateQueries({ queryKey: ["lab"] });
+      qc.invalidateQueries({ queryKey: ["lab-info"] });
+      toast.success("تم رفع الشعار");
+    } catch (e: any) {
+      toast.error(e?.message ?? "فشل رفع الشعار");
+    } finally {
+      setUploading(false);
+    }
+  };
+  const removeLogo = async () => {
+    if (!labId) return;
+    const { error } = await supabase.from("labs").update({ logo_url: null }).eq("id", labId);
+    if (error) return toast.error(error.message);
+    setForm((f) => ({ ...f, logo_url: "" }));
+    qc.invalidateQueries({ queryKey: ["lab"] });
+    qc.invalidateQueries({ queryKey: ["lab-info"] });
+    toast.success("تم حذف الشعار");
   };
   return (
     <Card>
       <CardHeader><CardTitle className="text-base">بيانات المعمل</CardTitle></CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
+        <div className="flex items-center gap-4 rounded-lg border bg-muted/20 p-3">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-background">
+            {form.logo_url ? (
+              <img src={form.logo_url} alt="logo" className="h-full w-full object-contain" />
+            ) : (
+              <span className="text-xs text-muted-foreground">لا يوجد شعار</span>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label>شعار المعمل</Label>
+            <p className="text-xs text-muted-foreground">PNG/JPG، أقصى حجم 2 ميجا. سيظهر على الفواتير والسندات والتقارير.</p>
+            <div className="flex gap-2">
+              <Input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleLogoUpload(f);
+                  e.target.value = "";
+                }}
+                className="text-xs"
+              />
+              {form.logo_url && (
+                <Button variant="outline" size="sm" onClick={removeLogo} disabled={uploading}>حذف</Button>
+              )}
+            </div>
+          </div>
+        </div>
         <div><Label>اسم المعمل</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
         <div className="grid grid-cols-2 gap-3">
           <div><Label>الهاتف</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
