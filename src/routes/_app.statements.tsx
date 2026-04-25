@@ -16,9 +16,10 @@ import { CalendarIcon, Plus, Printer, Trash2, FileDown } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { exportElementToPdf } from "@/lib/pdf";
-import { printElement } from "@/lib/print";
+import { renderReportToPdf } from "@/lib/reportRenderer";
+import { printReactElement } from "@/lib/print";
 import { ReceiptVoucherDialog } from "@/components/ReceiptVoucherDialog";
+import { StatementReport } from "@/components/reports/StatementReport";
 import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/_app/statements")({
@@ -54,11 +55,18 @@ function StatementsPage() {
     notes: "",
   });
 
+  const { data: lab } = useQuery({
+    queryKey: ["lab-info", labId],
+    enabled: !!labId,
+    queryFn: async () =>
+      (await supabase.from("labs").select("name, phone, address, logo_url, currency").eq("id", labId!).maybeSingle()).data,
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-statements", labId],
     enabled: !!labId,
     queryFn: async () =>
-      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone").eq("is_active", true).order("name")).data ?? [],
+      (await supabase.from("doctors").select("id, name, governorate, opening_balance, phone, clinic_name").eq("is_active", true).order("name")).data ?? [],
   });
   const doctor = doctors?.find((d) => d.id === doctorId);
 
@@ -71,7 +79,7 @@ function StatementsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("id, date_received, price, status")
+        .select("id, case_number, date_received, price, status, notes, tooth_numbers, patients(name), work_types(name)")
         .eq("doctor_id", doctorId)
         .gte("date_received", fromStr)
         .lte("date_received", toStr)
@@ -266,17 +274,32 @@ function StatementsPage() {
           </Dialog>
           <Button
             variant="outline"
-            disabled={!doctorId}
+            disabled={!doctorId || !lab || !doctor}
             onClick={async () => {
-              const el = document.getElementById("statement-print");
-              if (!el) {
-                toast.error("تعذر العثور على كشف الحساب");
-                return;
-              }
-
+              if (!lab || !doctor) return;
               try {
                 toast.loading("جاري إنشاء PDF...", { id: "statement-pdf" });
-                await exportElementToPdf(el, `statement-${doctor?.name ?? "doctor"}-${fromStr}_${toStr}.pdf`);
+                const reportCases = (cases ?? []).map((c: any) => ({
+                  id: c.id,
+                  case_number: c.case_number,
+                  date_received: c.date_received,
+                  patient_name: c.patients?.name ?? null,
+                  notes: c.notes,
+                  work_type_name: c.work_types?.name ?? null,
+                  tooth_numbers: c.tooth_numbers,
+                  price: c.price,
+                }));
+                await renderReportToPdf(
+                  <StatementReport
+                    lab={lab}
+                    doctor={doctor}
+                    cases={reportCases}
+                    payments={(payments ?? []) as any}
+                    fromDate={from}
+                    toDate={to}
+                  />,
+                  `statement-${doctor.name}-${fromStr}_${toStr}.pdf`,
+                );
                 toast.success("تم إنشاء PDF", { id: "statement-pdf" });
               } catch (error: any) {
                 toast.error(error?.message ?? "فشل إنشاء PDF", { id: "statement-pdf" });
@@ -286,14 +309,34 @@ function StatementsPage() {
             <FileDown className="ml-1 h-4 w-4" /> PDF
           </Button>
           <Button
-            disabled={!doctorId}
-            onClick={() => {
-              const el = document.getElementById("statement-print");
-              if (!el) {
-                toast.error("تعذر العثور على كشف الحساب");
-                return;
+            disabled={!doctorId || !lab || !doctor}
+            onClick={async () => {
+              if (!lab || !doctor) return;
+              try {
+                const reportCases = (cases ?? []).map((c: any) => ({
+                  id: c.id,
+                  case_number: c.case_number,
+                  date_received: c.date_received,
+                  patient_name: c.patients?.name ?? null,
+                  notes: c.notes,
+                  work_type_name: c.work_types?.name ?? null,
+                  tooth_numbers: c.tooth_numbers,
+                  price: c.price,
+                }));
+                await printReactElement(
+                  <StatementReport
+                    lab={lab}
+                    doctor={doctor}
+                    cases={reportCases}
+                    payments={(payments ?? []) as any}
+                    fromDate={from}
+                    toDate={to}
+                  />,
+                  `كشف حساب ${doctor.name}`,
+                );
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "فشل الطباعة");
               }
-              printElement(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
             }}
           >
             <Printer className="ml-1 h-4 w-4" /> طباعة
