@@ -7,20 +7,25 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { KeyRound, UserCheck, UserX, Copy } from "lucide-react";
+import { KeyRound, UserCheck, UserX, Copy, RefreshCw, ShieldAlert } from "lucide-react";
 
 interface Doctor {
   id: string;
   name: string;
   email: string | null;
+  phone?: string | null;
   user_id: string | null;
   portal_enabled: boolean;
+  portal_password_plain?: string | null;
+}
+
+function normalizePhone(p: string): string {
+  return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
 }
 
 export function PortalAccountButton({
@@ -32,16 +37,19 @@ export function PortalAccountButton({
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [email, setEmail] = useState(doctor.email ?? "");
-  const [password, setPassword] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   const hasAccount = !!doctor.user_id;
+  const phoneNorm = doctor.phone ? normalizePhone(doctor.phone) : "";
 
   const portalUrl =
     typeof window !== "undefined" ? `${window.location.origin}/portal/login` : "/portal/login";
 
+  const passwordToShow = generatedPassword ?? doctor.portal_password_plain ?? null;
+
   const copyCredentials = async () => {
-    const text = `بيانات دخول بورتال د. ${doctor.name}\n\nالرابط: ${portalUrl}\nالبريد: ${email}\nكلمة المرور: ${password}\n\nيرجى تغيير كلمة المرور بعد أول تسجيل دخول.`;
+    if (!passwordToShow) return;
+    const text = `بيانات دخول بورتال د. ${doctor.name}\n\nالرابط: ${portalUrl}\nرقم الموبايل: ${phoneNorm}\nكلمة المرور: ${passwordToShow}`;
     try {
       await navigator.clipboard.writeText(text);
       toast.success("تم نسخ بيانات الدخول");
@@ -51,8 +59,8 @@ export function PortalAccountButton({
   };
 
   const createAccount = async () => {
-    if (!email || password.length < 6) {
-      toast.error("أدخل بريد صحيح وكلمة سر 6 أحرف على الأقل");
+    if (!doctor.phone) {
+      toast.error("أضف رقم موبايل للطبيب أولاً");
       return;
     }
     setBusy(true);
@@ -65,16 +73,15 @@ export function PortalAccountButton({
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ doctor_id: doctor.id, email, password }),
+        body: JSON.stringify({ doctor_id: doctor.id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل إنشاء الحساب");
-      toast.success("تم إنشاء حساب الطبيب وتفعيل البورتال");
-      setOpen(false);
-      setPassword("");
+      setGeneratedPassword(data.password);
+      toast.success("تم إنشاء الحساب — انسخ البيانات وأرسلها للطبيب");
       onDone?.();
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل غير متوقع");
     } finally {
       setBusy(false);
     }
@@ -93,7 +100,13 @@ export function PortalAccountButton({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) setGeneratedPassword(null);
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="mt-2 h-7 w-full text-xs">
           {hasAccount ? (
@@ -119,16 +132,37 @@ export function PortalAccountButton({
       <DialogContent dir="rtl">
         <DialogHeader>
           <DialogTitle>حساب بورتال د. {doctor.name}</DialogTitle>
+          <DialogDescription>
+            يدخل الطبيب برقم موبايله المسجّل وكلمة سر مولّدة تلقائياً (٨ أرقام).
+          </DialogDescription>
         </DialogHeader>
 
         {hasAccount ? (
           <div className="space-y-4">
-            <div className="rounded-md bg-muted/40 p-3 text-sm">
-              <p>الحساب موجود بالفعل.</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                البريد: <span dir="ltr">{doctor.email}</span>
+            <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1.5">
+              <p className="font-medium">بيانات الدخول</p>
+              <p className="text-xs">
+                <span className="text-muted-foreground">رقم الموبايل: </span>
+                <span dir="ltr" className="font-mono">{phoneNorm || "—"}</span>
               </p>
+              <p className="text-xs">
+                <span className="text-muted-foreground">كلمة المرور: </span>
+                {passwordToShow ? (
+                  <span dir="ltr" className="font-mono font-bold text-base">{passwordToShow}</span>
+                ) : (
+                  <span className="text-muted-foreground italic">
+                    غير محفوظة — أعد التوليد لإنشاء كلمة جديدة
+                  </span>
+                )}
+              </p>
+              {passwordToShow && (
+                <Button type="button" variant="outline" size="sm" onClick={copyCredentials} className="mt-2 h-7 text-xs">
+                  <Copy className="ml-1 h-3 w-3" />
+                  نسخ بيانات الدخول
+                </Button>
+              )}
             </div>
+
             <div className="flex items-center justify-between rounded-md border p-3">
               <div>
                 <p className="text-sm font-medium">تفعيل وصول البورتال</p>
@@ -136,47 +170,40 @@ export function PortalAccountButton({
                   عند التعطيل لن يتمكن الطبيب من تسجيل الدخول
                 </p>
               </div>
-              <Switch
-                checked={doctor.portal_enabled}
-                onCheckedChange={togglePortal}
-              />
+              <Switch checked={doctor.portal_enabled} onCheckedChange={togglePortal} />
+            </div>
+
+            <div className="rounded-md border border-warning/40 bg-warning/5 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-warning-foreground">
+                <ShieldAlert className="h-3.5 w-3.5" />
+                إعادة تعيين كلمة المرور
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                لتغيير كلمة المرور احذف الحساب من قاعدة البيانات وأعد إنشاءه — أو اطلب من الطبيب تغييرها بنفسه لاحقاً.
+              </p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="portal-email">البريد الإلكتروني</Label>
-              <Input
-                id="portal-email"
-                type="email"
-                dir="ltr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="portal-pass">كلمة المرور المؤقتة</Label>
-              <Input
-                id="portal-pass"
-                type="text"
-                dir="ltr"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="6 أحرف على الأقل"
-              />
-              <p className="text-xs text-muted-foreground">
-                أرسل هذه البيانات للطبيب ليستخدمها في تسجيل الدخول على البورتال.
+            <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+              <p className="font-medium text-sm">سيتم إنشاء حساب بهذه البيانات:</p>
+              <p>
+                <span className="text-muted-foreground">رقم الموبايل: </span>
+                {phoneNorm ? (
+                  <span dir="ltr" className="font-mono">{phoneNorm}</span>
+                ) : (
+                  <span className="text-destructive">لم يتم إدخال رقم موبايل للطبيب</span>
+                )}
+              </p>
+              <p className="text-muted-foreground">
+                ستُولَّد كلمة سر تلقائية مكوّنة من ٨ أرقام بعد الإنشاء.
               </p>
             </div>
-            <DialogFooter className="gap-2 sm:gap-2">
-              {email && password.length >= 6 && (
-                <Button type="button" variant="outline" onClick={copyCredentials}>
-                  <Copy className="ml-1 h-4 w-4" />
-                  نسخ البيانات
-                </Button>
-              )}
-              <Button onClick={createAccount} disabled={busy}>
-                {busy ? "جارٍ الإنشاء..." : "إنشاء الحساب"}
+
+            <DialogFooter>
+              <Button onClick={createAccount} disabled={busy || !phoneNorm}>
+                <RefreshCw className={`ml-1 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
+                {busy ? "جارٍ الإنشاء..." : "إنشاء الحساب وتوليد كلمة السر"}
               </Button>
             </DialogFooter>
           </div>

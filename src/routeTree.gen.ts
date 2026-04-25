@@ -19,6 +19,7 @@ import { Route as PortalNewCaseRouteImport } from './routes/portal.new-case'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
@@ -96,6 +97,11 @@ const PortalCasesRoute = PortalCasesRouteImport.update({
   id: '/cases',
   path: '/cases',
   getParentRoute: () => PortalRoute,
+} as any)
+const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
+  id: '/api/portal-resolve-login',
+  path: '/api/portal-resolve-login',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiManageUserRoute = ApiManageUserRouteImport.update({
   id: '/api/manage-user',
@@ -269,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
+  '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
+  '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -349,6 +357,7 @@ export interface FileRoutesById {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
+  '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
     | '/api/manage-user'
+    | '/api/portal-resolve-login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
     | '/api/manage-user'
+    | '/api/portal-resolve-login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-doctor-account'
     | '/api/manage-user'
+    | '/api/portal-resolve-login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -490,6 +502,7 @@ export interface RootRouteChildren {
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
   ApiManageUserRoute: typeof ApiManageUserRoute
+  ApiPortalResolveLoginRoute: typeof ApiPortalResolveLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -563,6 +576,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/cases'
       preLoaderRoute: typeof PortalCasesRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/api/portal-resolve-login': {
+      id: '/api/portal-resolve-login'
+      path: '/api/portal-resolve-login'
+      fullPath: '/api/portal-resolve-login'
+      preLoaderRoute: typeof ApiPortalResolveLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/manage-user': {
       id: '/api/manage-user'
@@ -856,6 +876,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
   ApiManageUserRoute: ApiManageUserRoute,
+  ApiPortalResolveLoginRoute: ApiPortalResolveLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
