@@ -26,11 +26,12 @@ function PortalStatement() {
 
   const { data: cases } = useQuery({
     queryKey: ["statement-cases", doctor?.id],
-    enabled: !!doctor,
+    enabled: !!doctor?.id,
     queryFn: async () => {
       const { data } = await supabase
         .from("cases")
         .select("id, case_number, date_received, price, status")
+        .eq("doctor_id", doctor!.id)
         .neq("status", "pending_approval")
         .neq("status", "cancelled")
         .order("date_received", { ascending: true });
@@ -40,11 +41,12 @@ function PortalStatement() {
 
   const { data: payments } = useQuery({
     queryKey: ["statement-payments", doctor?.id],
-    enabled: !!doctor,
+    enabled: !!doctor?.id,
     queryFn: async () => {
       const { data } = await supabase
         .from("payments")
         .select("id, payment_date, amount, method, reference")
+        .eq("doctor_id", doctor!.id)
         .order("payment_date");
       return data ?? [];
     },
