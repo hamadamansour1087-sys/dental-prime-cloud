@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Phone, Mail, MapPin, Trash2, Power, PowerOff, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { PortalAccountButton } from "@/components/PortalAccountButton";
+import { EditDoctorDialog } from "@/components/EditDoctorDialog";
 import {
   AlertDialog,
   AlertDialogAction,
