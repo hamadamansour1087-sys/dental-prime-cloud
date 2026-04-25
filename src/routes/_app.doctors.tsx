@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,14 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Phone, Mail, MapPin, Trash2, User, Building2, FileText, Power, PowerOff } from "lucide-react";
+import { Search, Phone, Mail, MapPin, Trash2, Power, PowerOff, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { EGYPT_GOVERNORATES } from "@/lib/governorates";
 import { PortalAccountButton } from "@/components/PortalAccountButton";
 import {
   AlertDialog,
