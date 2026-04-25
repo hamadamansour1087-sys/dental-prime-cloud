@@ -27,15 +27,30 @@ export const Route = createFileRoute("/api/create-doctor-account")({
             return Response.json({ error: "رمز الجلسة فارغ" }, { status: 401 });
           }
 
-          // Verify the JWT directly using the admin client (no need for a second client)
-          const { data: userRes, error: uErr } = await supabaseAdmin.auth.getUser(token);
-          if (uErr || !userRes?.user) {
-            console.error("Auth verification failed:", uErr?.message);
+          // Verify the JWT by calling the auth REST endpoint directly with the user's token.
+          // (supabaseAdmin.auth.getUser(token) can fail with "Auth session missing!" because
+          // the admin client has no persisted session — calling the REST endpoint avoids that.)
+          const SUPABASE_URL = process.env.SUPABASE_URL!;
+          const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+          const verifyRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              apikey: SERVICE_KEY,
+            },
+          });
+          if (!verifyRes.ok) {
+            const txt = await verifyRes.text();
+            console.error("Auth verification failed:", verifyRes.status, txt);
             return Response.json(
-              { error: `جلسة غير صالحة: ${uErr?.message ?? "تعذّر التحقق من المستخدم"}` },
+              { error: `جلسة غير صالحة (${verifyRes.status}): ${txt.slice(0, 120)}` },
               { status: 401 },
             );
           }
+          const authUser = (await verifyRes.json()) as { id: string; email?: string };
+          if (!authUser?.id) {
+            return Response.json({ error: "تعذّر التحقق من المستخدم" }, { status: 401 });
+          }
+          const userRes = { user: authUser };
 
           const body = (await request.json()) as {
             doctor_id: string;
