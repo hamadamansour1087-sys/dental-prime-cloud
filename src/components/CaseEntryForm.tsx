@@ -266,6 +266,14 @@ const printThermalSlip = (data: PrintSlipData) => {
 export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }: CaseEntryFormProps) {
   const navigate = useNavigate();
   const prefs = useMemo(loadPrefs, []);
+  const DRAFT_KEY = useMemo(() => makeDraftKey(mode, fixedDoctorId), [mode, fixedDoctorId]);
+
+  // Cleanup legacy v1 draft (was shared across portal & lab — caused leakage)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("lovable.case-entry.draft.v1"); } catch { /* noop */ }
+    }
+  }, []);
 
   // ---------- form state ----------
   const [form, setForm] = useState({
