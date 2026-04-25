@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WorkTypeCategoriesTab } from "@/components/WorkTypeCategoriesTab";
+import { AddDoctorDialog } from "@/components/AddDoctorDialog";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
