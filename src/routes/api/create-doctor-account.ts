@@ -2,6 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createClient } from "@supabase/supabase-js";
 
+// Normalize a phone number to digits only (Egyptian style: drop leading 0/+/spaces)
+function normalizePhone(p: string): string {
+  return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
+}
+
+function generatePassword(length = 8): string {
+  // 8-digit numeric password (easy to dictate over the phone)
+  let s = "";
+  for (let i = 0; i < length; i++) s += Math.floor(Math.random() * 10).toString();
+  return s;
+}
+
 export const Route = createFileRoute("/api/create-doctor-account")({
   server: {
     handlers: {
@@ -25,17 +37,17 @@ export const Route = createFileRoute("/api/create-doctor-account")({
 
           const body = (await request.json()) as {
             doctor_id: string;
-            email: string;
-            password: string;
+            // password and email are now optional — generated server-side
+            password?: string;
           };
-          if (!body.doctor_id || !body.email || !body.password || body.password.length < 6) {
+          if (!body.doctor_id) {
             return Response.json({ error: "بيانات ناقصة" }, { status: 400 });
           }
 
           // Verify caller is admin/manager of doctor's lab
           const { data: doctor, error: dErr } = await supabaseAdmin
             .from("doctors")
-            .select("id, lab_id, name, user_id")
+            .select("id, lab_id, name, user_id, phone")
             .eq("id", body.doctor_id)
             .maybeSingle();
           if (dErr || !doctor) {
@@ -43,6 +55,12 @@ export const Route = createFileRoute("/api/create-doctor-account")({
           }
           if (doctor.user_id) {
             return Response.json({ error: "هذا الطبيب لديه حساب بالفعل" }, { status: 400 });
+          }
+          if (!doctor.phone) {
+            return Response.json(
+              { error: "يجب إضافة رقم موبايل للطبيب أولاً (يستخدم لتسجيل الدخول)" },
+              { status: 400 },
+            );
           }
 
           const { data: roleCheck } = await supabaseAdmin
@@ -55,10 +73,19 @@ export const Route = createFileRoute("/api/create-doctor-account")({
             return Response.json({ error: "صلاحيات غير كافية" }, { status: 403 });
           }
 
+          const phoneNorm = normalizePhone(doctor.phone);
+          if (phoneNorm.length < 7) {
+            return Response.json({ error: "رقم الموبايل غير صالح" }, { status: 400 });
+          }
+          // Build a stable internal email so Supabase auth accepts it.
+          // Doctor logs in with phone — UI maps phone → this email under the hood.
+          const internalEmail = `dr-${phoneNorm}-${doctor.lab_id.slice(0, 8)}@portal.local`;
+          const password = body.password && body.password.length >= 6 ? body.password : generatePassword(8);
+
           // Create auth user
           const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
-            email: body.email,
-            password: body.password,
+            email: internalEmail,
+            password,
             email_confirm: true,
             user_metadata: { full_name: doctor.name, is_doctor: true },
           });
@@ -74,22 +101,20 @@ export const Route = createFileRoute("/api/create-doctor-account")({
             .eq("id", created.user.id)
             .maybeSingle();
           if (autoProfile?.lab_id) {
-            // delete the auto-created lab and its seeded data
             await supabaseAdmin.from("workflow_stages").delete().eq("lab_id", autoProfile.lab_id);
             await supabaseAdmin.from("workflows").delete().eq("lab_id", autoProfile.lab_id);
             await supabaseAdmin.from("work_types").delete().eq("lab_id", autoProfile.lab_id);
             await supabaseAdmin.from("role_permissions").delete().in(
               "role_id",
               ((await supabaseAdmin.from("roles").select("id").eq("lab_id", autoProfile.lab_id)).data ?? []).map(
-                (r) => r.id
-              )
+                (r) => r.id,
+              ),
             );
             await supabaseAdmin.from("roles").delete().eq("lab_id", autoProfile.lab_id);
             await supabaseAdmin.from("profiles").delete().eq("id", created.user.id);
             await supabaseAdmin.from("labs").delete().eq("id", autoProfile.lab_id);
           }
 
-          // Re-create profile pointing to the doctor's lab
           await supabaseAdmin.from("profiles").insert({
             id: created.user.id,
             lab_id: doctor.lab_id,
@@ -101,18 +126,27 @@ export const Route = createFileRoute("/api/create-doctor-account")({
             role: "doctor",
           });
 
-          // Link doctor row
           await supabaseAdmin
             .from("doctors")
-            .update({ user_id: created.user.id, portal_enabled: true, email: body.email })
+            .update({
+              user_id: created.user.id,
+              portal_enabled: true,
+              email: internalEmail,
+              portal_password_plain: password,
+            })
             .eq("id", body.doctor_id);
 
-          return Response.json({ success: true, user_id: created.user.id });
+          return Response.json({
+            success: true,
+            user_id: created.user.id,
+            phone: phoneNorm,
+            password,
+          });
         } catch (e) {
           console.error("create-doctor-account error:", e);
           return Response.json(
             { error: e instanceof Error ? e.message : "خطأ غير متوقع" },
-            { status: 500 }
+            { status: 500 },
           );
         }
       },
