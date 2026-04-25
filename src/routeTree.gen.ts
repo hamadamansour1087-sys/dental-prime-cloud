@@ -44,6 +44,7 @@ import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
+import { Route as AppBackupRouteImport } from './routes/_app.backup'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
@@ -221,6 +222,11 @@ const AppCasesRoute = AppCasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBackupRoute = AppBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCasesNewRoute = AppCasesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -237,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
+  '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/cash-accounts': typeof AppCashAccountsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/backup'
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/backup'
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal'
     | '/signup'
+    | '/_app/backup'
     | '/_app/cases'
     | '/_app/cash-accounts'
     | '/_app/dashboard'
@@ -727,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCasesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/backup': {
+      id: '/_app/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof AppBackupRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cases/new': {
       id: '/_app/cases/new'
       path: '/new'
@@ -759,6 +778,7 @@ const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppBackupRoute: typeof AppBackupRoute
   AppCasesRoute: typeof AppCasesRouteWithChildren
   AppCashAccountsRoute: typeof AppCashAccountsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -781,6 +801,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBackupRoute: AppBackupRoute,
   AppCasesRoute: AppCasesRouteWithChildren,
   AppCashAccountsRoute: AppCashAccountsRoute,
   AppDashboardRoute: AppDashboardRoute,

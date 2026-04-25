@@ -73,17 +73,12 @@ async function fetchAllForLab(table: TableName, labId: string): Promise<unknown[
   let from = 0;
   const PAGE = 1000;
   while (true) {
-    let q = supabase.from(table).select("*").range(from, from + PAGE - 1);
-    if (table === "labs") {
-      q = q.eq("id", labId);
-    } else {
-      q = q.eq("lab_id", labId);
-    }
+    const base = supabase.from(table).select("*").range(from, from + PAGE - 1);
+    const q = table === "labs"
+      ? base.eq("id" as never, labId as never)
+      : base.eq("lab_id" as never, labId as never);
     const { data, error } = await q;
-    if (error) {
-      // roles can be lab-null (system); ignore some errors silently
-      throw new Error(`${table}: ${error.message}`);
-    }
+    if (error) throw new Error(`${table}: ${error.message}`);
     if (!data || data.length === 0) break;
     all.push(...data);
     if (data.length < PAGE) break;
