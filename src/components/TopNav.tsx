@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
