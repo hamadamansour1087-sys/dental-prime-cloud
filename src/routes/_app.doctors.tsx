@@ -224,14 +224,51 @@ function DoctorsPage() {
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {doctors?.map((d: any) => (
-          <Card key={d.id}>
+          <Card key={d.id} className={!d.is_active ? "opacity-60" : ""}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">{d.name}</CardTitle>
-              {d.governorate && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />{d.governorate}
-                </p>
-              )}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base">
+                    {d.name}
+                    {!d.is_active && <span className="ml-2 text-xs text-destructive">(غير مفعّل)</span>}
+                  </CardTitle>
+                  {d.governorate && (
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />{d.governorate}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    title={d.is_active ? "تعطيل" : "تفعيل"}
+                    onClick={() => toggleActive(d.id, d.is_active)}
+                  >
+                    {d.is_active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" title="حذف">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent dir="rtl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>حذف الطبيب؟</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          هل أنت متأكد من حذف "{d.name}"؟ لا يمكن التراجع عن هذا الإجراء. إذا كان هناك حالات مرتبطة بهذا الطبيب، استخدم التعطيل بدلاً من الحذف.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteDoctor(d.id)}>حذف</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-1 text-sm text-muted-foreground">
               {d.doctor_clinics?.length > 0 && (
