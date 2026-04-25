@@ -7,6 +7,7 @@ import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { PortalNotificationsBell } from "@/components/PortalNotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 import { TopNav } from "@/components/TopNav";
 import { BackupReminderDialog, shouldRemindBackup } from "@/components/BackupReminderDialog";
