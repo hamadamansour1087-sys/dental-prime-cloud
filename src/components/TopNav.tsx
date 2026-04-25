@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -37,6 +38,7 @@ const primary: NavItem[] = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الحالات", url: "/cases", icon: ClipboardList },
   { title: "طلبات الأطباء", url: "/pending-cases", icon: ClipboardList },
+  { title: "الرسائل", url: "/messages", icon: MessageSquare },
 ];
 
 const groups: NavGroup[] = [

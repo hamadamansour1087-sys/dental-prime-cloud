@@ -7,6 +7,7 @@ import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
 import { NotificationsBell } from "@/components/NotificationsBell";
+import { PortalNotificationsBell } from "@/components/PortalNotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 import { TopNav } from "@/components/TopNav";
 import { BackupReminderDialog, shouldRemindBackup } from "@/components/BackupReminderDialog";
@@ -88,6 +89,7 @@ function AppLayout() {
               <ScanLine className="h-4 w-4" />
             </Button>
             <NotificationsBell />
+            <PortalNotificationsBell variant="lab" />
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={handleLogout} title="تسجيل الخروج">
               <LogOut className="h-4 w-4" />

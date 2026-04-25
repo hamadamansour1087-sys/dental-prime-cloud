@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LayoutDashboard, FilePlus2, ClipboardList, Wallet, LogOut, Stethoscope, Search } from "lucide-react";
+import { LayoutDashboard, FilePlus2, ClipboardList, Wallet, LogOut, Stethoscope, Search, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
+import { PortalNotificationsBell } from "@/components/PortalNotificationsBell";
 
 export const Route = createFileRoute("/portal")({
   component: PortalLayout,
@@ -121,6 +122,7 @@ function PortalLayout() {
                 ⌘K
               </kbd>
             </Button>
+            <PortalNotificationsBell variant="doctor" />
             <ThemeToggle />
             <Button
               variant="ghost"
