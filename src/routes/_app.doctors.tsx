@@ -111,6 +111,7 @@ function DoctorsPage() {
                   )}
                 </div>
                 <div className="flex gap-1">
+                  <EditDoctorDialog doctor={d} />
                   <Button
                     size="icon"
                     variant="ghost"
