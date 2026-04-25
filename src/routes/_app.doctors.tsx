@@ -212,9 +212,14 @@ function DoctorsPage() {
         </Dialog>
       </div>
 
-      <div className="relative">
-        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="بحث بالاسم..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="بحث بالاسم..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Button variant={showInactive ? "default" : "outline"} size="sm" onClick={() => setShowInactive(!showInactive)}>
+          {showInactive ? "إخفاء غير المفعلين" : "عرض غير المفعلين"}
+        </Button>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
