@@ -11,10 +11,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Phone, Mail, MapPin, Trash2, User, Building2, FileText } from "lucide-react";
+import { Plus, Search, Phone, Mail, MapPin, Trash2, User, Building2, FileText, Power, PowerOff } from "lucide-react";
 import { toast } from "sonner";
 import { EGYPT_GOVERNORATES } from "@/lib/governorates";
 import { PortalAccountButton } from "@/components/PortalAccountButton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_app/doctors")({
   component: DoctorsPage,
