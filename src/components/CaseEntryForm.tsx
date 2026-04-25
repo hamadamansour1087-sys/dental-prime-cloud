@@ -346,51 +346,16 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     });
   }, [labId]);
 
-  // ---------- draft auto-save ----------
+  // ---------- draft auto-save (DISABLED by user request) ----------
+  // Clear any previously stored draft so it never gets restored.
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const draft = JSON.parse(raw) as DraftSnapshot;
-      // Only restore drafts < 24h old & matching mode
-      if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(DRAFT_KEY);
-        return;
-      }
-      const hasContent =
-        draft.patient_name?.trim() ||
-        draft.notes?.trim() ||
-        draft.items?.some((it) => it.work_type_id || it.tooth_numbers || it.shade);
-      if (!hasContent) return;
-      setForm({
-        doctor_id: fixedDoctorId ?? draft.doctor_id ?? "",
-        clinic_id: draft.clinic_id ?? "",
-        patient_name: draft.patient_name ?? "",
-        due_date: draft.due_date ?? "",
-        notes: draft.notes ?? "",
-      });
-      if (draft.items?.length) setItems(draft.items);
-      if (draft.due_date) setDueAuto(false);
-      setDraftRestored(true);
+      localStorage.removeItem(DRAFT_KEY);
     } catch {
       /* ignore */
     }
-  }, [fixedDoctorId, DRAFT_KEY]);
-
-  // Save draft (debounced)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const timer = window.setTimeout(() => {
-      const snapshot: DraftSnapshot = { ...form, items, savedAt: Date.now() };
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot));
-      } catch {
-        /* ignore */
-      }
-    }, 800);
-    return () => window.clearTimeout(timer);
-  }, [form, items, DRAFT_KEY]);
+  }, [DRAFT_KEY]);
 
   // ---------- predicted due date ----------
   const baseLeadDays = (stages ?? []).reduce((s: number, st: { estimated_days: number | null }) => s + (Number(st.estimated_days) || 0), 0) || 5;
@@ -786,11 +751,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             </div>
           </div>
         </div>
-        {draftRestored && (
-          <div className="border-t bg-amber-500/10 px-4 py-1.5 text-center text-xs font-medium text-amber-700 dark:text-amber-400">
-            <Sparkles className="me-1 inline h-3 w-3" /> تم استعادة مسودة لم تُحفظ سابقاً
-          </div>
-        )}
       </header>
 
       {/* Body — two-column responsive grid */}
