@@ -169,18 +169,36 @@ function DashboardPage() {
   return (
     <div className="space-y-5 md:space-y-6" dir="rtl">
       {/* Greeting Header */}
-      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs md:text-sm text-muted-foreground mb-1">
-            {format(new Date(), "EEEE • d MMMM yyyy")}
-          </p>
-          <h1 className="text-2xl md:text-3xl font-medium tracking-tight text-balance">
-            صباح الخير، {profile?.full_name ?? "مرحباً بك"}
-          </h1>
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3 md:gap-4">
+          {lab?.logo_url ? (
+            <img
+              src={lab.logo_url}
+              alt={lab?.name ?? "logo"}
+              className="size-12 md:size-14 rounded-2xl object-contain bg-card border border-border shadow-sm"
+            />
+          ) : (
+            <div className="size-12 md:size-14 rounded-2xl bg-primary/10 border border-border flex items-center justify-center text-primary font-bold text-lg">
+              {(lab?.name ?? "L").slice(0, 1)}
+            </div>
+          )}
+          <div>
+            <p className="text-xs md:text-sm text-muted-foreground mb-1">
+              {format(new Date(), "EEEE • d MMMM yyyy")}
+            </p>
+            <h1 className="text-2xl md:text-3xl font-medium tracking-tight text-balance">
+              {lab?.name ?? "المعمل"}
+            </h1>
+            {profile?.full_name && (
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                مرحباً، {profile.full_name}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2 self-start md:self-auto bg-card px-4 py-2 rounded-full shadow-sm border border-border">
           <span className="size-2 rounded-full bg-success" />
-          <span className="text-xs md:text-sm font-medium">معملك يعمل بانتظام</span>
+          <span className="text-xs md:text-sm font-medium">يعمل بانتظام</span>
         </div>
       </header>
 
