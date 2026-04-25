@@ -42,31 +42,14 @@ interface Row {
   code: string;
   patient: string;
   notes: string;
-  diagUpper: string;
-  diagLower: string;
+  teeth: string;
   workType: string;
   caseValue: number;
   payment: number;
 }
 
-function splitTeeth(t?: string | null): { upper: string; lower: string } {
-  if (!t) return { upper: "", lower: "" };
-  const tokens = t.split(/[,\s]+/).filter(Boolean);
-  const upper: string[] = [];
-  const lower: string[] = [];
-  for (const tok of tokens) {
-    const m = tok.match(/^(\d{2})$/);
-    if (m) {
-      const q = parseInt(tok[0], 10);
-      if (q === 1 || q === 2) upper.push(tok);
-      else if (q === 3 || q === 4) lower.push(tok);
-      else upper.push(tok);
-    } else {
-      upper.push(tok);
-    }
-  }
-  return { upper: upper.join(" "), lower: lower.join(" ") };
-}
+// (quadrant rendering handled by QuadrantsPrintView)
+
 
 // Brand palette
 const BRAND = "#8a7a5c"; // warm bronze
