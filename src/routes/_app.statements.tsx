@@ -16,9 +16,10 @@ import { CalendarIcon, Plus, Printer, Trash2, FileDown } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { exportElementToPdf } from "@/lib/pdf";
-import { printElement } from "@/lib/print";
+import { renderReportToPdf } from "@/lib/reportRenderer";
+import { printReactElement } from "@/lib/print";
 import { ReceiptVoucherDialog } from "@/components/ReceiptVoucherDialog";
+import { StatementReport } from "@/components/reports/StatementReport";
 import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/_app/statements")({
