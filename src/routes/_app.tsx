@@ -89,6 +89,7 @@ function AppLayout() {
               <ScanLine className="h-4 w-4" />
             </Button>
             <NotificationsBell />
+            <PortalNotificationsBell variant="lab" />
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={handleLogout} title="تسجيل الخروج">
               <LogOut className="h-4 w-4" />
