@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalStatementRouteImport } from './routes/portal.statement'
 import { Route as PortalNewCaseRouteImport } from './routes/portal.new-case'
+import { Route as PortalMessagesRouteImport } from './routes/portal.messages'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
@@ -81,6 +82,11 @@ const PortalStatementRoute = PortalStatementRouteImport.update({
 const PortalNewCaseRoute = PortalNewCaseRouteImport.update({
   id: '/new-case',
   path: '/new-case',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalMessagesRoute = PortalMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalLoginRoute = PortalLoginRouteImport.update({
@@ -279,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -361,6 +369,7 @@ export interface FileRoutesById {
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
+  '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
@@ -403,6 +412,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/cases/$caseId'
@@ -443,6 +453,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/cases/$caseId'
@@ -484,6 +495,7 @@ export interface FileRouteTypes {
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
+    | '/portal/messages'
     | '/portal/new-case'
     | '/portal/statement'
     | '/_app/cases/$caseId'
@@ -554,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/new-case'
       fullPath: '/portal/new-case'
       preLoaderRoute: typeof PortalNewCaseRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/messages': {
+      id: '/portal/messages'
+      path: '/messages'
+      fullPath: '/portal/messages'
+      preLoaderRoute: typeof PortalMessagesRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/login': {
@@ -849,6 +868,7 @@ interface PortalRouteChildren {
   PortalCasesRoute: typeof PortalCasesRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalLoginRoute: typeof PortalLoginRoute
+  PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNewCaseRoute: typeof PortalNewCaseRoute
   PortalStatementRoute: typeof PortalStatementRoute
 }
@@ -857,6 +877,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalCasesRoute: PortalCasesRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalLoginRoute: PortalLoginRoute,
+  PortalMessagesRoute: PortalMessagesRoute,
   PortalNewCaseRoute: PortalNewCaseRoute,
   PortalStatementRoute: PortalStatementRoute,
 }
