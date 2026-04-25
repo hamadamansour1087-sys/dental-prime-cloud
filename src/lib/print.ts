@@ -67,9 +67,10 @@ export async function printReactElement(
   root.render(element);
 
   await new Promise((r) => setTimeout(r, 100));
-  if ((document as { fonts?: { ready?: Promise<void> } }).fonts?.ready) {
+  const docFonts = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts;
+  if (docFonts?.ready) {
     try {
-      await (document as { fonts: { ready: Promise<void> } }).fonts.ready;
+      await docFonts.ready;
     } catch {
       /* noop */
     }
