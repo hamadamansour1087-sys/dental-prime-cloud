@@ -32,8 +32,7 @@ function PortalStatement() {
         .from("cases")
         .select("id, case_number, date_received, price, status")
         .eq("doctor_id", doctor!.id)
-        .neq("status", "pending_approval")
-        .neq("status", "cancelled")
+        .in("status", ["active", "on_hold", "delivered"])
         .order("date_received", { ascending: true });
       return data ?? [];
     },
