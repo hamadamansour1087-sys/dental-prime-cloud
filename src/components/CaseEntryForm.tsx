@@ -107,7 +107,10 @@ interface CaseEntryFormProps {
 }
 
 const SCAN_EXT = /\.(stl|ply|obj|zip|3mf|dcm)$/i;
-const DRAFT_KEY = "lovable.case-entry.draft.v1";
+const DRAFT_KEY_BASE = "lovable.case-entry.draft.v2";
+function makeDraftKey(mode: string, fixedDoctorId?: string) {
+  return `${DRAFT_KEY_BASE}.${mode}${fixedDoctorId ? `.${fixedDoctorId}` : ""}`;
+}
 const PREFS_KEY = "lovable.case-entry.prefs.v1";
 
 interface DraftSnapshot {
