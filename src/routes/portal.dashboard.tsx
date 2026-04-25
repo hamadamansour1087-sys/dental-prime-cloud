@@ -18,7 +18,7 @@ function PortalDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
-        .select("id")
+        .select("id, opening_balance")
         .eq("user_id", user!.id)
         .maybeSingle();
       return data;
@@ -34,14 +34,19 @@ function PortalDashboard() {
         supabase.from("payments").select("amount").eq("doctor_id", doctor!.id),
       ]);
       const list = cases.data ?? [];
-      const totalCharges = list.reduce((s, c: any) => s + (Number(c.price) || 0), 0);
+      // الحالات المُحتسبة على الطبيب: كل ما تم قبوله (مش معلق ومش ملغي)
+      const billable = list.filter(
+        (c: any) => c.status !== "pending_approval" && c.status !== "cancelled",
+      );
+      const totalCharges = billable.reduce((s, c: any) => s + (Number(c.price) || 0), 0);
       const totalPaid = (payments.data ?? []).reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
+      const opening = Number(doctor?.opening_balance ?? 0);
       return {
         total: list.length,
         pending: list.filter((c: any) => c.status === "pending_approval").length,
         active: list.filter((c: any) => c.status === "active").length,
         delivered: list.filter((c: any) => c.status === "delivered").length,
-        balance: totalCharges - totalPaid,
+        balance: opening + totalCharges - totalPaid,
       };
     },
   });
