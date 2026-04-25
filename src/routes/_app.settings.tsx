@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil, UserPlus } from "lucide-react";
+import { Building2, Hash, Palette, Workflow, Shield, Briefcase, Tag, Layers, ArrowLeft, Plus, Trash2, Pencil, UserPlus, Database } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
@@ -35,6 +35,7 @@ function SettingsPage() {
           <TabsTrigger value="users"><Shield className="ml-1 h-4 w-4" />المستخدمون والأدوار</TabsTrigger>
           <TabsTrigger value="appearance"><Palette className="ml-1 h-4 w-4" />المظهر</TabsTrigger>
           <TabsTrigger value="add-doctor"><UserPlus className="ml-1 h-4 w-4" />إضافة طبيب</TabsTrigger>
+          <TabsTrigger value="backup"><Database className="ml-1 h-4 w-4" />النسخ الاحتياطي</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lab"><LabInfoTab /></TabsContent>
