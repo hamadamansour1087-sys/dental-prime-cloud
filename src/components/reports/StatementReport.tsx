@@ -472,30 +472,29 @@ const tdDiag: React.CSSProperties = {
   textAlign: "center",
 };
 
-const diagRow: React.CSSProperties = {
+const diagLine: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-  gap: "0",
-  minHeight: "20px",
+  justifyContent: "flex-start",
+  gap: "6px",
+  fontSize: "11px",
+  marginTop: "2px",
 };
 
-const diagCell: React.CSSProperties = {
-  flex: "0 0 70px",
-  borderBottom: `1px solid ${BORDER}`,
-  padding: "2px 4px",
+const diagLabel: React.CSSProperties = {
+  fontSize: "10px",
+  color: "#666",
+  fontWeight: 600,
+  minWidth: "32px",
+};
+
+const diagTeeth: React.CSSProperties = {
   fontFamily: "monospace",
-  letterSpacing: "2px",
-  textAlign: "center",
-  margin: "0 2px",
-  minHeight: "16px",
-};
-
-const diagWork: React.CSSProperties = {
-  flex: 1,
-  padding: "2px 6px",
-  textAlign: "center",
-  fontSize: "10.5px",
+  fontSize: "11.5px",
+  fontWeight: 600,
+  color: "#222",
+  direction: "ltr",
+  textAlign: "left",
 };
 
 const summaryBox: React.CSSProperties = {
