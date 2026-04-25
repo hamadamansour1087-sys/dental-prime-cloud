@@ -39,6 +39,7 @@ import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
+import { Route as AppMessagesRouteImport } from './routes/_app.messages'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
@@ -199,6 +200,11 @@ const AppPatientsRoute = AppPatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvoicesRoute = AppInvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
   '/pricing': typeof AppPricingRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/invoices': typeof AppInvoicesRoute
+  '/_app/messages': typeof AppMessagesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
   '/_app/pricing': typeof AppPricingRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/messages'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/messages'
     | '/patients'
     | '/pending-cases'
     | '/pricing'
@@ -473,6 +484,7 @@ export interface FileRouteTypes {
     | '/_app/expenses'
     | '/_app/inventory'
     | '/_app/invoices'
+    | '/_app/messages'
     | '/_app/patients'
     | '/_app/pending-cases'
     | '/_app/pricing'
@@ -729,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/messages': {
+      id: '/_app/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/invoices': {
       id: '/_app/invoices'
       path: '/invoices'
@@ -825,6 +844,7 @@ interface AppRouteChildren {
   AppExpensesRoute: typeof AppExpensesRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
+  AppMessagesRoute: typeof AppMessagesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
   AppPricingRoute: typeof AppPricingRoute
@@ -848,6 +868,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppExpensesRoute: AppExpensesRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
+  AppMessagesRoute: AppMessagesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
   AppPricingRoute: AppPricingRoute,
