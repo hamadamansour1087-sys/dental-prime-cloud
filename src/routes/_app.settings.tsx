@@ -34,6 +34,7 @@ function SettingsPage() {
           <TabsTrigger value="workflows"><Workflow className="ml-1 h-4 w-4" />سير العمل</TabsTrigger>
           <TabsTrigger value="users"><Shield className="ml-1 h-4 w-4" />المستخدمون والأدوار</TabsTrigger>
           <TabsTrigger value="appearance"><Palette className="ml-1 h-4 w-4" />المظهر</TabsTrigger>
+          <TabsTrigger value="add-doctor"><UserPlus className="ml-1 h-4 w-4" />إضافة طبيب</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lab"><LabInfoTab /></TabsContent>
