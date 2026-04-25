@@ -587,7 +587,7 @@ function ReportsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">الإيراد حسب نوع العمل</CardTitle></CardHeader>
-                <CardContent style={{ height: 320 }}>
+                <CardContent className="overflow-hidden isolate" style={{ height: 320, contain: "layout paint" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={productionByWorkType.slice(0, 10)} layout="vertical" margin={{ left: 60 }}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -602,7 +602,7 @@ function ReportsPage() {
 
               <Card>
                 <CardHeader><CardTitle className="text-base">توزيع الفئات</CardTitle></CardHeader>
-                <CardContent style={{ height: 320 }}>
+                <CardContent className="overflow-hidden isolate" style={{ height: 320, contain: "layout paint" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={productionByCategory} dataKey="revenue" nameKey="name" outerRadius={110} label={(e) => e.name}>
@@ -632,7 +632,7 @@ function ReportsPage() {
           <TabsContent value="doctors" className="space-y-4 print:!block">
             <Card>
               <CardHeader><CardTitle className="text-base">أعلى 10 أطباء (إيراد)</CardTitle></CardHeader>
-              <CardContent style={{ height: 360 }}>
+              <CardContent className="overflow-hidden isolate" style={{ height: 360, contain: "layout paint" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={productionByDoctor.slice(0, 10)}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -666,7 +666,7 @@ function ReportsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
                 <CardHeader><CardTitle className="text-base">الإيراد حسب المحافظة</CardTitle></CardHeader>
-                <CardContent style={{ height: 320 }}>
+                <CardContent className="overflow-hidden isolate" style={{ height: 320, contain: "layout paint" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={productionByGovernorate}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -680,7 +680,7 @@ function ReportsPage() {
               </Card>
               <Card>
                 <CardHeader><CardTitle className="text-base">توزيع الحالات</CardTitle></CardHeader>
-                <CardContent style={{ height: 320 }}>
+                <CardContent className="overflow-hidden isolate" style={{ height: 320, contain: "layout paint" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={productionByGovernorate} dataKey="count" nameKey="name" outerRadius={110} label={(e) => e.name}>
@@ -750,7 +750,7 @@ function ReportsPage() {
           <TabsContent value="trends" className="space-y-4 print:!block">
             <Card>
               <CardHeader><CardTitle className="text-base">الإيرادات والتحصيلات اليومية</CardTitle></CardHeader>
-              <CardContent style={{ height: 360 }}>
+              <CardContent className="overflow-hidden isolate" style={{ height: 360, contain: "layout paint" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={dailyTrend}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -766,7 +766,7 @@ function ReportsPage() {
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-base">عدد الحالات اليومية المسلمة</CardTitle></CardHeader>
-              <CardContent style={{ height: 280 }}>
+              <CardContent className="overflow-hidden isolate" style={{ height: 280, contain: "layout paint" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dailyTrend}>
                     <CartesianGrid strokeDasharray="3 3" />
