@@ -11,10 +11,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Phone, Mail, MapPin, Trash2, User, Building2, FileText } from "lucide-react";
+import { Plus, Search, Phone, Mail, MapPin, Trash2, User, Building2, FileText, Power, PowerOff } from "lucide-react";
 import { toast } from "sonner";
 import { EGYPT_GOVERNORATES } from "@/lib/governorates";
 import { PortalAccountButton } from "@/components/PortalAccountButton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_app/doctors")({
   component: DoctorsPage,
@@ -26,6 +37,7 @@ function DoctorsPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -39,20 +51,42 @@ function DoctorsPage() {
   const [clinics, setClinics] = useState<ClinicInput[]>([{ name: "", address: "", phone: "" }]);
 
   const { data: doctors } = useQuery({
-    queryKey: ["doctors", labId, search],
+    queryKey: ["doctors", labId, search, showInactive],
     enabled: !!labId,
     queryFn: async () => {
       let q = supabase
         .from("doctors")
         .select("*, doctor_clinics(id, name, address, phone)")
-        .eq("is_active", true)
         .order("created_at", { ascending: false });
+      if (!showInactive) q = q.eq("is_active", true);
       if (search) q = q.ilike("name", `%${search}%`);
       const { data, error } = await q;
       if (error) throw error;
       return data;
     },
   });
+
+  const toggleActive = async (id: string, current: boolean) => {
+    const { error } = await supabase.from("doctors").update({ is_active: !current }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(current ? "تم تعطيل الطبيب" : "تم تفعيل الطبيب");
+    qc.invalidateQueries({ queryKey: ["doctors"] });
+  };
+
+  const deleteDoctor = async (id: string) => {
+    const { count } = await supabase
+      .from("cases")
+      .select("id", { count: "exact", head: true })
+      .eq("doctor_id", id);
+    if (count && count > 0) {
+      toast.error(`لا يمكن الحذف - يوجد ${count} حالة مرتبطة. يمكنك تعطيل الطبيب بدلاً من ذلك.`);
+      return;
+    }
+    const { error } = await supabase.from("doctors").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("تم حذف الطبيب");
+    qc.invalidateQueries({ queryKey: ["doctors"] });
+  };
 
   const reset = () => {
     setForm({ name: "", phone: "", email: "", governorate: "", address: "", notes: "", opening_balance: "0" });
@@ -178,21 +212,63 @@ function DoctorsPage() {
         </Dialog>
       </div>
 
-      <div className="relative">
-        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="بحث بالاسم..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="بحث بالاسم..." className="pr-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Button variant={showInactive ? "default" : "outline"} size="sm" onClick={() => setShowInactive(!showInactive)}>
+          {showInactive ? "إخفاء غير المفعلين" : "عرض غير المفعلين"}
+        </Button>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {doctors?.map((d: any) => (
-          <Card key={d.id}>
+          <Card key={d.id} className={!d.is_active ? "opacity-60" : ""}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">{d.name}</CardTitle>
-              {d.governorate && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />{d.governorate}
-                </p>
-              )}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base">
+                    {d.name}
+                    {!d.is_active && <span className="ml-2 text-xs text-destructive">(غير مفعّل)</span>}
+                  </CardTitle>
+                  {d.governorate && (
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />{d.governorate}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    title={d.is_active ? "تعطيل" : "تفعيل"}
+                    onClick={() => toggleActive(d.id, d.is_active)}
+                  >
+                    {d.is_active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" title="حذف">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent dir="rtl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>حذف الطبيب؟</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          هل أنت متأكد من حذف "{d.name}"؟ لا يمكن التراجع عن هذا الإجراء. إذا كان هناك حالات مرتبطة بهذا الطبيب، استخدم التعطيل بدلاً من الحذف.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteDoctor(d.id)}>حذف</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-1 text-sm text-muted-foreground">
               {d.doctor_clinics?.length > 0 && (
