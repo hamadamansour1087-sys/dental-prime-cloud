@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // Normalize a phone number to digits only (Egyptian style: drop leading 0/+/spaces)
@@ -27,27 +28,29 @@ export const Route = createFileRoute("/api/create-doctor-account")({
             return Response.json({ error: "رمز الجلسة فارغ" }, { status: 401 });
           }
 
-          // Verify the JWT by calling the auth REST endpoint directly with the user's token.
-          // (supabaseAdmin.auth.getUser(token) can fail with "Auth session missing!" because
-          // the admin client has no persisted session — calling the REST endpoint avoids that.)
           const SUPABASE_URL = process.env.SUPABASE_URL!;
-          const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-          const verifyRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              apikey: SERVICE_KEY,
+          const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
+          const userClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: {
+              storage: undefined,
+              persistSession: false,
+              autoRefreshToken: false,
             },
           });
-          if (!verifyRes.ok) {
-            const txt = await verifyRes.text();
-            console.error("Auth verification failed:", verifyRes.status, txt);
+          const { data: claimsRes, error: claimsErr } = await userClient.auth.getClaims(token);
+          if (claimsErr || !claimsRes?.claims?.sub) {
+            console.error("Auth claims verification failed:", claimsErr);
             return Response.json(
-              { error: `جلسة غير صالحة (${verifyRes.status}): ${txt.slice(0, 120)}` },
+              { error: `جلسة غير صالحة: ${claimsErr?.message ?? "تعذّر التحقق من التوكن"}` },
               { status: 401 },
             );
           }
-          const authUser = (await verifyRes.json()) as { id: string; email?: string };
-          if (!authUser?.id) {
+          const authUser = {
+            id: claimsRes.claims.sub,
+            email: typeof claimsRes.claims.email === "string" ? claimsRes.claims.email : undefined,
+          };
+          if (!authUser.id) {
             return Response.json({ error: "تعذّر التحقق من المستخدم" }, { status: 401 });
           }
           const userRes = { user: authUser };
