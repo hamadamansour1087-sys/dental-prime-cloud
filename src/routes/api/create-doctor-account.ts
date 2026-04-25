@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { createClient } from "@supabase/supabase-js";
 
 // Normalize a phone number to digits only (Egyptian style: drop leading 0/+/spaces)
 function normalizePhone(p: string): string {
@@ -23,16 +22,19 @@ export const Route = createFileRoute("/api/create-doctor-account")({
           if (!authHeader?.startsWith("Bearer ")) {
             return Response.json({ error: "غير مصرح" }, { status: 401 });
           }
-          const token = authHeader.slice(7);
+          const token = authHeader.slice(7).trim();
+          if (!token) {
+            return Response.json({ error: "رمز الجلسة فارغ" }, { status: 401 });
+          }
 
-          const SUPABASE_URL = process.env.SUPABASE_URL!;
-          const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
-          const userClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-            global: { headers: { Authorization: `Bearer ${token}` } },
-          });
-          const { data: userRes, error: uErr } = await userClient.auth.getUser();
-          if (uErr || !userRes.user) {
-            return Response.json({ error: "جلسة غير صالحة" }, { status: 401 });
+          // Verify the JWT directly using the admin client (no need for a second client)
+          const { data: userRes, error: uErr } = await supabaseAdmin.auth.getUser(token);
+          if (uErr || !userRes?.user) {
+            console.error("Auth verification failed:", uErr?.message);
+            return Response.json(
+              { error: `جلسة غير صالحة: ${uErr?.message ?? "تعذّر التحقق من المستخدم"}` },
+              { status: 401 },
+            );
           }
 
           const body = (await request.json()) as {
