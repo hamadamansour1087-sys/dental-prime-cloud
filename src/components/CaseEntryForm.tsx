@@ -751,11 +751,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             </div>
           </div>
         </div>
-        {draftRestored && (
-          <div className="border-t bg-amber-500/10 px-4 py-1.5 text-center text-xs font-medium text-amber-700 dark:text-amber-400">
-            <Sparkles className="me-1 inline h-3 w-3" /> تم استعادة مسودة لم تُحفظ سابقاً
-          </div>
-        )}
       </header>
 
       {/* Body — two-column responsive grid */}
