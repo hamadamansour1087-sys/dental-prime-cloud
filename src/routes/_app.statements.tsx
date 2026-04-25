@@ -283,7 +283,7 @@ function StatementsPage() {
                 toast.error("تعذر العثور على كشف الحساب");
                 return;
               }
-              openPrintWindow(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
+              printElement(el, `كشف حساب ${doctor?.name ?? "doctor"}`);
             }}
           >
             <Printer className="ml-1 h-4 w-4" /> طباعة
