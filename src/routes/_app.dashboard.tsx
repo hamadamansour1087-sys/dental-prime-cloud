@@ -32,6 +32,19 @@ export const Route = createFileRoute("/_app/dashboard")({
 function DashboardPage() {
   const { labId, profile } = useAuth();
 
+  const { data: lab } = useQuery({
+    queryKey: ["dashboard-lab", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("labs")
+        .select("name, logo_url")
+        .eq("id", labId!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats", labId],
     enabled: !!labId,
