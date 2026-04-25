@@ -107,7 +107,10 @@ interface CaseEntryFormProps {
 }
 
 const SCAN_EXT = /\.(stl|ply|obj|zip|3mf|dcm)$/i;
-const DRAFT_KEY = "lovable.case-entry.draft.v1";
+const DRAFT_KEY_BASE = "lovable.case-entry.draft.v2";
+function makeDraftKey(mode: string, fixedDoctorId?: string) {
+  return `${DRAFT_KEY_BASE}.${mode}${fixedDoctorId ? `.${fixedDoctorId}` : ""}`;
+}
 const PREFS_KEY = "lovable.case-entry.prefs.v1";
 
 interface DraftSnapshot {
@@ -263,6 +266,14 @@ const printThermalSlip = (data: PrintSlipData) => {
 export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }: CaseEntryFormProps) {
   const navigate = useNavigate();
   const prefs = useMemo(loadPrefs, []);
+  const DRAFT_KEY = useMemo(() => makeDraftKey(mode, fixedDoctorId), [mode, fixedDoctorId]);
+
+  // Cleanup legacy v1 draft (was shared across portal & lab — caused leakage)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem("lovable.case-entry.draft.v1"); } catch { /* noop */ }
+    }
+  }, []);
 
   // ---------- form state ----------
   const [form, setForm] = useState({
@@ -365,7 +376,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     } catch {
       /* ignore */
     }
-  }, [fixedDoctorId]);
+  }, [fixedDoctorId, DRAFT_KEY]);
 
   // Save draft (debounced)
   useEffect(() => {
@@ -379,7 +390,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
     }, 800);
     return () => window.clearTimeout(timer);
-  }, [form, items]);
+  }, [form, items, DRAFT_KEY]);
 
   // ---------- predicted due date ----------
   const baseLeadDays = (stages ?? []).reduce((s: number, st: { estimated_days: number | null }) => s + (Number(st.estimated_days) || 0), 0) || 5;
