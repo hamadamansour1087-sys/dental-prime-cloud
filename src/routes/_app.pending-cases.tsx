@@ -49,8 +49,14 @@ function PendingCasesPage() {
   const reject = async (id: string) => {
     const reason = prompt("سبب الرفض (اختياري):");
     if (reason === null) return;
+    await supabase.auth.getSession();
     const { error } = await supabase.rpc("reject_pending_case", { _case_id: id, _reason: reason });
-    if (error) return toast.error(error.message);
+    if (error) {
+      const msg = error.message?.includes("Forbidden")
+        ? "ليس لديك صلاحية لرفض الحالات (يتطلب صلاحية مدير أو مشرف)"
+        : error.message;
+      return toast.error(msg);
+    }
     toast.success("تم رفض الحالة");
     qc.invalidateQueries({ queryKey: ["pending-cases"] });
   };
