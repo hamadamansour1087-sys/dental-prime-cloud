@@ -494,6 +494,7 @@ export type Database = {
           opening_balance: number
           phone: string | null
           portal_enabled: boolean
+          portal_password_plain: string | null
           updated_at: string
           user_id: string | null
         }
@@ -511,6 +512,7 @@ export type Database = {
           opening_balance?: number
           phone?: string | null
           portal_enabled?: boolean
+          portal_password_plain?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -528,6 +530,7 @@ export type Database = {
           opening_balance?: number
           phone?: string | null
           portal_enabled?: boolean
+          portal_password_plain?: string | null
           updated_at?: string
           user_id?: string | null
         }

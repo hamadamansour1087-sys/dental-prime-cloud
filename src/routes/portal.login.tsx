@@ -15,7 +15,7 @@ export const Route = createFileRoute("/portal/login")({
 function PortalLoginPage() {
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -25,13 +25,35 @@ function PortalLoginPage() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!phone.trim() || !password.trim()) {
+      toast.error("أدخل رقم الموبايل وكلمة السر");
+      return;
+    }
     setBusy(true);
-    const { error } = await signIn(email, password);
-    setBusy(false);
-    if (error) toast.error(error);
-    else {
-      toast.success("تم تسجيل الدخول");
-      navigate({ to: "/portal/dashboard" });
+    try {
+      // Resolve phone → internal email
+      const res = await fetch("/api/portal-resolve-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.email) {
+        toast.error(data.error || "رقم الموبايل غير مسجّل");
+        setBusy(false);
+        return;
+      }
+      const { error } = await signIn(data.email, password.trim());
+      setBusy(false);
+      if (error) {
+        toast.error("كلمة السر غير صحيحة");
+      } else {
+        toast.success("تم تسجيل الدخول");
+        navigate({ to: "/portal/dashboard" });
+      }
+    } catch {
+      setBusy(false);
+      toast.error("تعذّر الاتصال بالخادم");
     }
   };
 
@@ -46,19 +68,22 @@ function PortalLoginPage() {
             <Stethoscope className="h-7 w-7" />
           </div>
           <CardTitle className="text-2xl">بورتال الأطباء</CardTitle>
-          <CardDescription>سجل الدخول لمتابعة حالاتك وكشف حسابك</CardDescription>
+          <CardDescription>سجل الدخول برقم موبايلك وكلمة السر التي زوّدك بها المعمل</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="phone">رقم الموبايل</Label>
               <Input
-                id="email"
-                type="email"
+                id="phone"
+                type="tel"
+                inputMode="numeric"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 dir="ltr"
+                placeholder="01xxxxxxxxx"
+                autoComplete="tel"
               />
             </div>
             <div className="space-y-2">
@@ -66,17 +91,20 @@ function PortalLoginPage() {
               <Input
                 id="password"
                 type="password"
+                inputMode="numeric"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 dir="ltr"
+                placeholder="٨ أرقام"
+                autoComplete="current-password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy ? "جارٍ الدخول..." : "تسجيل الدخول"}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              لإنشاء حساب، تواصل مع المعمل المتعاقد معك.
+              لا تملك حساباً؟ تواصل مع المعمل المتعاقد معك للحصول على بياناتك.
             </p>
           </form>
         </CardContent>

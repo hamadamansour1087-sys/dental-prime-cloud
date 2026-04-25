@@ -9,16 +9,18 @@ import { AIAssistant } from "@/components/AIAssistant";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 import { TopNav } from "@/components/TopNav";
+import { BackupReminderDialog, shouldRemindBackup } from "@/components/BackupReminderDialog";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
 function AppLayout() {
-  const { user, loading, signOut, profile } = useAuth();
+  const { user, loading, signOut, profile, labId, hasRole } = useAuth();
   const navigate = useNavigate();
   const [scanOpen, setScanOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [backupOpen, setBackupOpen] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
 
   if (loading) {
@@ -31,9 +33,18 @@ function AppLayout() {
 
   if (!user) return <Navigate to="/login" />;
 
-  const handleLogout = async () => {
+  const performLogout = async () => {
     await signOut();
     navigate({ to: "/login" });
+  };
+
+  const handleLogout = () => {
+    // Only nag admins (they own the data) and only once every 24h
+    if (hasRole("admin") && labId && shouldRemindBackup()) {
+      setBackupOpen(true);
+    } else {
+      performLogout();
+    }
   };
 
   return (
@@ -92,6 +103,14 @@ function AppLayout() {
       <QrScannerDialog open={scanOpen} onOpenChange={setScanOpen} />
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} variant="admin" />
       <AIAssistant />
+      {labId && (
+        <BackupReminderDialog
+          open={backupOpen}
+          onOpenChange={setBackupOpen}
+          labId={labId}
+          onProceed={performLogout}
+        />
+      )}
     </div>
   );
 }
