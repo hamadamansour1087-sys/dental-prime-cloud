@@ -1,13 +1,8 @@
 /**
- * Invoice tooth diagram — shows a stylized dental arch (upper + lower)
- * with ONLY the worked-on teeth highlighted and labeled by their FDI number.
- * Designed for print/PDF inside InvoiceReport. Pure SVG, no external deps.
+ * Invoice tooth diagram — renders only the worked-on teeth as small
+ * tooth-shaped icons (crown + roots) with their FDI number underneath.
+ * No full arch — just the selected teeth, large and clear for print/PDF.
  */
-
-const FDI = {
-  upper: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
-  lower: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38],
-};
 
 const QUAD_TO_FDI: Record<string, number> = {
   UR1: 11, UR2: 12, UR3: 13, UR4: 14, UR5: 15, UR6: 16, UR7: 17, UR8: 18,
@@ -16,113 +11,110 @@ const QUAD_TO_FDI: Record<string, number> = {
   LR1: 41, LR2: 42, LR3: 43, LR4: 44, LR5: 45, LR6: 46, LR7: 47, LR8: 48,
 };
 
-function parseSelected(selected: string | null | undefined): Set<number> {
-  const out = new Set<number>();
+function parseSelected(selected: string | null | undefined): number[] {
+  const out: number[] = [];
+  const seen = new Set<number>();
   (selected ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
     .forEach((s) => {
-      const n = Number(s);
-      if (!isNaN(n)) out.add(n);
-      else if (QUAD_TO_FDI[s]) out.add(QUAD_TO_FDI[s]);
+      let n: number | null = null;
+      const num = Number(s);
+      if (!isNaN(num)) n = num;
+      else if (QUAD_TO_FDI[s]) n = QUAD_TO_FDI[s];
+      if (n !== null && !seen.has(n)) {
+        seen.add(n);
+        out.push(n);
+      }
     });
-  return out;
+  // Sort: upper first (10–28), then lower (30–48); within each, ascending FDI
+  return out.sort((a, b) => {
+    const aUpper = a < 30 ? 0 : 1;
+    const bUpper = b < 30 ? 0 : 1;
+    if (aUpper !== bUpper) return aUpper - bUpper;
+    return a - b;
+  });
+}
+
+/** Single tooth icon — molar-ish silhouette with two roots. Upper teeth point down (roots up). */
+function ToothIcon({ isUpper }: { isUpper: boolean }) {
+  // Crown (rounded top) + two roots tapering down. For upper, flip vertically.
+  const path =
+    "M6 2 C3 2 1 4 1 8 C1 11 2 13 4 14 L4 20 C4 22 5 23 6 23 C7 23 8 22 8 20 L8 14 C8 14 8.5 14 9 14 L9 20 C9 22 10 23 11 23 C12 23 13 22 13 20 L13 14 C15 13 17 11 17 8 C17 4 15 2 12 2 Z";
+  return (
+    <svg
+      viewBox="0 0 18 25"
+      width="22"
+      height="30"
+      style={{ display: "block", transform: isUpper ? "scaleY(-1)" : "none" }}
+    >
+      <path
+        d={path}
+        fill="#ffffff"
+        stroke="#0c4a6e"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      {/* subtle crown shading */}
+      <path
+        d="M3 6 C5 4 13 4 15 6"
+        fill="none"
+        stroke="#0e7490"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+    </svg>
+  );
 }
 
 export function InvoiceToothDiagram({
   selected,
-  size = 140,
 }: {
   selected: string | null | undefined;
   size?: number;
 }) {
-  const on = parseSelected(selected);
-
-  // Geometry: each arch is rendered as 16 teeth on a half-ellipse.
-  const W = 220;
-  const H = 130;
-  const cx = W / 2;
-  const upperCy = 58;
-  const lowerCy = 72;
-  const rx = 92;
-  const ryUpper = 44;
-  const ryLower = 44;
-  const toothR = 7.2;
-
-  // Distribute 16 teeth across upper arch from angle 200° (right) to 340° (left)
-  // (in SVG, y grows downward — upper arch uses negative y offset)
-  const placeUpper = (i: number) => {
-    const t = i / 15; // 0..1
-    const angle = Math.PI * (1 - t); // PI..0  (right to left across the top)
-    const x = cx + rx * Math.cos(angle);
-    const y = upperCy - ryUpper * Math.sin(angle);
-    return { x, y };
-  };
-  const placeLower = (i: number) => {
-    const t = i / 15;
-    const angle = Math.PI * (1 - t);
-    const x = cx + rx * Math.cos(angle);
-    const y = H - lowerCy + ryLower * Math.sin(angle);
-    return { x, y };
-  };
-
-  const renderTooth = (
-    n: number,
-    pos: { x: number; y: number },
-    labelAbove: boolean,
-  ) => {
-    const isOn = on.has(n);
-    return (
-      <g key={n}>
-        <circle
-          cx={pos.x}
-          cy={pos.y}
-          r={toothR}
-          fill={isOn ? "#0e7490" : "#ffffff"}
-          stroke={isOn ? "#0c4a6e" : "#cbd5e1"}
-          strokeWidth={isOn ? 1.2 : 0.7}
-        />
-        {isOn && (
-          <text
-            x={pos.x}
-            y={labelAbove ? pos.y - toothR - 3 : pos.y + toothR + 8}
-            textAnchor="middle"
-            fontSize="7.5"
-            fontWeight="700"
-            fill="#0c4a6e"
-            fontFamily="'Cairo', monospace"
-          >
-            {n}
-          </text>
-        )}
-      </g>
-    );
-  };
+  const teeth = parseSelected(selected);
+  if (teeth.length === 0) return <span style={{ color: "#94a3b8" }}>—</span>;
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      width={size}
-      height={(size * H) / W}
-      style={{ display: "block" }}
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        justifyContent: "center",
+        alignItems: "flex-start",
+      }}
     >
-      {/* subtle midline */}
-      <line
-        x1={cx}
-        y1={6}
-        x2={cx}
-        y2={H - 6}
-        stroke="#e2e8f0"
-        strokeDasharray="2 2"
-        strokeWidth={0.5}
-      />
-      {/* upper arch label */}
-      <text x={4} y={12} fontSize="6.5" fill="#94a3b8" fontFamily="'Cairo', sans-serif">R</text>
-      <text x={W - 10} y={12} fontSize="6.5" fill="#94a3b8" fontFamily="'Cairo', sans-serif">L</text>
-
-      {FDI.upper.map((n, i) => renderTooth(n, placeUpper(i), true))}
-      {FDI.lower.map((n, i) => renderTooth(n, placeLower(i), false))}
-    </svg>
+      {teeth.map((n) => {
+        const isUpper = n < 30;
+        return (
+          <div
+            key={n}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "2px",
+            }}
+          >
+            <ToothIcon isUpper={isUpper} />
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: 800,
+                color: "#0c4a6e",
+                fontFamily: "'Cairo', monospace",
+                lineHeight: 1,
+              }}
+            >
+              {n}
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
