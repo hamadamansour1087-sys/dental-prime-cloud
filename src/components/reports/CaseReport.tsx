@@ -76,7 +76,7 @@ export function CaseReport({
           <Field label="الهاتف" value={caseRow.patients?.phone ?? "—"} ltr />
         </InfoBlock>
         <InfoBlock title="بيانات الحالة">
-          <Field label="تاريخ الاستلام" value={format(new Date(caseRow.date_received), "dd/MM/yyyy")} />
+          <Field label="تاريخ الدخول" value={format(new Date(caseRow.date_received), "dd/MM/yyyy")} />
           <Field label="تاريخ التسليم المتوقع" value={caseRow.due_date ? format(new Date(caseRow.due_date), "dd/MM/yyyy") : "—"} />
           <Field label="المرحلة الحالية" value={stage?.name ?? "—"} bold />
           <Field label="اللون العام" value={caseRow.shade ?? "—"} />
