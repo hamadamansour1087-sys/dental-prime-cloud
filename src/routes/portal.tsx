@@ -30,14 +30,13 @@ function PortalLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
 
-  const isDeliveryRole = (roles as string[]).includes("delivery");
   const isLabMember = !!(profile && labId);
-  // A doctor portal user has neither lab membership nor delivery role
-  const isDoctorUser = !!user && !isLabMember && !isDeliveryRole;
+  // A doctor portal user has no lab membership and is linked to a doctor record
+  const canCheckPortalAccount = !!user && !isLabMember;
 
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
-    enabled: !!user && !isLoginRoute && isDoctorUser,
+    enabled: !!user && !isLoginRoute && canCheckPortalAccount,
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
@@ -55,19 +54,18 @@ function PortalLayout() {
       navigate({ to: "/portal/login", replace: true });
       return;
     }
-    // Wrong portal: route delivery agents and lab members away
-    if (isDeliveryRole) {
-      redirectingRef.current = true;
-      navigate({ to: "/delivery/dashboard", replace: true });
-      return;
-    }
     if (isLabMember) {
       redirectingRef.current = true;
       navigate({ to: "/dashboard", replace: true });
+      return;
     }
-  }, [loading, user, isLoginRoute, navigate, isDeliveryRole, isLabMember]);
+    if (!docLoading && !doctor) {
+      redirectingRef.current = true;
+      navigate({ to: "/delivery/dashboard", replace: true });
+    }
+  }, [loading, user, isLoginRoute, navigate, isLabMember, docLoading, doctor]);
 
-  if (loading || (!isLoginRoute && user && isDoctorUser && docLoading)) {
+  if (loading || (!isLoginRoute && user && canCheckPortalAccount && docLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -79,7 +77,7 @@ function PortalLayout() {
     return <Outlet />;
   }
 
-  if (!user || !isDoctorUser) {
+  if (!user || isLabMember || !doctor) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
