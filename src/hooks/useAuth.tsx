@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,12 +26,47 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+type AuthScope = "lab" | "portal" | "delivery";
+
+const getAuthScope = (): AuthScope => {
+  if (typeof window === "undefined") return "lab";
+  if (window.location.pathname.startsWith("/portal")) return "portal";
+  if (window.location.pathname.startsWith("/delivery")) return "delivery";
+  return "lab";
+};
+
+const scopedSessionKey = (scope: AuthScope) => `hamd-auth-session:${scope}`;
+
+const readScopedSession = (scope: AuthScope): Session | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(scopedSessionKey(scope));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Session;
+    return parsed?.access_token && parsed?.refresh_token ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeScopedSession = (scope: AuthScope, sess: Session) => {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(scopedSessionKey(scope), JSON.stringify(sess));
+};
+
+const clearScopedSession = (scope: AuthScope) => {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(scopedSessionKey(scope));
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const scopeRef = useRef<AuthScope>(getAuthScope());
+  const signingOutRef = useRef(false);
 
   const loadProfileAndRoles = async (uid: string) => {
     const [{ data: prof }, { data: rs }] = await Promise.all([
@@ -43,7 +78,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      const scoped = readScopedSession(scopeRef.current);
+      if (!scoped) {
+        await supabase.auth.signOut({ scope: "local" });
+        if (mounted) setLoading(false);
+        return;
+      }
+      const { data: setData, error } = await supabase.auth.setSession({
+        access_token: scoped.access_token,
+        refresh_token: scoped.refresh_token,
+      });
+      const sess = error ? null : setData.session;
+      if (!sess) {
+        clearScopedSession(scopeRef.current);
+        await supabase.auth.signOut({ scope: "local" });
+        if (mounted) setLoading(false);
+        return;
+      }
+      if (!mounted) return;
+      setSession(sess);
+      setUser(sess.user);
+      await loadProfileAndRoles(sess.user.id).finally(() => mounted && setLoading(false));
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (signingOutRef.current) return;
+      if (sess) writeScopedSession(scopeRef.current, sess);
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
@@ -58,18 +120,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      if (sess?.user) loadProfileAndRoles(sess.user.id).finally(() => setLoading(false));
-      else setLoading(false);
-    });
+    init();
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (data.session) writeScopedSession(scopeRef.current, data.session);
     return { error: error?.message ?? null };
   };
 
@@ -86,7 +147,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    signingOutRef.current = true;
+    clearScopedSession(scopeRef.current);
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setRoles([]);
+    await supabase.auth.signOut({ scope: "local" });
+    signingOutRef.current = false;
   };
 
   const refresh = async () => {
