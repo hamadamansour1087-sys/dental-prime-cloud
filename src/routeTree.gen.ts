@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalStatementRouteImport } from './routes/portal.statement'
@@ -20,6 +21,7 @@ import { Route as PortalMessagesRouteImport } from './routes/portal.messages'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as DeliveryLoginRouteImport } from './routes/delivery.login'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
@@ -72,6 +74,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -110,6 +117,11 @@ const PortalCasesRoute = PortalCasesRouteImport.update({
   id: '/cases',
   path: '/cases',
   getParentRoute: () => PortalRoute,
+} as any)
+const DeliveryLoginRoute = DeliveryLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => DeliveryRoute,
 } as any)
 const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
   id: '/api/portal-resolve-login',
@@ -295,6 +307,7 @@ const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -332,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/login': typeof DeliveryLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -343,6 +357,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -380,6 +395,7 @@ export interface FileRoutesByTo {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/login': typeof DeliveryLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -393,6 +409,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -430,6 +447,7 @@ export interface FileRoutesById {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/login': typeof DeliveryLoginRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -443,6 +461,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -480,6 +499,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -491,6 +511,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -528,6 +549,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -540,6 +562,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -577,6 +600,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/login'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -590,6 +614,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DeliveryRoute: typeof DeliveryRouteWithChildren
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
@@ -625,6 +650,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -682,6 +714,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/cases'
       preLoaderRoute: typeof PortalCasesRouteImport
       parentRoute: typeof PortalRoute
+    }
+    '/delivery/login': {
+      id: '/delivery/login'
+      path: '/login'
+      fullPath: '/delivery/login'
+      preLoaderRoute: typeof DeliveryLoginRouteImport
+      parentRoute: typeof DeliveryRoute
     }
     '/api/portal-resolve-login': {
       id: '/api/portal-resolve-login'
@@ -1010,6 +1049,18 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface DeliveryRouteChildren {
+  DeliveryLoginRoute: typeof DeliveryLoginRoute
+}
+
+const DeliveryRouteChildren: DeliveryRouteChildren = {
+  DeliveryLoginRoute: DeliveryLoginRoute,
+}
+
+const DeliveryRouteWithChildren = DeliveryRoute._addFileChildren(
+  DeliveryRouteChildren,
+)
+
 interface PortalRouteChildren {
   PortalCasesRoute: typeof PortalCasesRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
@@ -1034,6 +1085,7 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DeliveryRoute: DeliveryRouteWithChildren,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
