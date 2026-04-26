@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  const { user, loading, signOut, profile, labId, hasRole, roles } = useAuth();
+  const { user, loading, signOut, profile, labId, hasRole } = useAuth();
   const navigate = useNavigate();
   const [scanOpen, setScanOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -33,11 +33,6 @@ function AppLayout() {
   }
 
   if (!user) return <Navigate to="/login" />;
-
-  // Delivery agents → delivery portal
-  if ((roles as string[]).includes("delivery")) {
-    return <Navigate to="/delivery/dashboard" />;
-  }
 
   // Doctors (portal users) don't have a lab profile — redirect them to the portal
   if (!profile || !labId) {
