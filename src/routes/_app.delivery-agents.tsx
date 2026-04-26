@@ -28,6 +28,7 @@ function DeliveryAgentsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", route_id: "", governorates: [] as string[], notes: "" });
+  const [generatedPasswords, setGeneratedPasswords] = useState<Record<string, string>>({});
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ["delivery-agents", labId],
@@ -104,7 +105,8 @@ function DeliveryAgentsPage() {
     });
     const data = await res.json();
     if (!res.ok) return toast.error(data.error ?? "فشل");
-    toast.success(`تم إنشاء الحساب — كلمة السر: ${data.password}`);
+    setGeneratedPasswords((prev) => ({ ...prev, [agentId]: data.password }));
+    toast.success(`تم إنشاء الحساب — كلمة السر: ${data.password} (انسخها الآن، لن تظهر مرة أخرى)`);
     qc.invalidateQueries({ queryKey: ["delivery-agents"] });
   };
 
