@@ -67,7 +67,7 @@ function PortalLayout() {
     }
   }, [loading, user, isLoginRoute, navigate, isDeliveryRole, isLabMember]);
 
-  if (loading || (!isLoginRoute && user && docLoading)) {
+  if (loading || (!isLoginRoute && user && isDoctorUser && docLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -79,7 +79,7 @@ function PortalLayout() {
     return <Outlet />;
   }
 
-  if (!user) {
+  if (!user || !isDoctorUser) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
