@@ -61,8 +61,84 @@ function DeliveryDashboard() {
     },
   });
 
+  // Track first load — initialize known IDs without firing notifications
+  useEffect(() => {
+    if (!cases) return;
+    if (knownReadyIdsRef.current === null) {
+      knownReadyIdsRef.current = new Set(cases.map((c: any) => c.id));
+      return;
+    }
+    // Find newly added ready cases
+    const known = knownReadyIdsRef.current;
+    const newOnes = cases.filter((c: any) => !known.has(c.id));
+    if (newOnes.length > 0) {
+      newOnes.forEach((c: any) => {
+        const title = "🚚 حالة جاهزة للتسليم";
+        const body = `د. ${c.doctors?.name ?? ""}${c.doctors?.governorate ? " — " + c.doctors.governorate : ""} (${c.case_number})`;
+        toast.success(title, { description: body, duration: 8000 });
+        playNotificationSound();
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+          try {
+            const n = new Notification(title, { body, tag: c.id, icon: "/favicon.ico" });
+            n.onclick = () => { window.focus(); n.close(); };
+          } catch { /* noop */ }
+        }
+      });
+      knownReadyIdsRef.current = new Set(cases.map((c: any) => c.id));
+    } else {
+      // Remove ids that are no longer ready
+      knownReadyIdsRef.current = new Set(cases.map((c: any) => c.id));
+    }
+  }, [cases]);
+
+  // Realtime subscription on cases for this lab — refetch on change
+  useEffect(() => {
+    if (!agent?.lab_id) return;
+    const ch = supabase
+      .channel(`delivery-cases-${agent.lab_id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "cases", filter: `lab_id=eq.${agent.lab_id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["delivery-ready-cases", agent.id] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [agent?.lab_id, agent?.id, queryClient]);
+
+  const requestNotifPermission = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    try {
+      const p = await Notification.requestPermission();
+      setNotifPerm(p);
+      if (p === "granted") {
+        toast.success("تم تفعيل الإشعارات");
+        playNotificationSound();
+      } else {
+        toast.error("لم يتم تفعيل الإشعارات");
+      }
+    } catch { /* noop */ }
+  };
+
   return (
     <div className="space-y-3" dir="rtl">
+      {notifPerm === "default" && (
+        <Card className="p-3 flex items-center justify-between gap-2 border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-2 text-sm">
+            <Bell className="h-4 w-4 text-primary" />
+            <span>فعّل الإشعارات لتلقي تنبيه فوري بالحالات الجاهزة</span>
+          </div>
+          <Button size="sm" onClick={requestNotifPermission}>تفعيل</Button>
+        </Card>
+      )}
+      {notifPerm === "denied" && (
+        <Card className="p-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <BellOff className="h-3.5 w-3.5" />
+          <span>الإشعارات معطّلة من إعدادات المتصفح</span>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">حالات جاهزة للتسليم</h1>
         <Badge variant="secondary">{cases.length}</Badge>
