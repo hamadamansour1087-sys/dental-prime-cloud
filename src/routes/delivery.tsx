@@ -17,15 +17,17 @@ const items = [
 ] as const;
 
 function DeliveryLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, roles, profile, labId } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/delivery/login";
   const redirectingRef = useRef(false);
 
+  const isDeliveryRole = (roles as string[]).includes("delivery");
+
   const { data: agent, isLoading: agentLoading } = useQuery({
     queryKey: ["delivery-agent-self", user?.id],
-    enabled: !!user && !isLoginRoute,
+    enabled: !!user && !isLoginRoute && isDeliveryRole,
     queryFn: async () => {
       const { data } = await supabase
         .from("delivery_agents")
@@ -37,20 +39,26 @@ function DeliveryLayout() {
   });
 
   useEffect(() => {
-    if (!loading && !user && !isLoginRoute && !redirectingRef.current) {
+    if (loading || isLoginRoute || redirectingRef.current) return;
+    if (!user) {
       redirectingRef.current = true;
       navigate({ to: "/delivery/login", replace: true });
       return;
     }
-    redirectingRef.current = false;
-  }, [loading, user, isLoginRoute, navigate]);
+    // If logged in but not a delivery agent, send to the right portal
+    if (!isDeliveryRole) {
+      redirectingRef.current = true;
+      if (profile && labId) navigate({ to: "/dashboard", replace: true });
+      else navigate({ to: "/portal/dashboard", replace: true });
+    }
+  }, [loading, user, isLoginRoute, navigate, isDeliveryRole, profile, labId]);
 
-  if (loading || (!isLoginRoute && user && agentLoading)) {
+  if (loading || (!isLoginRoute && user && isDeliveryRole && agentLoading)) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   }
 
   if (isLoginRoute) return <Outlet />;
-  if (!user) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  if (!user || !isDeliveryRole) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
   if (!agent || !agent.is_active) {
     return (
