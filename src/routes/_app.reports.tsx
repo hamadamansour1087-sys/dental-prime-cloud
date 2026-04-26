@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { DatePickerInput } from "@/components/ui/date-picker-input";
 
 export const Route = createFileRoute("/_app/reports")({
   component: ReportsPage,
@@ -504,11 +505,11 @@ function ReportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <Label className="text-xs">من تاريخ</Label>
-              <DatePickerInput value={range.from} onChange={(v) => { setRange({ ...range, from: v }); setPreset("custom"); }} placeholder="من تاريخ" className="w-full" />
+              <DatePickerInput value={range.from} onChange={(v: string) => { setRange({ ...range, from: v }); setPreset("custom"); }} placeholder="من تاريخ" className="w-full" />
             </div>
             <div>
               <Label className="text-xs">إلى تاريخ</Label>
-              <DatePickerInput value={range.to} onChange={(v) => { setRange({ ...range, to: v }); setPreset("custom"); }} placeholder="إلى تاريخ" className="w-full" />
+              <DatePickerInput value={range.to} onChange={(v: string) => { setRange({ ...range, to: v }); setPreset("custom"); }} placeholder="إلى تاريخ" className="w-full" />
             </div>
             <div>
               <Label className="text-xs">الطبيب</Label>

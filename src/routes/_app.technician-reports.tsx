@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy } from "lucide-react";
+import { DatePickerInput } from "@/components/ui/date-picker-input";
 
 export const Route = createFileRoute("/_app/technician-reports")({
   component: TechnicianReportsPage,
