@@ -163,8 +163,8 @@ function DeliveryDashboard() {
               <p className="text-lg font-bold leading-none">{Number(summary.payments_total ?? 0).toFixed(0)}</p>
               <p className="text-[10px] text-muted-foreground mt-1">{summary.payments_count} سند</p>
             </div>
-            <div className="rounded-lg bg-amber-500/10 p-2">
-              <Package className="h-4 w-4 text-amber-600 mx-auto mb-1" />
+            <div className="rounded-lg bg-secondary p-2">
+              <Package className="h-4 w-4 text-secondary-foreground mx-auto mb-1" />
               <p className="text-lg font-bold leading-none">{summary.pending_ready}</p>
               <p className="text-[10px] text-muted-foreground mt-1">جاهزة</p>
             </div>
