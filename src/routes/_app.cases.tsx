@@ -207,6 +207,7 @@ function CasesPage() {
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>(""); // YYYY-MM-DD: filter cases whose current stage was entered on this day
   const [form, setForm] = useState({
     doctor_id: "",
     clinic_id: "",
@@ -263,11 +264,33 @@ function CasesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("*, doctors(name), patients(name), work_types(name)")
+        .select("*, doctors(name), patients(name), work_types(name), workflow_stages!cases_current_stage_id_fkey(name, code, color)")
         .neq("status", "cancelled")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Fetch the technician assigned at the "ready" stage per case (most recent)
+  const { data: readyTechnicians } = useQuery({
+    queryKey: ["cases-ready-technicians", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("case_stage_history")
+        .select("case_id, entered_at, technicians(name), workflow_stages!inner(code)")
+        .eq("workflow_stages.code", "ready")
+        .not("technician_id", "is", null)
+        .order("entered_at", { ascending: false });
+      if (error) throw error;
+      const map = new Map<string, string>();
+      (data ?? []).forEach((row: any) => {
+        if (!map.has(row.case_id) && row.technicians?.name) {
+          map.set(row.case_id, row.technicians.name);
+        }
+      });
+      return map;
     },
   });
 
@@ -520,6 +543,12 @@ function CasesPage() {
   const filteredCases = useMemo(() => {
     let list = cases ?? [];
     if (stageFilter !== "all") list = list.filter((c) => c.current_stage_id === stageFilter);
+    if (dateFilter) {
+      list = list.filter((c: any) => {
+        if (!c.stage_entered_at) return false;
+        return c.stage_entered_at.slice(0, 10) === dateFilter;
+      });
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       list = list.filter((c: any) =>
@@ -530,7 +559,7 @@ function CasesPage() {
       );
     }
     return list;
-  }, [cases, search, stageFilter]);
+  }, [cases, search, stageFilter, dateFilter]);
 
   const grandTotal = items.reduce((s, it) => {
     const u = parseInt(it.units) || 0;
@@ -578,6 +607,7 @@ function CasesPage() {
         initialToStageId={selectedTransition?.toStageId}
         onTransitioned={() => {
           qc.invalidateQueries({ queryKey: ["cases"] });
+          qc.invalidateQueries({ queryKey: ["cases-ready-technicians"] });
         }}
       />
 
@@ -934,6 +964,20 @@ function CasesPage() {
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1">
+          <Input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-[160px]"
+            title="تصفية حسب تاريخ دخول المرحلة الحالية"
+          />
+          {dateFilter && (
+            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setDateFilter("")} title="مسح فلتر التاريخ">
+              <XCircle className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <span className="text-xs text-muted-foreground">{filteredCases.length} حالة</span>
         <div className="ms-auto flex gap-1 rounded-md border p-0.5">
           <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8">
@@ -956,6 +1000,8 @@ function CasesPage() {
                 <TableHead>المريض</TableHead>
                 <TableHead>نوع العمل</TableHead>
                 <TableHead>المرحلة</TableHead>
+                <TableHead className="w-[130px]">دخول المرحلة</TableHead>
+                <TableHead>الفني</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
                 <TableHead>تاريخ التسليم</TableHead>
               </TableRow>
@@ -964,6 +1010,7 @@ function CasesPage() {
               {filteredCases.map((c: any) => {
                 const overdue = c.due_date && c.due_date < today && c.status === "active";
                 const stage = stages?.find((s) => s.id === c.current_stage_id);
+                const technicianName = readyTechnicians?.get(c.id);
                 return (
                   <TableRow
                     key={c.id}
@@ -998,6 +1045,18 @@ function CasesPage() {
                         </span>
                       ) : "—"}
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.stage_entered_at ? format(new Date(c.stage_entered_at), "dd/MM/yyyy HH:mm") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {technicianName ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                          {technicianName}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
                       {c.date_delivered
@@ -1011,7 +1070,7 @@ function CasesPage() {
               })}
               {!filteredCases.length && (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
                     لا توجد حالات
                   </TableCell>
                 </TableRow>
