@@ -3,6 +3,7 @@ import { Sparkles, Loader2, AlertTriangle, ArrowRight, Clock, Flame } from "luci
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Analysis = {
   summary: string;
@@ -26,9 +27,13 @@ export function CaseAIAnalysis({ caseData }: { caseData: any }) {
   const run = async () => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch("/api/ai-analyze-case", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ caseData }),
       });
       if (!resp.ok) {
