@@ -22,7 +22,7 @@ const items = [
 ] as const;
 
 function PortalLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, roles, profile, labId } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/portal/login";
@@ -30,9 +30,14 @@ function PortalLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
 
+  const isDeliveryRole = (roles as string[]).includes("delivery");
+  const isLabMember = !!(profile && labId);
+  // A doctor portal user has neither lab membership nor delivery role
+  const isDoctorUser = !!user && !isLabMember && !isDeliveryRole;
+
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
-    enabled: !!user && !isLoginRoute,
+    enabled: !!user && !isLoginRoute && isDoctorUser,
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
@@ -44,13 +49,23 @@ function PortalLayout() {
   });
 
   useEffect(() => {
-    if (!loading && !user && !isLoginRoute && !redirectingRef.current) {
+    if (loading || isLoginRoute || redirectingRef.current) return;
+    if (!user) {
       redirectingRef.current = true;
       navigate({ to: "/portal/login", replace: true });
       return;
     }
-    redirectingRef.current = false;
-  }, [loading, user, isLoginRoute, navigate]);
+    // Wrong portal: route delivery agents and lab members away
+    if (isDeliveryRole) {
+      redirectingRef.current = true;
+      navigate({ to: "/delivery/dashboard", replace: true });
+      return;
+    }
+    if (isLabMember) {
+      redirectingRef.current = true;
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [loading, user, isLoginRoute, navigate, isDeliveryRole, isLabMember]);
 
   if (loading || (!isLoginRoute && user && docLoading)) {
     return (
