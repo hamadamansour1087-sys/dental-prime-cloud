@@ -149,6 +149,29 @@ function DeliveryDashboard() {
         </Card>
       )}
 
+      {summary && (
+        <Card className="p-3">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">ملخص اليوم</p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-lg bg-success/10 p-2">
+              <CheckCircle2 className="h-4 w-4 text-success mx-auto mb-1" />
+              <p className="text-lg font-bold leading-none">{summary.delivered_count}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">مسلّمة</p>
+            </div>
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Wallet className="h-4 w-4 text-primary mx-auto mb-1" />
+              <p className="text-lg font-bold leading-none">{Number(summary.payments_total ?? 0).toFixed(0)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{summary.payments_count} سند</p>
+            </div>
+            <div className="rounded-lg bg-amber-500/10 p-2">
+              <Package className="h-4 w-4 text-amber-600 mx-auto mb-1" />
+              <p className="text-lg font-bold leading-none">{summary.pending_ready}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">جاهزة</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">حالات جاهزة للتسليم</h1>
         <Badge variant="secondary">{cases.length}</Badge>
