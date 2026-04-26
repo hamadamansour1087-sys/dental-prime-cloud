@@ -17,6 +17,11 @@ export const Route = createFileRoute("/delivery/dashboard")({
 
 function DeliveryDashboard() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission | "unsupported">(
+    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported"
+  );
+  const knownReadyIdsRef = useRef<Set<string> | null>(null);
 
   const { data: agent } = useQuery({
     queryKey: ["delivery-agent-self", user?.id],
