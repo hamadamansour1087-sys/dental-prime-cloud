@@ -207,6 +207,7 @@ function CasesPage() {
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>(""); // YYYY-MM-DD: filter cases whose current stage was entered on this day
   const [form, setForm] = useState({
     doctor_id: "",
     clinic_id: "",
