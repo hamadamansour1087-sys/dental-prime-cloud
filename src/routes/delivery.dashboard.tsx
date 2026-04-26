@@ -33,6 +33,16 @@ function DeliveryDashboard() {
     },
   });
 
+  const { data: summary } = useQuery({
+    queryKey: ["agent-daily-summary", agent?.id],
+    enabled: !!agent,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("agent_daily_summary");
+      return data as { delivered_count: number; payments_count: number; payments_total: number; pending_ready: number } | null;
+    },
+    refetchInterval: 60000,
+  });
+
   const { data: cases = [], isLoading } = useQuery({
     queryKey: ["delivery-ready-cases", agent?.id],
     enabled: !!agent,
