@@ -47,10 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(() => loadProfileAndRoles(sess.user.id), 0);
+        setLoading(true);
+        setTimeout(() => {
+          loadProfileAndRoles(sess.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setProfile(null);
         setRoles([]);
+        setLoading(false);
       }
     });
 

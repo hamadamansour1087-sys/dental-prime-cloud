@@ -17,28 +17,31 @@ function Index() {
     if (loading) return;
     if (!user) { setDest("/login"); return; }
 
-    // Delivery agent role takes priority
-    if ((roles as string[]).includes("delivery")) {
-      setDest("/delivery/dashboard");
-      return;
-    }
-
     // Lab member (has profile + lab_id)
     if (profile && labId) {
       setDest("/dashboard");
       return;
     }
 
-    // Otherwise check if this user is a doctor (portal user)
+    // Otherwise check if this user belongs to a doctor or delivery agent account
     (async () => {
-      const { data } = await supabase
-        .from("doctors")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setDest(data ? "/portal/dashboard" : "/login");
+      const [{ data: agent }, { data: doctor }] = await Promise.all([
+        supabase
+          .from("delivery_agents")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle(),
+        supabase
+          .from("doctors")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("portal_enabled", true)
+          .maybeSingle(),
+      ]);
+      setDest(agent ? "/delivery/dashboard" : doctor ? "/portal/dashboard" : "/login");
     })();
-  }, [user, loading, roles, profile, labId]);
+  }, [user, loading, profile, labId]);
 
   if (loading || !dest) {
     return (
