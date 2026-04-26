@@ -23,10 +23,12 @@ import { Route as PortalCasesRouteImport } from './routes/portal.cases'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
+import { Route as ApiCreateDeliveryAgentAccountRouteImport } from './routes/api/create-delivery-agent-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
 import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-insights'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 import { Route as ApiAiAnalyzeCaseRouteImport } from './routes/api/ai-analyze-case'
+import { Route as ApiAgentResolveLoginRouteImport } from './routes/api/agent-resolve-login'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppVouchersRouteImport } from './routes/_app.vouchers'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
@@ -121,6 +123,12 @@ const ApiCreateDoctorAccountRoute = ApiCreateDoctorAccountRouteImport.update({
   path: '/api/create-doctor-account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCreateDeliveryAgentAccountRoute =
+  ApiCreateDeliveryAgentAccountRouteImport.update({
+    id: '/api/create-delivery-agent-account',
+    path: '/api/create-delivery-agent-account',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAiPredictDeliveryRoute = ApiAiPredictDeliveryRouteImport.update({
   id: '/api/ai-predict-delivery',
   path: '/api/ai-predict-delivery',
@@ -139,6 +147,11 @@ const ApiAiChatRoute = ApiAiChatRouteImport.update({
 const ApiAiAnalyzeCaseRoute = ApiAiAnalyzeCaseRouteImport.update({
   id: '/api/ai-analyze-case',
   path: '/api/ai-analyze-case',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentResolveLoginRoute = ApiAgentResolveLoginRouteImport.update({
+  id: '/api/agent-resolve-login',
+  path: '/api/agent-resolve-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
@@ -289,10 +302,12 @@ export interface FileRoutesByFullPath {
   '/users': typeof AppUsersRoute
   '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
@@ -332,10 +347,12 @@ export interface FileRoutesByTo {
   '/users': typeof AppUsersRoute
   '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
@@ -377,10 +394,12 @@ export interface FileRoutesById {
   '/_app/users': typeof AppUsersRoute
   '/_app/vouchers': typeof AppVouchersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
@@ -422,10 +441,12 @@ export interface FileRouteTypes {
     | '/users'
     | '/vouchers'
     | '/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
@@ -465,10 +486,12 @@ export interface FileRouteTypes {
     | '/users'
     | '/vouchers'
     | '/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
@@ -509,10 +532,12 @@ export interface FileRouteTypes {
     | '/_app/users'
     | '/_app/vouchers'
     | '/_app/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
@@ -532,10 +557,12 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
+  ApiAgentResolveLoginRoute: typeof ApiAgentResolveLoginRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
   ApiAiDailyInsightsRoute: typeof ApiAiDailyInsightsRoute
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
+  ApiCreateDeliveryAgentAccountRoute: typeof ApiCreateDeliveryAgentAccountRoute
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
   ApiManageUserRoute: typeof ApiManageUserRoute
   ApiPortalResolveLoginRoute: typeof ApiPortalResolveLoginRoute
@@ -641,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCreateDoctorAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/create-delivery-agent-account': {
+      id: '/api/create-delivery-agent-account'
+      path: '/api/create-delivery-agent-account'
+      fullPath: '/api/create-delivery-agent-account'
+      preLoaderRoute: typeof ApiCreateDeliveryAgentAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai-predict-delivery': {
       id: '/api/ai-predict-delivery'
       path: '/api/ai-predict-delivery'
@@ -667,6 +701,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ai-analyze-case'
       fullPath: '/api/ai-analyze-case'
       preLoaderRoute: typeof ApiAiAnalyzeCaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-resolve-login': {
+      id: '/api/agent-resolve-login'
+      path: '/api/agent-resolve-login'
+      fullPath: '/api/agent-resolve-login'
+      preLoaderRoute: typeof ApiAgentResolveLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/workflows': {
@@ -933,10 +974,12 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
+  ApiAgentResolveLoginRoute: ApiAgentResolveLoginRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
   ApiAiChatRoute: ApiAiChatRoute,
   ApiAiDailyInsightsRoute: ApiAiDailyInsightsRoute,
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
+  ApiCreateDeliveryAgentAccountRoute: ApiCreateDeliveryAgentAccountRoute,
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
   ApiManageUserRoute: ApiManageUserRoute,
   ApiPortalResolveLoginRoute: ApiPortalResolveLoginRoute,
