@@ -999,6 +999,8 @@ function CasesPage() {
                 <TableHead>المريض</TableHead>
                 <TableHead>نوع العمل</TableHead>
                 <TableHead>المرحلة</TableHead>
+                <TableHead className="w-[130px]">دخول المرحلة</TableHead>
+                <TableHead>الفني</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
                 <TableHead>تاريخ التسليم</TableHead>
               </TableRow>
@@ -1007,6 +1009,7 @@ function CasesPage() {
               {filteredCases.map((c: any) => {
                 const overdue = c.due_date && c.due_date < today && c.status === "active";
                 const stage = stages?.find((s) => s.id === c.current_stage_id);
+                const technicianName = readyTechnicians?.get(c.id);
                 return (
                   <TableRow
                     key={c.id}
@@ -1040,6 +1043,18 @@ function CasesPage() {
                           {stage.name}
                         </span>
                       ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.stage_entered_at ? format(new Date(c.stage_entered_at), "dd/MM/yyyy HH:mm") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {technicianName ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                          {technicianName}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
