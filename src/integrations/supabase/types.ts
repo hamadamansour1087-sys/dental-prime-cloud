@@ -2172,6 +2172,7 @@ export type Database = {
         Returns: string
       }
       agent_can_see_doctor: { Args: { _doctor_id: string }; Returns: boolean }
+      agent_daily_summary: { Args: { _date?: string }; Returns: Json }
       approve_pending_case: {
         Args: { _case_id: string; _workflow_id?: string }
         Returns: string
