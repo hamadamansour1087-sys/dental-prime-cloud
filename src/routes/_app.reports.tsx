@@ -504,11 +504,11 @@ function ReportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <Label className="text-xs">من تاريخ</Label>
-              <Input type="date" value={range.from} onChange={(e) => { setRange({ ...range, from: e.target.value }); setPreset("custom"); }} />
+              <DatePickerInput value={range.from} onChange={(v) => { setRange({ ...range, from: v }); setPreset("custom"); }} placeholder="من تاريخ" className="w-full" />
             </div>
             <div>
               <Label className="text-xs">إلى تاريخ</Label>
-              <Input type="date" value={range.to} onChange={(e) => { setRange({ ...range, to: e.target.value }); setPreset("custom"); }} />
+              <DatePickerInput value={range.to} onChange={(v) => { setRange({ ...range, to: v }); setPreset("custom"); }} placeholder="إلى تاريخ" className="w-full" />
             </div>
             <div>
               <Label className="text-xs">الطبيب</Label>

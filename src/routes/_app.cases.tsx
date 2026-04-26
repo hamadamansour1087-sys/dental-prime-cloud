@@ -21,6 +21,7 @@ import { ToothChart } from "@/components/ToothChart";
 import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { ShadeSelector } from "@/components/ShadeSelector";
 import { FollowupCaseDialog } from "@/components/FollowupCaseDialog";
+import { DatePickerInput } from "@/components/ui/date-picker-input";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
