@@ -136,13 +136,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await loadProfileAndRoles(user.id);
   };
 
+  const isLabRole = roles.some((r) => r === "admin" || r === "manager" || r === "technician");
+  const effectiveLabId = isLabRole ? profile?.lab_id ?? null : null;
+
   const value = useMemo<AuthCtx>(
     () => ({
       user,
       session,
       profile,
       roles,
-      labId: profile?.lab_id ?? null,
+      labId: effectiveLabId,
       loading,
       signIn,
       signUp,
@@ -150,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasRole: (r) => roles.includes(r),
       refresh,
     }),
-    [user, session, profile, roles, loading],
+    [user, session, profile, roles, effectiveLabId, loading],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
