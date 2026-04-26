@@ -964,20 +964,13 @@ function CasesPage() {
             ))}
           </SelectContent>
         </Select>
-        <div className="flex items-center gap-1">
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="w-[160px]"
-            title="تصفية حسب تاريخ دخول المرحلة الحالية"
-          />
-          {dateFilter && (
-            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setDateFilter("")} title="مسح فلتر التاريخ">
-              <XCircle className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        <DatePickerInput
+          value={dateFilter}
+          onChange={setDateFilter}
+          placeholder="فلتر التاريخ"
+          title="تصفية حسب تاريخ دخول المرحلة الحالية"
+          className="w-[200px]"
+        />
         <span className="text-xs text-muted-foreground">{filteredCases.length} حالة</span>
         <div className="ms-auto flex gap-1 rounded-md border p-0.5">
           <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8">
