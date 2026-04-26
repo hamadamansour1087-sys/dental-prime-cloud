@@ -59,6 +59,9 @@ const clearScopedSession = (scope: AuthScope) => {
   window.sessionStorage.removeItem(scopedSessionKey(scope));
 };
 
+const isSameSession = (a: Session | null, b: Session | null) =>
+  !!a?.access_token && !!b?.access_token && a.access_token === b.access_token;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -67,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const scopeRef = useRef<AuthScope>(getAuthScope());
   const signingOutRef = useRef(false);
+  const signingInRef = useRef(false);
+  const applyingScopedSessionRef = useRef(false);
 
   const loadProfileAndRoles = async (uid: string) => {
     const [{ data: prof }, { data: rs }] = await Promise.all([
@@ -79,21 +84,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    const init = async () => {
+    const applyScopedSession = async () => {
       const scoped = readScopedSession(scopeRef.current);
-      if (!scoped) {
-        await supabase.auth.signOut({ scope: "local" });
-        if (mounted) setLoading(false);
-        return;
-      }
+      if (!scoped) return null;
+      applyingScopedSessionRef.current = true;
       const { data: setData, error } = await supabase.auth.setSession({
         access_token: scoped.access_token,
         refresh_token: scoped.refresh_token,
       });
+      applyingScopedSessionRef.current = false;
       const sess = error ? null : setData.session;
+      if (sess) writeScopedSession(scopeRef.current, sess);
+      return sess;
+    };
+
+    const init = async () => {
+      const scoped = readScopedSession(scopeRef.current);
+      if (!scoped) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setRoles([]);
+        if (mounted) setLoading(false);
+        return;
+      }
+      const sess = await applyScopedSession();
       if (!sess) {
         clearScopedSession(scopeRef.current);
-        await supabase.auth.signOut({ scope: "local" });
         if (mounted) setLoading(false);
         return;
       }
@@ -105,6 +122,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       if (signingOutRef.current) return;
+      const scoped = readScopedSession(scopeRef.current);
+      const shouldAccept = signingInRef.current || applyingScopedSessionRef.current || isSameSession(sess, scoped);
+
+      if (!shouldAccept) {
+        if (!sess) return;
+        setTimeout(() => {
+          applyScopedSession().catch(() => undefined);
+        }, 0);
+        return;
+      }
+
+      signingInRef.current = false;
       if (sess) writeScopedSession(scopeRef.current, sess);
       setSession(sess);
       setUser(sess?.user ?? null);
@@ -122,15 +151,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     init();
 
+    const restoreCurrentScope = () => {
+      applyScopedSession().catch(() => undefined);
+    };
+    const restoreWhenVisible = () => {
+      if (document.visibilityState === "visible") restoreCurrentScope();
+    };
+    window.addEventListener("focus", restoreCurrentScope);
+    document.addEventListener("visibilitychange", restoreWhenVisible);
+
     return () => {
       mounted = false;
+      window.removeEventListener("focus", restoreCurrentScope);
+      document.removeEventListener("visibilitychange", restoreWhenVisible);
       sub.subscription.unsubscribe();
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    signingInRef.current = true;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (data.session) writeScopedSession(scopeRef.current, data.session);
+    if (!data.session) signingInRef.current = false;
     return { error: error?.message ?? null };
   };
 
