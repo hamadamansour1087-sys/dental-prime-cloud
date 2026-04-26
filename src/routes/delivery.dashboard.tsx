@@ -1,12 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MapPin, Phone, Calendar, Stethoscope } from "lucide-react";
+import { ChevronLeft, MapPin, Phone, Calendar, Stethoscope, Bell, BellOff } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { playNotificationSound } from "@/lib/notificationSound";
 
 export const Route = createFileRoute("/delivery/dashboard")({
   component: DeliveryDashboard,
