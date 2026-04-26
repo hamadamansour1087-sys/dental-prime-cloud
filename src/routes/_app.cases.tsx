@@ -951,12 +951,12 @@ function CasesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[110px]">رقم الحالة</TableHead>
+                <TableHead className="w-[110px]">تاريخ الدخول</TableHead>
                 <TableHead>الطبيب</TableHead>
                 <TableHead>المريض</TableHead>
                 <TableHead>نوع العمل</TableHead>
                 <TableHead>المرحلة</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
-                <TableHead>تاريخ الاستلام</TableHead>
                 <TableHead>تاريخ التسليم</TableHead>
               </TableRow>
             </TableHeader>
