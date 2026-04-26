@@ -34,9 +34,18 @@ function AppLayout() {
 
   if (!user) return <Navigate to="/login" />;
 
-  // Doctors (portal users) don't have a lab profile — redirect them to the portal
   if (!profile || !labId) {
-    return <Navigate to="/portal/dashboard" />;
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4" dir="rtl">
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center">
+          <h2 className="text-lg font-semibold">هذا الحساب ليس حساب معمل</h2>
+          <p className="mt-2 text-sm text-muted-foreground">سجّل الدخول بحساب المعمل الصحيح من صفحة برنامج المعمل.</p>
+          <Button variant="outline" className="mt-4" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
+            تسجيل الخروج
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const performLogout = async () => {
