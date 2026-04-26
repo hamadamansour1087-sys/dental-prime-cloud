@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalStatementRouteImport } from './routes/portal.statement'
@@ -20,13 +21,20 @@ import { Route as PortalMessagesRouteImport } from './routes/portal.messages'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as DeliveryPaymentsRouteImport } from './routes/delivery.payments'
+import { Route as DeliveryLoginRouteImport } from './routes/delivery.login'
+import { Route as DeliveryDoctorsRouteImport } from './routes/delivery.doctors'
+import { Route as DeliveryDeliveredRouteImport } from './routes/delivery.delivered'
+import { Route as DeliveryDashboardRouteImport } from './routes/delivery.dashboard'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
+import { Route as ApiCreateDeliveryAgentAccountRouteImport } from './routes/api/create-delivery-agent-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
 import { Route as ApiAiDailyInsightsRouteImport } from './routes/api/ai-daily-insights'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 import { Route as ApiAiAnalyzeCaseRouteImport } from './routes/api/ai-analyze-case'
+import { Route as ApiAgentResolveLoginRouteImport } from './routes/api/agent-resolve-login'
 import { Route as AppWorkflowsRouteImport } from './routes/_app.workflows'
 import { Route as AppVouchersRouteImport } from './routes/_app.vouchers'
 import { Route as AppUsersRouteImport } from './routes/_app.users'
@@ -38,6 +46,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReportsRouteImport } from './routes/_app.reports'
 import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
+import { Route as AppPendingPaymentsRouteImport } from './routes/_app.pending-payments'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppMessagesRouteImport } from './routes/_app.messages'
@@ -45,10 +54,14 @@ import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
+import { Route as AppDeliveryRoutesRouteImport } from './routes/_app.delivery-routes'
+import { Route as AppDeliveryAgentsRouteImport } from './routes/_app.delivery-agents'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppBackupRouteImport } from './routes/_app.backup'
+import { Route as DeliveryDoctorDoctorIdRouteImport } from './routes/delivery.doctor.$doctorId'
+import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.deliver.$caseId'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
@@ -65,6 +78,11 @@ const PortalRoute = PortalRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -106,6 +124,31 @@ const PortalCasesRoute = PortalCasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => PortalRoute,
 } as any)
+const DeliveryPaymentsRoute = DeliveryPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryLoginRoute = DeliveryLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDoctorsRoute = DeliveryDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDeliveredRoute = DeliveryDeliveredRouteImport.update({
+  id: '/delivered',
+  path: '/delivered',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDashboardRoute = DeliveryDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => DeliveryRoute,
+} as any)
 const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
   id: '/api/portal-resolve-login',
   path: '/api/portal-resolve-login',
@@ -121,6 +164,12 @@ const ApiCreateDoctorAccountRoute = ApiCreateDoctorAccountRouteImport.update({
   path: '/api/create-doctor-account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCreateDeliveryAgentAccountRoute =
+  ApiCreateDeliveryAgentAccountRouteImport.update({
+    id: '/api/create-delivery-agent-account',
+    path: '/api/create-delivery-agent-account',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAiPredictDeliveryRoute = ApiAiPredictDeliveryRouteImport.update({
   id: '/api/ai-predict-delivery',
   path: '/api/ai-predict-delivery',
@@ -139,6 +188,11 @@ const ApiAiChatRoute = ApiAiChatRouteImport.update({
 const ApiAiAnalyzeCaseRoute = ApiAiAnalyzeCaseRouteImport.update({
   id: '/api/ai-analyze-case',
   path: '/api/ai-analyze-case',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentResolveLoginRoute = ApiAgentResolveLoginRouteImport.update({
+  id: '/api/agent-resolve-login',
+  path: '/api/agent-resolve-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
@@ -196,6 +250,11 @@ const AppPricingRoute = AppPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPendingPaymentsRoute = AppPendingPaymentsRouteImport.update({
+  id: '/pending-payments',
+  path: '/pending-payments',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPendingCasesRoute = AppPendingCasesRouteImport.update({
   id: '/pending-cases',
   path: '/pending-cases',
@@ -231,6 +290,16 @@ const AppDoctorsRoute = AppDoctorsRouteImport.update({
   path: '/doctors',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDeliveryRoutesRoute = AppDeliveryRoutesRouteImport.update({
+  id: '/delivery-routes',
+  path: '/delivery-routes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeliveryAgentsRoute = AppDeliveryAgentsRouteImport.update({
+  id: '/delivery-agents',
+  path: '/delivery-agents',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -251,6 +320,16 @@ const AppBackupRoute = AppBackupRouteImport.update({
   path: '/backup',
   getParentRoute: () => AppRoute,
 } as any)
+const DeliveryDoctorDoctorIdRoute = DeliveryDoctorDoctorIdRouteImport.update({
+  id: '/doctor/$doctorId',
+  path: '/doctor/$doctorId',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDeliverCaseIdRoute = DeliveryDeliverCaseIdRouteImport.update({
+  id: '/deliver/$caseId',
+  path: '/deliver/$caseId',
+  getParentRoute: () => DeliveryRoute,
+} as any)
 const AppCasesNewRoute = AppCasesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -264,6 +343,7 @@ const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -271,6 +351,8 @@ export interface FileRoutesByFullPath {
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/delivery-routes': typeof AppDeliveryRoutesRoute
   '/doctors': typeof AppDoctorsRoute
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
@@ -278,6 +360,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
+  '/pending-payments': typeof AppPendingPaymentsRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
   '/reports': typeof AppReportsRoute
@@ -289,13 +372,20 @@ export interface FileRoutesByFullPath {
   '/users': typeof AppUsersRoute
   '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
+  '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -304,9 +394,12 @@ export interface FileRoutesByFullPath {
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
   '/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -314,6 +407,8 @@ export interface FileRoutesByTo {
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/delivery-routes': typeof AppDeliveryRoutesRoute
   '/doctors': typeof AppDoctorsRoute
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
@@ -321,6 +416,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
+  '/pending-payments': typeof AppPendingPaymentsRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
   '/reports': typeof AppReportsRoute
@@ -332,13 +428,20 @@ export interface FileRoutesByTo {
   '/users': typeof AppUsersRoute
   '/vouchers': typeof AppVouchersRoute
   '/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
+  '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -347,11 +450,14 @@ export interface FileRoutesByTo {
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
   '/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/signup': typeof SignupRoute
@@ -359,6 +465,8 @@ export interface FileRoutesById {
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/cash-accounts': typeof AppCashAccountsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/_app/delivery-routes': typeof AppDeliveryRoutesRoute
   '/_app/doctors': typeof AppDoctorsRoute
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/inventory': typeof AppInventoryRoute
@@ -366,6 +474,7 @@ export interface FileRoutesById {
   '/_app/messages': typeof AppMessagesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
+  '/_app/pending-payments': typeof AppPendingPaymentsRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/purchases': typeof AppPurchasesRoute
   '/_app/reports': typeof AppReportsRoute
@@ -377,13 +486,20 @@ export interface FileRoutesById {
   '/_app/users': typeof AppUsersRoute
   '/_app/vouchers': typeof AppVouchersRoute
   '/_app/workflows': typeof AppWorkflowsRoute
+  '/api/agent-resolve-login': typeof ApiAgentResolveLoginRoute
   '/api/ai-analyze-case': typeof ApiAiAnalyzeCaseRoute
   '/api/ai-chat': typeof ApiAiChatRoute
   '/api/ai-daily-insights': typeof ApiAiDailyInsightsRoute
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
+  '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
+  '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -392,11 +508,14 @@ export interface FileRoutesById {
   '/portal/statement': typeof PortalStatementRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
   '/_app/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -404,6 +523,8 @@ export interface FileRouteTypes {
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
+    | '/delivery-agents'
+    | '/delivery-routes'
     | '/doctors'
     | '/expenses'
     | '/inventory'
@@ -411,6 +532,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/patients'
     | '/pending-cases'
+    | '/pending-payments'
     | '/pricing'
     | '/purchases'
     | '/reports'
@@ -422,13 +544,20 @@ export interface FileRouteTypes {
     | '/users'
     | '/vouchers'
     | '/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
+    | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -437,9 +566,12 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/cases/$caseId'
     | '/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -447,6 +579,8 @@ export interface FileRouteTypes {
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
+    | '/delivery-agents'
+    | '/delivery-routes'
     | '/doctors'
     | '/expenses'
     | '/inventory'
@@ -454,6 +588,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/patients'
     | '/pending-cases'
+    | '/pending-payments'
     | '/pricing'
     | '/purchases'
     | '/reports'
@@ -465,13 +600,20 @@ export interface FileRouteTypes {
     | '/users'
     | '/vouchers'
     | '/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
+    | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -480,10 +622,13 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/cases/$caseId'
     | '/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/delivery'
     | '/login'
     | '/portal'
     | '/signup'
@@ -491,6 +636,8 @@ export interface FileRouteTypes {
     | '/_app/cases'
     | '/_app/cash-accounts'
     | '/_app/dashboard'
+    | '/_app/delivery-agents'
+    | '/_app/delivery-routes'
     | '/_app/doctors'
     | '/_app/expenses'
     | '/_app/inventory'
@@ -498,6 +645,7 @@ export interface FileRouteTypes {
     | '/_app/messages'
     | '/_app/patients'
     | '/_app/pending-cases'
+    | '/_app/pending-payments'
     | '/_app/pricing'
     | '/_app/purchases'
     | '/_app/reports'
@@ -509,13 +657,20 @@ export interface FileRouteTypes {
     | '/_app/users'
     | '/_app/vouchers'
     | '/_app/workflows'
+    | '/api/agent-resolve-login'
     | '/api/ai-analyze-case'
     | '/api/ai-chat'
     | '/api/ai-daily-insights'
     | '/api/ai-predict-delivery'
+    | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
+    | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -524,18 +679,23 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/_app/cases/$caseId'
     | '/_app/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DeliveryRoute: typeof DeliveryRouteWithChildren
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
   SignupRoute: typeof SignupRoute
+  ApiAgentResolveLoginRoute: typeof ApiAgentResolveLoginRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
   ApiAiDailyInsightsRoute: typeof ApiAiDailyInsightsRoute
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
+  ApiCreateDeliveryAgentAccountRoute: typeof ApiCreateDeliveryAgentAccountRoute
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
   ApiManageUserRoute: typeof ApiManageUserRoute
   ApiPortalResolveLoginRoute: typeof ApiPortalResolveLoginRoute
@@ -562,6 +722,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -620,6 +787,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCasesRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/delivery/payments': {
+      id: '/delivery/payments'
+      path: '/payments'
+      fullPath: '/delivery/payments'
+      preLoaderRoute: typeof DeliveryPaymentsRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/login': {
+      id: '/delivery/login'
+      path: '/login'
+      fullPath: '/delivery/login'
+      preLoaderRoute: typeof DeliveryLoginRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/doctors': {
+      id: '/delivery/doctors'
+      path: '/doctors'
+      fullPath: '/delivery/doctors'
+      preLoaderRoute: typeof DeliveryDoctorsRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/delivered': {
+      id: '/delivery/delivered'
+      path: '/delivered'
+      fullPath: '/delivery/delivered'
+      preLoaderRoute: typeof DeliveryDeliveredRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/dashboard': {
+      id: '/delivery/dashboard'
+      path: '/dashboard'
+      fullPath: '/delivery/dashboard'
+      preLoaderRoute: typeof DeliveryDashboardRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
     '/api/portal-resolve-login': {
       id: '/api/portal-resolve-login'
       path: '/api/portal-resolve-login'
@@ -639,6 +841,13 @@ declare module '@tanstack/react-router' {
       path: '/api/create-doctor-account'
       fullPath: '/api/create-doctor-account'
       preLoaderRoute: typeof ApiCreateDoctorAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/create-delivery-agent-account': {
+      id: '/api/create-delivery-agent-account'
+      path: '/api/create-delivery-agent-account'
+      fullPath: '/api/create-delivery-agent-account'
+      preLoaderRoute: typeof ApiCreateDeliveryAgentAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ai-predict-delivery': {
@@ -667,6 +876,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ai-analyze-case'
       fullPath: '/api/ai-analyze-case'
       preLoaderRoute: typeof ApiAiAnalyzeCaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-resolve-login': {
+      id: '/api/agent-resolve-login'
+      path: '/api/agent-resolve-login'
+      fullPath: '/api/agent-resolve-login'
+      preLoaderRoute: typeof ApiAgentResolveLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/workflows': {
@@ -746,6 +962,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPricingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pending-payments': {
+      id: '/_app/pending-payments'
+      path: '/pending-payments'
+      fullPath: '/pending-payments'
+      preLoaderRoute: typeof AppPendingPaymentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/pending-cases': {
       id: '/_app/pending-cases'
       path: '/pending-cases'
@@ -795,6 +1018,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDoctorsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/delivery-routes': {
+      id: '/_app/delivery-routes'
+      path: '/delivery-routes'
+      fullPath: '/delivery-routes'
+      preLoaderRoute: typeof AppDeliveryRoutesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/delivery-agents': {
+      id: '/_app/delivery-agents'
+      path: '/delivery-agents'
+      fullPath: '/delivery-agents'
+      preLoaderRoute: typeof AppDeliveryAgentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -822,6 +1059,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/backup'
       preLoaderRoute: typeof AppBackupRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/delivery/doctor/$doctorId': {
+      id: '/delivery/doctor/$doctorId'
+      path: '/doctor/$doctorId'
+      fullPath: '/delivery/doctor/$doctorId'
+      preLoaderRoute: typeof DeliveryDoctorDoctorIdRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/deliver/$caseId': {
+      id: '/delivery/deliver/$caseId'
+      path: '/deliver/$caseId'
+      fullPath: '/delivery/deliver/$caseId'
+      preLoaderRoute: typeof DeliveryDeliverCaseIdRouteImport
+      parentRoute: typeof DeliveryRoute
     }
     '/_app/cases/new': {
       id: '/_app/cases/new'
@@ -859,6 +1110,8 @@ interface AppRouteChildren {
   AppCasesRoute: typeof AppCasesRouteWithChildren
   AppCashAccountsRoute: typeof AppCashAccountsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDeliveryAgentsRoute: typeof AppDeliveryAgentsRoute
+  AppDeliveryRoutesRoute: typeof AppDeliveryRoutesRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
   AppExpensesRoute: typeof AppExpensesRoute
   AppInventoryRoute: typeof AppInventoryRoute
@@ -866,6 +1119,7 @@ interface AppRouteChildren {
   AppMessagesRoute: typeof AppMessagesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
+  AppPendingPaymentsRoute: typeof AppPendingPaymentsRoute
   AppPricingRoute: typeof AppPricingRoute
   AppPurchasesRoute: typeof AppPurchasesRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -884,6 +1138,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppCasesRoute: AppCasesRouteWithChildren,
   AppCashAccountsRoute: AppCashAccountsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDeliveryAgentsRoute: AppDeliveryAgentsRoute,
+  AppDeliveryRoutesRoute: AppDeliveryRoutesRoute,
   AppDoctorsRoute: AppDoctorsRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppInventoryRoute: AppInventoryRoute,
@@ -891,6 +1147,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMessagesRoute: AppMessagesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
+  AppPendingPaymentsRoute: AppPendingPaymentsRoute,
   AppPricingRoute: AppPricingRoute,
   AppPurchasesRoute: AppPurchasesRoute,
   AppReportsRoute: AppReportsRoute,
@@ -905,6 +1162,30 @@ const AppRouteChildren: AppRouteChildren = {
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface DeliveryRouteChildren {
+  DeliveryDashboardRoute: typeof DeliveryDashboardRoute
+  DeliveryDeliveredRoute: typeof DeliveryDeliveredRoute
+  DeliveryDoctorsRoute: typeof DeliveryDoctorsRoute
+  DeliveryLoginRoute: typeof DeliveryLoginRoute
+  DeliveryPaymentsRoute: typeof DeliveryPaymentsRoute
+  DeliveryDeliverCaseIdRoute: typeof DeliveryDeliverCaseIdRoute
+  DeliveryDoctorDoctorIdRoute: typeof DeliveryDoctorDoctorIdRoute
+}
+
+const DeliveryRouteChildren: DeliveryRouteChildren = {
+  DeliveryDashboardRoute: DeliveryDashboardRoute,
+  DeliveryDeliveredRoute: DeliveryDeliveredRoute,
+  DeliveryDoctorsRoute: DeliveryDoctorsRoute,
+  DeliveryLoginRoute: DeliveryLoginRoute,
+  DeliveryPaymentsRoute: DeliveryPaymentsRoute,
+  DeliveryDeliverCaseIdRoute: DeliveryDeliverCaseIdRoute,
+  DeliveryDoctorDoctorIdRoute: DeliveryDoctorDoctorIdRoute,
+}
+
+const DeliveryRouteWithChildren = DeliveryRoute._addFileChildren(
+  DeliveryRouteChildren,
+)
 
 interface PortalRouteChildren {
   PortalCasesRoute: typeof PortalCasesRoute
@@ -930,13 +1211,16 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DeliveryRoute: DeliveryRouteWithChildren,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
   SignupRoute: SignupRoute,
+  ApiAgentResolveLoginRoute: ApiAgentResolveLoginRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
   ApiAiChatRoute: ApiAiChatRoute,
   ApiAiDailyInsightsRoute: ApiAiDailyInsightsRoute,
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
+  ApiCreateDeliveryAgentAccountRoute: ApiCreateDeliveryAgentAccountRoute,
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
   ApiManageUserRoute: ApiManageUserRoute,
   ApiPortalResolveLoginRoute: ApiPortalResolveLoginRoute,
