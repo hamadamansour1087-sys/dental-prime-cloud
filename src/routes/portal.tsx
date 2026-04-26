@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -22,21 +22,16 @@ const items = [
 ] as const;
 
 function PortalLayout() {
-  const { user, loading, signOut, roles, profile, labId } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/portal/login";
-  const redirectingRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
 
-  const isLabMember = !!(profile && labId);
-  // A doctor portal user has no lab membership and is linked to a doctor record
-  const canCheckPortalAccount = !!user && !isLabMember;
-
   const { data: doctor, isLoading: docLoading } = useQuery({
     queryKey: ["portal-doctor", user?.id],
-    enabled: !!user && !isLoginRoute && canCheckPortalAccount,
+    enabled: !!user && !isLoginRoute,
     queryFn: async () => {
       const { data } = await supabase
         .from("doctors")
@@ -48,24 +43,13 @@ function PortalLayout() {
   });
 
   useEffect(() => {
-    if (loading || isLoginRoute || redirectingRef.current) return;
+    if (loading || isLoginRoute) return;
     if (!user) {
-      redirectingRef.current = true;
       navigate({ to: "/portal/login", replace: true });
-      return;
     }
-    if (isLabMember) {
-      redirectingRef.current = true;
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
-    if (!docLoading && !doctor) {
-      redirectingRef.current = true;
-      navigate({ to: "/delivery/dashboard", replace: true });
-    }
-  }, [loading, user, isLoginRoute, navigate, isLabMember, docLoading, doctor]);
+  }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || (!isLoginRoute && user && canCheckPortalAccount && docLoading)) {
+  if (loading || (!isLoginRoute && user && docLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -77,10 +61,25 @@ function PortalLayout() {
     return <Outlet />;
   }
 
-  if (!user || isLabMember || !doctor) {
+  if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4" dir="rtl">
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center">
+          <Stethoscope className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h2 className="mt-4 text-lg font-semibold">هذا الحساب ليس حساب طبيب</h2>
+          <p className="mt-2 text-sm text-muted-foreground">سجّل الدخول من بورتال الأطباء بحساب الطبيب الصحيح.</p>
+          <Button variant="outline" className="mt-4" onClick={async () => { await signOut(); navigate({ to: "/portal/login" }); }}>
+            تسجيل الخروج
+          </Button>
+        </div>
       </div>
     );
   }
