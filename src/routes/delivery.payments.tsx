@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, CheckCircle2, XCircle, Clock, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Wallet, CheckCircle2, XCircle, Clock, Calendar, Plus, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/delivery/payments")({
@@ -32,7 +33,15 @@ function AgentPayments() {
 
   return (
     <div className="space-y-3" dir="rtl">
-      <h1 className="text-xl font-bold flex items-center gap-2"><Wallet className="h-5 w-5 text-primary" /> سندات القبض</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold flex items-center gap-2"><Wallet className="h-5 w-5 text-primary" /> سندات القبض</h1>
+        <Button asChild size="sm">
+          <Link to="/delivery/doctors"><Plus className="ml-1 h-4 w-4" /> سند جديد</Link>
+        </Button>
+      </div>
+      <Card className="p-2.5 text-xs text-muted-foreground bg-muted/40">
+        لإنشاء سند: اختر الطبيب من <Link to="/delivery/doctors" className="text-primary font-semibold mx-1">قائمة الأطباء</Link> ثم اضغط "سند قبض جديد".
+      </Card>
 
       {isLoading ? (
         <Card className="p-8 text-center text-muted-foreground">جارٍ التحميل...</Card>
