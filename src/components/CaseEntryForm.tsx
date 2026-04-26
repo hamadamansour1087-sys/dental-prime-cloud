@@ -467,10 +467,13 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
 
     setSubmitting(true);
     try {
-      // Patient upsert
+      const isPortal = mode === "portal";
+
+      // Patient upsert (lab members only — doctors can't write to patients table via RLS).
+      // For portal submissions, the patient name is preserved in the case notes instead.
       let patientId: string | null = null;
       const trimmedName = form.patient_name.trim();
-      if (trimmedName) {
+      if (trimmedName && !isPortal) {
         const { data: existing } = await supabase
           .from("patients")
           .select("id")
@@ -488,8 +491,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           patientId = newP.id;
         }
       }
-
-      const isPortal = mode === "portal";
 
       const { data: caseNum } = isPortal
         ? { data: `PND-${Date.now()}` }
