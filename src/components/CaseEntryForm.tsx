@@ -529,7 +529,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           units: totalUnits,
           price: totalPrice || null,
           due_date: form.due_date || null,
-          notes: form.notes || null,
+          notes:
+            isPortal && trimmedName
+              ? `المريض: ${trimmedName}${form.notes ? `\n${form.notes}` : ""}`
+              : form.notes || null,
           status: isPortal ? "pending_approval" : "active",
         })
         .select()
