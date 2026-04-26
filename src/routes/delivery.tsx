@@ -29,7 +29,7 @@ function DeliveryLayout() {
     queryFn: async () => {
       const { data } = await supabase
         .from("delivery_agents")
-        .select("id, name, lab_id, is_active, labs(name)")
+        .select("id, name, lab_id, route_id, governorates, is_active, labs(name)")
         .eq("user_id", user!.id)
         .maybeSingle();
       return data;
