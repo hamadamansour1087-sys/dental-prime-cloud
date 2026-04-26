@@ -45,10 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfileAndRoles = useCallback(async (uid: string) => {
     const [{ data: prof }, { data: rs }] = await Promise.all([
       supabase.from("profiles").select("id, lab_id, full_name").eq("id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("user_roles").select("role, lab_id").eq("user_id", uid),
     ]);
     setProfile(prof ?? null);
-    setRoles(((rs ?? []) as { role: Role }[]).map((r) => r.role));
+    setRoles(
+      ((rs ?? []) as { role: Role; lab_id: string }[])
+        .filter((r) => !!prof?.lab_id && r.lab_id === prof.lab_id)
+        .map((r) => r.role),
+    );
   }, []);
 
   const applySession = useCallback(
