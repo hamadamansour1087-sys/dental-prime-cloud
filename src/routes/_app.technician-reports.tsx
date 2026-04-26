@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy } from "lucide-react";
+import { DatePickerInput } from "@/components/ui/date-picker-input";
 
 export const Route = createFileRoute("/_app/technician-reports")({
   component: TechnicianReportsPage,
@@ -87,11 +88,11 @@ function TechnicianReportsPage() {
         <CardContent className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
           <div>
             <Label className="text-xs">من تاريخ</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <DatePickerInput value={from} onChange={setFrom} placeholder="من تاريخ" className="w-full" />
           </div>
           <div>
             <Label className="text-xs">إلى تاريخ</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <DatePickerInput value={to} onChange={setTo} placeholder="إلى تاريخ" className="w-full" />
           </div>
           <div className="rounded-md border bg-muted/30 p-2">
             <p className="text-xs text-muted-foreground">إجمالي الحالات</p>
