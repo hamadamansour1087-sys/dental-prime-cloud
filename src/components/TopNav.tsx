@@ -67,8 +67,6 @@ const groups: NavGroup[] = [
       { title: "سندات قبض/صرف", url: "/vouchers", icon: ArrowLeftRight },
     ],
   },
-    ],
-  },
   {
     label: "التوصيل",
     icon: TruckIcon,
