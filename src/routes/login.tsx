@@ -19,7 +19,7 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/" });
+    if (user) navigate({ to: "/dashboard" });
   }, [user, navigate]);
 
   const submit = async (e: FormEvent) => {
@@ -30,8 +30,7 @@ function LoginPage() {
     if (error) toast.error(error);
     else {
       toast.success("تم تسجيل الدخول");
-      // Route through "/" so role-based redirect picks the right portal
-      navigate({ to: "/" });
+      navigate({ to: "/dashboard" });
     }
   };
 
