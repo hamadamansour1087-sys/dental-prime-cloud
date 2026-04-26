@@ -19,7 +19,7 @@ function DeliveryLogin() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (user) navigate({ to: "/" }); }, [user, navigate]);
+  useEffect(() => { if (user) navigate({ to: "/delivery/dashboard" }); }, [user, navigate]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ function DeliveryLogin() {
       const { error } = await signIn(data.email, password.trim());
       setBusy(false);
       if (error) toast.error("كلمة السر غير صحيحة");
-      else { toast.success("أهلاً بك"); navigate({ to: "/" }); }
+      else { toast.success("أهلاً بك"); navigate({ to: "/delivery/dashboard" }); }
     } catch { setBusy(false); toast.error("تعذّر الاتصال"); }
   };
 

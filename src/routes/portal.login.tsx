@@ -20,7 +20,7 @@ function PortalLoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/" });
+    if (user) navigate({ to: "/portal/dashboard" });
   }, [user, navigate]);
 
   const submit = async (e: FormEvent) => {
@@ -49,7 +49,7 @@ function PortalLoginPage() {
         toast.error("كلمة السر غير صحيحة");
       } else {
         toast.success("تم تسجيل الدخول");
-        navigate({ to: "/" });
+        navigate({ to: "/portal/dashboard" });
       }
     } catch {
       setBusy(false);

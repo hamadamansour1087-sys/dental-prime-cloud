@@ -45,10 +45,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfileAndRoles = useCallback(async (uid: string) => {
     const [{ data: prof }, { data: rs }] = await Promise.all([
       supabase.from("profiles").select("id, lab_id, full_name").eq("id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
+      supabase.from("user_roles").select("role, lab_id").eq("user_id", uid),
     ]);
     setProfile(prof ?? null);
-    setRoles(((rs ?? []) as { role: Role }[]).map((r) => r.role));
+    setRoles(
+      ((rs ?? []) as { role: Role; lab_id: string }[])
+        .filter(
+          (r) =>
+            !!prof?.lab_id &&
+            r.lab_id === prof.lab_id &&
+            (r.role === "admin" || r.role === "manager" || r.role === "technician"),
+        )
+        .map((r) => r.role),
+    );
   }, []);
 
   const applySession = useCallback(
@@ -132,13 +141,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await loadProfileAndRoles(user.id);
   };
 
+  const isLabRole = roles.some((r) => r === "admin" || r === "manager" || r === "technician");
+  const effectiveLabId = isLabRole ? profile?.lab_id ?? null : null;
+
   const value = useMemo<AuthCtx>(
     () => ({
       user,
       session,
       profile,
       roles,
-      labId: profile?.lab_id ?? null,
+      labId: effectiveLabId,
       loading,
       signIn,
       signUp,
@@ -146,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasRole: (r) => roles.includes(r),
       refresh,
     }),
-    [user, session, profile, roles, loading],
+    [user, session, profile, roles, effectiveLabId, loading],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
