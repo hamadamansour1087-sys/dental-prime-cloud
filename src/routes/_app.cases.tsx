@@ -264,11 +264,33 @@ function CasesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("*, doctors(name), patients(name), work_types(name)")
+        .select("*, doctors(name), patients(name), work_types(name), workflow_stages!cases_current_stage_id_fkey(name, code, color)")
         .neq("status", "cancelled")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Fetch the technician assigned at the "ready" stage per case (most recent)
+  const { data: readyTechnicians } = useQuery({
+    queryKey: ["cases-ready-technicians", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("case_stage_history")
+        .select("case_id, entered_at, technicians(name), workflow_stages!inner(code)")
+        .eq("workflow_stages.code", "ready")
+        .not("technician_id", "is", null)
+        .order("entered_at", { ascending: false });
+      if (error) throw error;
+      const map = new Map<string, string>();
+      (data ?? []).forEach((row: any) => {
+        if (!map.has(row.case_id) && row.technicians?.name) {
+          map.set(row.case_id, row.technicians.name);
+        }
+      });
+      return map;
     },
   });
 
