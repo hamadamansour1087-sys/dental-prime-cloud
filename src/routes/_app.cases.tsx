@@ -607,6 +607,7 @@ function CasesPage() {
         initialToStageId={selectedTransition?.toStageId}
         onTransitioned={() => {
           qc.invalidateQueries({ queryKey: ["cases"] });
+          qc.invalidateQueries({ queryKey: ["cases-ready-technicians"] });
         }}
       />
 
