@@ -543,6 +543,12 @@ function CasesPage() {
   const filteredCases = useMemo(() => {
     let list = cases ?? [];
     if (stageFilter !== "all") list = list.filter((c) => c.current_stage_id === stageFilter);
+    if (dateFilter) {
+      list = list.filter((c: any) => {
+        if (!c.stage_entered_at) return false;
+        return c.stage_entered_at.slice(0, 10) === dateFilter;
+      });
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       list = list.filter((c: any) =>
@@ -553,7 +559,7 @@ function CasesPage() {
       );
     }
     return list;
-  }, [cases, search, stageFilter]);
+  }, [cases, search, stageFilter, dateFilter]);
 
   const grandTotal = items.reduce((s, it) => {
     const u = parseInt(it.units) || 0;
