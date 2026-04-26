@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/create-delivery-agent-account")({
 
           await supabaseAdmin
             .from("delivery_agents")
-            .update({ user_id: created.user.id, email: internalEmail, portal_password_plain: password })
+            .update({ user_id: created.user.id, email: internalEmail })
             .eq("id", body.agent_id);
 
           return Response.json({ success: true, user_id: created.user.id, phone: phoneNorm, password });

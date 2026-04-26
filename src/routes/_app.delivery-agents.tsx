@@ -192,10 +192,10 @@ function DeliveryAgentsPage() {
                 {a.governorates?.length > 0 && (
                   <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" />{a.governorates.join("، ")}</p>
                 )}
-                {a.portal_password_plain && (
+                {generatedPasswords[a.id] && (
                   <p className="flex items-center gap-1.5 font-mono text-foreground bg-muted px-2 py-1 rounded">
-                    <KeyRound className="h-3 w-3" />{a.portal_password_plain}
-                    <button onClick={() => { navigator.clipboard.writeText(a.portal_password_plain); toast.success("تم النسخ"); }}
+                    <KeyRound className="h-3 w-3" />{generatedPasswords[a.id]}
+                    <button onClick={() => { navigator.clipboard.writeText(generatedPasswords[a.id]); toast.success("تم النسخ"); }}
                       className="mr-auto"><Copy className="h-3 w-3" /></button>
                   </p>
                 )}
