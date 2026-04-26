@@ -22,6 +22,9 @@ import {
   Menu,
   X,
   MessageSquare,
+  Truck as TruckIcon,
+  Route as RouteIcon,
+  Wallet as WalletIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -62,6 +65,17 @@ const groups: NavGroup[] = [
       { title: "الخزن", url: "/cash-accounts", icon: Wallet },
       { title: "المصروفات", url: "/expenses", icon: Receipt },
       { title: "سندات قبض/صرف", url: "/vouchers", icon: ArrowLeftRight },
+    ],
+  },
+    ],
+  },
+  {
+    label: "التوصيل",
+    icon: TruckIcon,
+    items: [
+      { title: "المندوبون", url: "/delivery-agents", icon: TruckIcon },
+      { title: "خطوط السير", url: "/delivery-routes", icon: RouteIcon },
+      { title: "سندات المندوبين", url: "/pending-payments", icon: WalletIcon },
     ],
   },
   {

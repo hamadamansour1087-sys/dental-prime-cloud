@@ -21,7 +21,11 @@ import { Route as PortalMessagesRouteImport } from './routes/portal.messages'
 import { Route as PortalLoginRouteImport } from './routes/portal.login'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCasesRouteImport } from './routes/portal.cases'
+import { Route as DeliveryPaymentsRouteImport } from './routes/delivery.payments'
 import { Route as DeliveryLoginRouteImport } from './routes/delivery.login'
+import { Route as DeliveryDoctorsRouteImport } from './routes/delivery.doctors'
+import { Route as DeliveryDeliveredRouteImport } from './routes/delivery.delivered'
+import { Route as DeliveryDashboardRouteImport } from './routes/delivery.dashboard'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
@@ -56,6 +60,8 @@ import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppBackupRouteImport } from './routes/_app.backup'
+import { Route as DeliveryDoctorDoctorIdRouteImport } from './routes/delivery.doctor.$doctorId'
+import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.deliver.$caseId'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
@@ -118,9 +124,29 @@ const PortalCasesRoute = PortalCasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => PortalRoute,
 } as any)
+const DeliveryPaymentsRoute = DeliveryPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => DeliveryRoute,
+} as any)
 const DeliveryLoginRoute = DeliveryLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDoctorsRoute = DeliveryDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDeliveredRoute = DeliveryDeliveredRouteImport.update({
+  id: '/delivered',
+  path: '/delivered',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDashboardRoute = DeliveryDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => DeliveryRoute,
 } as any)
 const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
@@ -294,6 +320,16 @@ const AppBackupRoute = AppBackupRouteImport.update({
   path: '/backup',
   getParentRoute: () => AppRoute,
 } as any)
+const DeliveryDoctorDoctorIdRoute = DeliveryDoctorDoctorIdRouteImport.update({
+  id: '/doctor/$doctorId',
+  path: '/doctor/$doctorId',
+  getParentRoute: () => DeliveryRoute,
+} as any)
+const DeliveryDeliverCaseIdRoute = DeliveryDeliverCaseIdRouteImport.update({
+  id: '/deliver/$caseId',
+  path: '/deliver/$caseId',
+  getParentRoute: () => DeliveryRoute,
+} as any)
 const AppCasesNewRoute = AppCasesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -345,7 +381,11 @@ export interface FileRoutesByFullPath {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
   '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -354,6 +394,8 @@ export interface FileRoutesByFullPath {
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
   '/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -395,7 +437,11 @@ export interface FileRoutesByTo {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
   '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -404,6 +450,8 @@ export interface FileRoutesByTo {
   '/portal/statement': typeof PortalStatementRoute
   '/cases/$caseId': typeof AppCasesCaseIdRoute
   '/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -447,7 +495,11 @@ export interface FileRoutesById {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/delivery/dashboard': typeof DeliveryDashboardRoute
+  '/delivery/delivered': typeof DeliveryDeliveredRoute
+  '/delivery/doctors': typeof DeliveryDoctorsRoute
   '/delivery/login': typeof DeliveryLoginRoute
+  '/delivery/payments': typeof DeliveryPaymentsRoute
   '/portal/cases': typeof PortalCasesRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/login': typeof PortalLoginRoute
@@ -456,6 +508,8 @@ export interface FileRoutesById {
   '/portal/statement': typeof PortalStatementRoute
   '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
   '/_app/cases/new': typeof AppCasesNewRoute
+  '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
+  '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -499,7 +553,11 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
     | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -508,6 +566,8 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/cases/$caseId'
     | '/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -549,7 +609,11 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
     | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -558,6 +622,8 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/cases/$caseId'
     | '/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   id:
     | '__root__'
     | '/'
@@ -600,7 +666,11 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/delivery/dashboard'
+    | '/delivery/delivered'
+    | '/delivery/doctors'
     | '/delivery/login'
+    | '/delivery/payments'
     | '/portal/cases'
     | '/portal/dashboard'
     | '/portal/login'
@@ -609,6 +679,8 @@ export interface FileRouteTypes {
     | '/portal/statement'
     | '/_app/cases/$caseId'
     | '/_app/cases/new'
+    | '/delivery/deliver/$caseId'
+    | '/delivery/doctor/$doctorId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -715,11 +787,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCasesRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/delivery/payments': {
+      id: '/delivery/payments'
+      path: '/payments'
+      fullPath: '/delivery/payments'
+      preLoaderRoute: typeof DeliveryPaymentsRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
     '/delivery/login': {
       id: '/delivery/login'
       path: '/login'
       fullPath: '/delivery/login'
       preLoaderRoute: typeof DeliveryLoginRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/doctors': {
+      id: '/delivery/doctors'
+      path: '/doctors'
+      fullPath: '/delivery/doctors'
+      preLoaderRoute: typeof DeliveryDoctorsRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/delivered': {
+      id: '/delivery/delivered'
+      path: '/delivered'
+      fullPath: '/delivery/delivered'
+      preLoaderRoute: typeof DeliveryDeliveredRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/dashboard': {
+      id: '/delivery/dashboard'
+      path: '/dashboard'
+      fullPath: '/delivery/dashboard'
+      preLoaderRoute: typeof DeliveryDashboardRouteImport
       parentRoute: typeof DeliveryRoute
     }
     '/api/portal-resolve-login': {
@@ -960,6 +1060,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBackupRouteImport
       parentRoute: typeof AppRoute
     }
+    '/delivery/doctor/$doctorId': {
+      id: '/delivery/doctor/$doctorId'
+      path: '/doctor/$doctorId'
+      fullPath: '/delivery/doctor/$doctorId'
+      preLoaderRoute: typeof DeliveryDoctorDoctorIdRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
+    '/delivery/deliver/$caseId': {
+      id: '/delivery/deliver/$caseId'
+      path: '/deliver/$caseId'
+      fullPath: '/delivery/deliver/$caseId'
+      preLoaderRoute: typeof DeliveryDeliverCaseIdRouteImport
+      parentRoute: typeof DeliveryRoute
+    }
     '/_app/cases/new': {
       id: '/_app/cases/new'
       path: '/new'
@@ -1050,11 +1164,23 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface DeliveryRouteChildren {
+  DeliveryDashboardRoute: typeof DeliveryDashboardRoute
+  DeliveryDeliveredRoute: typeof DeliveryDeliveredRoute
+  DeliveryDoctorsRoute: typeof DeliveryDoctorsRoute
   DeliveryLoginRoute: typeof DeliveryLoginRoute
+  DeliveryPaymentsRoute: typeof DeliveryPaymentsRoute
+  DeliveryDeliverCaseIdRoute: typeof DeliveryDeliverCaseIdRoute
+  DeliveryDoctorDoctorIdRoute: typeof DeliveryDoctorDoctorIdRoute
 }
 
 const DeliveryRouteChildren: DeliveryRouteChildren = {
+  DeliveryDashboardRoute: DeliveryDashboardRoute,
+  DeliveryDeliveredRoute: DeliveryDeliveredRoute,
+  DeliveryDoctorsRoute: DeliveryDoctorsRoute,
   DeliveryLoginRoute: DeliveryLoginRoute,
+  DeliveryPaymentsRoute: DeliveryPaymentsRoute,
+  DeliveryDeliverCaseIdRoute: DeliveryDeliverCaseIdRoute,
+  DeliveryDoctorDoctorIdRoute: DeliveryDoctorDoctorIdRoute,
 }
 
 const DeliveryRouteWithChildren = DeliveryRoute._addFileChildren(
