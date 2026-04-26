@@ -981,6 +981,9 @@ function CasesPage() {
                         {c.case_number}
                       </button>
                     </TableCell>
+                    <TableCell className="text-xs">
+                      {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
+                    </TableCell>
                     <TableCell>{c.doctors?.name ?? "—"}</TableCell>
                     <TableCell>{c.patients?.name ?? "—"}</TableCell>
                     <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
@@ -996,9 +999,6 @@ function CasesPage() {
                       ) : "—"}
                     </TableCell>
                     <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
-                    <TableCell className="text-xs">
-                      {c.date_received ? format(new Date(c.date_received), "dd/MM/yyyy") : "—"}
-                    </TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
                       {c.date_delivered
                         ? format(new Date(c.date_delivered), "dd/MM/yyyy")
