@@ -109,6 +109,73 @@ export type Database = {
           },
         ]
       }
+      case_deliveries: {
+        Row: {
+          agent_id: string
+          case_id: string
+          created_at: string
+          delivered_at: string
+          id: string
+          lab_id: string
+          latitude: number | null
+          location_accuracy: number | null
+          longitude: number | null
+          notes: string | null
+          recipient_name: string | null
+          signature_path: string | null
+        }
+        Insert: {
+          agent_id: string
+          case_id: string
+          created_at?: string
+          delivered_at?: string
+          id?: string
+          lab_id: string
+          latitude?: number | null
+          location_accuracy?: number | null
+          longitude?: number | null
+          notes?: string | null
+          recipient_name?: string | null
+          signature_path?: string | null
+        }
+        Update: {
+          agent_id?: string
+          case_id?: string
+          created_at?: string
+          delivered_at?: string
+          id?: string
+          lab_id?: string
+          latitude?: number | null
+          location_accuracy?: number | null
+          longitude?: number | null
+          notes?: string | null
+          recipient_name?: string | null
+          signature_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_deliveries_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_deliveries_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_deliveries_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_items: {
         Row: {
           case_id: string
@@ -421,6 +488,153 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "cash_accounts_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_agents: {
+        Row: {
+          created_at: string
+          email: string | null
+          governorates: string[]
+          id: string
+          is_active: boolean
+          lab_id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          portal_password_plain: string | null
+          route_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          governorates?: string[]
+          id?: string
+          is_active?: boolean
+          lab_id: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          portal_password_plain?: string | null
+          route_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          governorates?: string[]
+          id?: string
+          is_active?: boolean
+          lab_id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          portal_password_plain?: string | null
+          route_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_agents_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_agents_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_route_doctors: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          lab_id: string
+          route_id: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          lab_id: string
+          route_id: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          lab_id?: string
+          route_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_route_doctors_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_route_doctors_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_route_doctors_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_routes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          lab_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lab_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_routes_lab_id_fkey"
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
@@ -920,6 +1134,98 @@ export type Database = {
           },
           {
             foreignKeyName: "payments_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_payments: {
+        Row: {
+          agent_id: string
+          amount: number
+          approved_payment_id: string | null
+          collected_at: string
+          created_at: string
+          doctor_id: string
+          id: string
+          lab_id: string
+          latitude: number | null
+          longitude: number | null
+          method: string | null
+          notes: string | null
+          reference: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          approved_payment_id?: string | null
+          collected_at?: string
+          created_at?: string
+          doctor_id: string
+          id?: string
+          lab_id: string
+          latitude?: number | null
+          longitude?: number | null
+          method?: string | null
+          notes?: string | null
+          reference?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          approved_payment_id?: string | null
+          collected_at?: string
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          lab_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          method?: string | null
+          notes?: string | null
+          reference?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_payments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_payments_approved_payment_id_fkey"
+            columns: ["approved_payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_payments_lab_id_fkey"
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
@@ -1862,8 +2168,13 @@ export type Database = {
         }
         Returns: string
       }
+      agent_can_see_doctor: { Args: { _doctor_id: string }; Returns: boolean }
       approve_pending_case: {
         Args: { _case_id: string; _workflow_id?: string }
+        Returns: string
+      }
+      approve_pending_payment: {
+        Args: { _cash_account_id?: string; _pp_id: string }
         Returns: string
       }
       create_followup_case: {
@@ -1882,6 +2193,8 @@ export type Database = {
         Args: { _description?: string; _name: string }
         Returns: string
       }
+      current_agent_id: { Args: never; Returns: string }
+      current_agent_lab_id: { Args: never; Returns: string }
       current_doctor_id: { Args: never; Returns: string }
       current_doctor_lab_id: { Args: never; Returns: string }
       current_lab_id: { Args: never; Returns: string }
@@ -1890,6 +2203,18 @@ export type Database = {
         Returns: undefined
       }
       delete_workflow_stage: { Args: { _stage_id: string }; Returns: undefined }
+      deliver_case_by_agent: {
+        Args: {
+          _accuracy?: number
+          _case_id: string
+          _latitude?: number
+          _longitude?: number
+          _notes?: string
+          _recipient_name?: string
+          _signature_path?: string
+        }
+        Returns: string
+      }
       generate_case_number: { Args: { _lab_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -1904,6 +2229,10 @@ export type Database = {
       is_lab_member: { Args: { _lab_id: string }; Returns: boolean }
       reject_pending_case: {
         Args: { _case_id: string; _reason?: string }
+        Returns: undefined
+      }
+      reject_pending_payment: {
+        Args: { _pp_id: string; _reason?: string }
         Returns: undefined
       }
       reorder_workflow_stages: {
@@ -1961,7 +2290,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "technician" | "doctor"
+      app_role: "admin" | "manager" | "technician" | "doctor" | "delivery"
       case_status:
         | "active"
         | "on_hold"
@@ -2095,7 +2424,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "technician", "doctor"],
+      app_role: ["admin", "manager", "technician", "doctor", "delivery"],
       case_status: [
         "active",
         "on_hold",
