@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,17 +17,14 @@ const items = [
 ] as const;
 
 function DeliveryLayout() {
-  const { user, loading, signOut, roles, profile, labId } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/delivery/login";
-  const redirectingRef = useRef(false);
-
-  const isLabMember = !!(profile && labId);
 
   const { data: agent, isLoading: agentLoading } = useQuery({
     queryKey: ["delivery-agent-self", user?.id],
-    enabled: !!user && !isLoginRoute && !isLabMember,
+    enabled: !!user && !isLoginRoute,
     queryFn: async () => {
       const { data } = await supabase
         .from("delivery_agents")
@@ -39,29 +36,33 @@ function DeliveryLayout() {
   });
 
   useEffect(() => {
-    if (loading || isLoginRoute || redirectingRef.current) return;
+    if (loading || isLoginRoute) return;
     if (!user) {
-      redirectingRef.current = true;
       navigate({ to: "/delivery/login", replace: true });
-      return;
     }
-    if (isLabMember) {
-      redirectingRef.current = true;
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
-    if (!agentLoading && !agent) {
-      redirectingRef.current = true;
-      navigate({ to: "/portal/dashboard", replace: true });
-    }
-  }, [loading, user, isLoginRoute, navigate, isLabMember, agentLoading, agent]);
+  }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || (!isLoginRoute && user && !isLabMember && agentLoading)) {
+  if (loading || (!isLoginRoute && user && agentLoading)) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   }
 
   if (isLoginRoute) return <Outlet />;
-  if (!user || isLabMember || !agent) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  if (!user) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  if (!agent) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4" dir="rtl">
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center">
+          <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h2 className="mt-4 text-lg font-semibold">هذا الحساب ليس حساب مندوب</h2>
+          <p className="mt-2 text-sm text-muted-foreground">سجّل الدخول من بوابة المندوبين بحساب المندوب الصحيح.</p>
+          <Button variant="outline" className="mt-4" onClick={async () => { await signOut(); navigate({ to: "/delivery/login" }); }}>
+            تسجيل الخروج
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!agent || !agent.is_active) {
     return (
