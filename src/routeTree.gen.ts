@@ -40,6 +40,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReportsRouteImport } from './routes/_app.reports'
 import { Route as AppPurchasesRouteImport } from './routes/_app.purchases'
 import { Route as AppPricingRouteImport } from './routes/_app.pricing'
+import { Route as AppPendingPaymentsRouteImport } from './routes/_app.pending-payments'
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppMessagesRouteImport } from './routes/_app.messages'
@@ -47,6 +48,8 @@ import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
 import { Route as AppDoctorsRouteImport } from './routes/_app.doctors'
+import { Route as AppDeliveryRoutesRouteImport } from './routes/_app.delivery-routes'
+import { Route as AppDeliveryAgentsRouteImport } from './routes/_app.delivery-agents'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
@@ -209,6 +212,11 @@ const AppPricingRoute = AppPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPendingPaymentsRoute = AppPendingPaymentsRouteImport.update({
+  id: '/pending-payments',
+  path: '/pending-payments',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPendingCasesRoute = AppPendingCasesRouteImport.update({
   id: '/pending-cases',
   path: '/pending-cases',
@@ -242,6 +250,16 @@ const AppExpensesRoute = AppExpensesRouteImport.update({
 const AppDoctorsRoute = AppDoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeliveryRoutesRoute = AppDeliveryRoutesRouteImport.update({
+  id: '/delivery-routes',
+  path: '/delivery-routes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeliveryAgentsRoute = AppDeliveryAgentsRouteImport.update({
+  id: '/delivery-agents',
+  path: '/delivery-agents',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -284,6 +302,8 @@ export interface FileRoutesByFullPath {
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/delivery-routes': typeof AppDeliveryRoutesRoute
   '/doctors': typeof AppDoctorsRoute
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
@@ -291,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
+  '/pending-payments': typeof AppPendingPaymentsRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
   '/reports': typeof AppReportsRoute
@@ -329,6 +350,8 @@ export interface FileRoutesByTo {
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/delivery-routes': typeof AppDeliveryRoutesRoute
   '/doctors': typeof AppDoctorsRoute
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
@@ -336,6 +359,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
+  '/pending-payments': typeof AppPendingPaymentsRoute
   '/pricing': typeof AppPricingRoute
   '/purchases': typeof AppPurchasesRoute
   '/reports': typeof AppReportsRoute
@@ -376,6 +400,8 @@ export interface FileRoutesById {
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/cash-accounts': typeof AppCashAccountsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/delivery-agents': typeof AppDeliveryAgentsRoute
+  '/_app/delivery-routes': typeof AppDeliveryRoutesRoute
   '/_app/doctors': typeof AppDoctorsRoute
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/inventory': typeof AppInventoryRoute
@@ -383,6 +409,7 @@ export interface FileRoutesById {
   '/_app/messages': typeof AppMessagesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
+  '/_app/pending-payments': typeof AppPendingPaymentsRoute
   '/_app/pricing': typeof AppPricingRoute
   '/_app/purchases': typeof AppPurchasesRoute
   '/_app/reports': typeof AppReportsRoute
@@ -423,6 +450,8 @@ export interface FileRouteTypes {
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
+    | '/delivery-agents'
+    | '/delivery-routes'
     | '/doctors'
     | '/expenses'
     | '/inventory'
@@ -430,6 +459,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/patients'
     | '/pending-cases'
+    | '/pending-payments'
     | '/pricing'
     | '/purchases'
     | '/reports'
@@ -468,6 +498,8 @@ export interface FileRouteTypes {
     | '/cases'
     | '/cash-accounts'
     | '/dashboard'
+    | '/delivery-agents'
+    | '/delivery-routes'
     | '/doctors'
     | '/expenses'
     | '/inventory'
@@ -475,6 +507,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/patients'
     | '/pending-cases'
+    | '/pending-payments'
     | '/pricing'
     | '/purchases'
     | '/reports'
@@ -514,6 +547,8 @@ export interface FileRouteTypes {
     | '/_app/cases'
     | '/_app/cash-accounts'
     | '/_app/dashboard'
+    | '/_app/delivery-agents'
+    | '/_app/delivery-routes'
     | '/_app/doctors'
     | '/_app/expenses'
     | '/_app/inventory'
@@ -521,6 +556,7 @@ export interface FileRouteTypes {
     | '/_app/messages'
     | '/_app/patients'
     | '/_app/pending-cases'
+    | '/_app/pending-payments'
     | '/_app/pricing'
     | '/_app/purchases'
     | '/_app/reports'
@@ -787,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPricingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pending-payments': {
+      id: '/_app/pending-payments'
+      path: '/pending-payments'
+      fullPath: '/pending-payments'
+      preLoaderRoute: typeof AppPendingPaymentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/pending-cases': {
       id: '/_app/pending-cases'
       path: '/pending-cases'
@@ -834,6 +877,20 @@ declare module '@tanstack/react-router' {
       path: '/doctors'
       fullPath: '/doctors'
       preLoaderRoute: typeof AppDoctorsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/delivery-routes': {
+      id: '/_app/delivery-routes'
+      path: '/delivery-routes'
+      fullPath: '/delivery-routes'
+      preLoaderRoute: typeof AppDeliveryRoutesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/delivery-agents': {
+      id: '/_app/delivery-agents'
+      path: '/delivery-agents'
+      fullPath: '/delivery-agents'
+      preLoaderRoute: typeof AppDeliveryAgentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -900,6 +957,8 @@ interface AppRouteChildren {
   AppCasesRoute: typeof AppCasesRouteWithChildren
   AppCashAccountsRoute: typeof AppCashAccountsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDeliveryAgentsRoute: typeof AppDeliveryAgentsRoute
+  AppDeliveryRoutesRoute: typeof AppDeliveryRoutesRoute
   AppDoctorsRoute: typeof AppDoctorsRoute
   AppExpensesRoute: typeof AppExpensesRoute
   AppInventoryRoute: typeof AppInventoryRoute
@@ -907,6 +966,7 @@ interface AppRouteChildren {
   AppMessagesRoute: typeof AppMessagesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
+  AppPendingPaymentsRoute: typeof AppPendingPaymentsRoute
   AppPricingRoute: typeof AppPricingRoute
   AppPurchasesRoute: typeof AppPurchasesRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -925,6 +985,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppCasesRoute: AppCasesRouteWithChildren,
   AppCashAccountsRoute: AppCashAccountsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDeliveryAgentsRoute: AppDeliveryAgentsRoute,
+  AppDeliveryRoutesRoute: AppDeliveryRoutesRoute,
   AppDoctorsRoute: AppDoctorsRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppInventoryRoute: AppInventoryRoute,
@@ -932,6 +994,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMessagesRoute: AppMessagesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
+  AppPendingPaymentsRoute: AppPendingPaymentsRoute,
   AppPricingRoute: AppPricingRoute,
   AppPurchasesRoute: AppPurchasesRoute,
   AppReportsRoute: AppReportsRoute,

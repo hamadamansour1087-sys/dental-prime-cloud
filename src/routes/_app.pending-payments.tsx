@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { CheckCircle2, XCircle, Clock, Wallet, MapPin, Calendar } from "lucide-react";
+import { CheckCircle2, XCircle, Wallet, MapPin, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -56,7 +56,7 @@ function PendingPaymentsPage() {
     mutationFn: async () => {
       const { error } = await supabase.rpc("approve_pending_payment", {
         _pp_id: approveItem.id,
-        _cash_account_id: cashAccountId || null,
+        _cash_account_id: cashAccountId || undefined,
       });
       if (error) throw error;
     },
@@ -71,7 +71,7 @@ function PendingPaymentsPage() {
   const reject = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc("reject_pending_payment", {
-        _pp_id: rejectItem.id, _reason: rejectReason || null,
+        _pp_id: rejectItem.id, _reason: rejectReason || undefined,
       });
       if (error) throw error;
     },
@@ -142,7 +142,7 @@ function PendingPaymentsPage() {
                         </Button>
                       </div>
                     )}
-                    {tab === "approved" && <Badge className="bg-emerald-500/10 text-emerald-700"><CheckCircle2 className="ml-1 h-3 w-3" />معتمد</Badge>}
+                    {tab === "approved" && <Badge variant="default"><CheckCircle2 className="ml-1 h-3 w-3" />معتمد</Badge>}
                     {tab === "rejected" && <Badge variant="destructive"><XCircle className="ml-1 h-3 w-3" />مرفوض</Badge>}
                   </div>
                 </Card>
@@ -187,4 +187,4 @@ function PendingPaymentsPage() {
   );
 }
 
-function Clock_unused() { return <Clock />; }
+
