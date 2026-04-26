@@ -2243,6 +2243,16 @@ export type Database = {
         Args: { _ordered_stage_ids: string[]; _workflow_id: string }
         Returns: undefined
       }
+      request_followup_case_from_portal: {
+        Args: {
+          _case_type: string
+          _notes?: string
+          _parent_case_id: string
+          _shade?: string
+          _tooth_numbers?: string
+        }
+        Returns: string
+      }
       resolve_case_price: {
         Args: { _doctor_id: string; _lab_id: string; _work_type_id: string }
         Returns: number
