@@ -78,7 +78,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      const scoped = readScopedSession(scopeRef.current);
+      if (!scoped) {
+        await supabase.auth.signOut({ scope: "local" });
+        if (mounted) setLoading(false);
+        return;
+      }
+      const { data: setData, error } = await supabase.auth.setSession({
+        access_token: scoped.access_token,
+        refresh_token: scoped.refresh_token,
+      });
+      const sess = error ? null : setData.session;
+      if (!sess) {
+        clearScopedSession(scopeRef.current);
+        await supabase.auth.signOut({ scope: "local" });
+        if (mounted) setLoading(false);
+        return;
+      }
+      if (!mounted) return;
+      setSession(sess);
+      setUser(sess.user);
+      await loadProfileAndRoles(sess.user.id).finally(() => mounted && setLoading(false));
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (signingOutRef.current) return;
+      if (sess) writeScopedSession(scopeRef.current, sess);
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
@@ -93,18 +120,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      if (sess?.user) loadProfileAndRoles(sess.user.id).finally(() => setLoading(false));
-      else setLoading(false);
-    });
+    init();
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (data.session) writeScopedSession(scopeRef.current, data.session);
     return { error: error?.message ?? null };
   };
 
@@ -121,7 +147,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    signingOutRef.current = true;
+    clearScopedSession(scopeRef.current);
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setRoles([]);
+    await supabase.auth.signOut({ scope: "local" });
+    signingOutRef.current = false;
   };
 
   const refresh = async () => {
