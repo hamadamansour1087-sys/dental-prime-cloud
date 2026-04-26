@@ -50,7 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(prof ?? null);
     setRoles(
       ((rs ?? []) as { role: Role; lab_id: string }[])
-        .filter((r) => !!prof?.lab_id && r.lab_id === prof.lab_id)
+        .filter(
+          (r) =>
+            !!prof?.lab_id &&
+            r.lab_id === prof.lab_id &&
+            (r.role === "admin" || r.role === "manager" || r.role === "technician"),
+        )
         .map((r) => r.role),
     );
   }, []);
