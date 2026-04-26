@@ -1,10 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyBearer, rateLimit } from "@/lib/serverAuth";
 
 export const Route = createFileRoute("/api/ai-analyze-case")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
+          const userId = await verifyBearer(request);
+          if (!userId) {
+            return new Response(JSON.stringify({ error: "غير مصرح" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          if (!rateLimit(`ai-analyze:${userId}`, 30, 60_000)) {
+            return new Response(JSON.stringify({ error: "تم تجاوز الحد" }), {
+              status: 429,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
           const apiKey = process.env.LOVABLE_API_KEY;
           if (!apiKey) {
             return new Response(JSON.stringify({ error: "LOVABLE_API_KEY غير مهيأ" }), {

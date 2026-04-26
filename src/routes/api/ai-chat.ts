@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyBearer, rateLimit, clientIp } from "@/lib/serverAuth";
 
 const SYSTEM_PROMPT = `أنت "مساعد H.A.M.D" — مساعد ذكي متخصص في إدارة معامل تركيبات الأسنان.
 - جاوب دائماً بالعربية الفصحى المبسطة وبأسلوب مهني وودود.
@@ -12,6 +13,19 @@ export const Route = createFileRoute("/api/ai-chat")({
     handlers: {
       POST: async ({ request }) => {
         try {
+          const userId = await verifyBearer(request);
+          if (!userId) {
+            return new Response(JSON.stringify({ error: "غير مصرح" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          if (!rateLimit(`ai-chat:${userId}`, 30, 60_000)) {
+            return new Response(JSON.stringify({ error: "تم تجاوز الحد، حاول بعد دقيقة" }), {
+              status: 429,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
           const apiKey = process.env.LOVABLE_API_KEY;
           if (!apiKey) {
             return new Response(JSON.stringify({ error: "LOVABLE_API_KEY غير مهيأ" }), {

@@ -506,7 +506,6 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
-          portal_password_plain: string | null
           route_id: string | null
           updated_at: string
           user_id: string | null
@@ -521,7 +520,6 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
-          portal_password_plain?: string | null
           route_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -536,7 +534,6 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
-          portal_password_plain?: string | null
           route_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -711,7 +708,6 @@ export type Database = {
           opening_balance: number
           phone: string | null
           portal_enabled: boolean
-          portal_password_plain: string | null
           updated_at: string
           user_id: string | null
         }
@@ -729,7 +725,6 @@ export type Database = {
           opening_balance?: number
           phone?: string | null
           portal_enabled?: boolean
-          portal_password_plain?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -747,7 +742,6 @@ export type Database = {
           opening_balance?: number
           phone?: string | null
           portal_enabled?: boolean
-          portal_password_plain?: string | null
           updated_at?: string
           user_id?: string | null
         }

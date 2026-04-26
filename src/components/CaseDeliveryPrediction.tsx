@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Prediction = {
   estimated_days_remaining: number;
@@ -26,9 +27,13 @@ export function CaseDeliveryPrediction({ caseData }: { caseData: any }) {
   const run = async () => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch("/api/ai-predict-delivery", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ caseData }),
       });
       if (!resp.ok) {

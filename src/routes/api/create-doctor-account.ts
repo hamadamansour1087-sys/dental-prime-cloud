@@ -152,7 +152,6 @@ export const Route = createFileRoute("/api/create-doctor-account")({
               user_id: created.user.id,
               portal_enabled: true,
               email: internalEmail,
-              portal_password_plain: password,
             })
             .eq("id", body.doctor_id);
 

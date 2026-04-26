@@ -21,7 +21,6 @@ interface Doctor {
   phone?: string | null;
   user_id: string | null;
   portal_enabled: boolean;
-  portal_password_plain?: string | null;
 }
 
 function normalizePhone(p: string): string {
@@ -45,7 +44,7 @@ export function PortalAccountButton({
   const portalUrl =
     typeof window !== "undefined" ? `${window.location.origin}/portal/login` : "/portal/login";
 
-  const passwordToShow = generatedPassword ?? doctor.portal_password_plain ?? null;
+  const passwordToShow = generatedPassword;
 
   const copyCredentials = async () => {
     if (!passwordToShow) return;

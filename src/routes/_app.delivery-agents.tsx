@@ -28,6 +28,7 @@ function DeliveryAgentsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", route_id: "", governorates: [] as string[], notes: "" });
+  const [generatedPasswords, setGeneratedPasswords] = useState<Record<string, string>>({});
 
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ["delivery-agents", labId],
@@ -104,7 +105,8 @@ function DeliveryAgentsPage() {
     });
     const data = await res.json();
     if (!res.ok) return toast.error(data.error ?? "فشل");
-    toast.success(`تم إنشاء الحساب — كلمة السر: ${data.password}`);
+    setGeneratedPasswords((prev) => ({ ...prev, [agentId]: data.password }));
+    toast.success(`تم إنشاء الحساب — كلمة السر: ${data.password} (انسخها الآن، لن تظهر مرة أخرى)`);
     qc.invalidateQueries({ queryKey: ["delivery-agents"] });
   };
 
@@ -192,10 +194,10 @@ function DeliveryAgentsPage() {
                 {a.governorates?.length > 0 && (
                   <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" />{a.governorates.join("، ")}</p>
                 )}
-                {a.portal_password_plain && (
+                {generatedPasswords[a.id] && (
                   <p className="flex items-center gap-1.5 font-mono text-foreground bg-muted px-2 py-1 rounded">
-                    <KeyRound className="h-3 w-3" />{a.portal_password_plain}
-                    <button onClick={() => { navigator.clipboard.writeText(a.portal_password_plain); toast.success("تم النسخ"); }}
+                    <KeyRound className="h-3 w-3" />{generatedPasswords[a.id]}
+                    <button onClick={() => { navigator.clipboard.writeText(generatedPasswords[a.id]); toast.success("تم النسخ"); }}
                       className="mr-auto"><Copy className="h-3 w-3" /></button>
                   </p>
                 )}

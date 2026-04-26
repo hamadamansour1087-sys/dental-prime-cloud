@@ -40,9 +40,16 @@ export function CaseLabelDialog({
   }, [open, caseId]);
 
   const handlePrint = () => {
+    const esc = (s: unknown) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     const html = `
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/>
-<title>ملصق ${caseNumber}</title>
+<title>ملصق ${esc(caseNumber)}</title>
 <style>
   @page { size: A6; margin: 6mm; }
   * { box-sizing: border-box; }
@@ -59,19 +66,19 @@ export function CaseLabelDialog({
   .footer { margin-top: 8px; padding-top: 6px; border-top: 1px dashed #999; font-size: 9px; color: #666; text-align: center; word-break: break-all; }
 </style></head><body>
 <div class="label">
-  ${labName ? `<div class="lab">${labName}</div>` : ""}
-  <div class="num">${caseNumber}</div>
+  ${labName ? `<div class="lab">${esc(labName)}</div>` : ""}
+  <div class="num">${esc(caseNumber)}</div>
   <div class="row">
-    <div class="qr">${qrUrl ? `<img src="${qrUrl}" alt="QR"/>` : ""}</div>
+    <div class="qr">${qrUrl ? `<img src="${esc(qrUrl)}" alt="QR"/>` : ""}</div>
     <div class="info">
-      ${doctorName ? `<div><b>الطبيب:</b> ${doctorName}</div>` : ""}
-      ${patientName ? `<div><b>المريض:</b> ${patientName}</div>` : ""}
-      ${dateReceived ? `<div><b>الاستلام:</b> ${format(new Date(dateReceived), "dd/MM/yyyy")}</div>` : ""}
-      ${dueDate ? `<div><b>التسليم:</b> ${format(new Date(dueDate), "dd/MM/yyyy")}</div>` : ""}
-      ${stageName ? `<div class="stage">${stageName}</div>` : ""}
+      ${doctorName ? `<div><b>الطبيب:</b> ${esc(doctorName)}</div>` : ""}
+      ${patientName ? `<div><b>المريض:</b> ${esc(patientName)}</div>` : ""}
+      ${dateReceived ? `<div><b>الاستلام:</b> ${esc(format(new Date(dateReceived), "dd/MM/yyyy"))}</div>` : ""}
+      ${dueDate ? `<div><b>التسليم:</b> ${esc(format(new Date(dueDate), "dd/MM/yyyy"))}</div>` : ""}
+      ${stageName ? `<div class="stage">${esc(stageName)}</div>` : ""}
     </div>
   </div>
-  <div class="footer">${window.location.origin}/cases/${caseId}</div>
+  <div class="footer">${esc(window.location.origin)}/cases/${esc(caseId)}</div>
 </div>
 <script>window.onload=()=>{setTimeout(()=>{window.print();window.close();},250);};</script>
 </body></html>`;
