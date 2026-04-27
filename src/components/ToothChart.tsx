@@ -98,7 +98,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
         type="button"
         onClick={() => toggle(key)}
         className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-sm font-bold transition-colors sm:h-9 sm:w-9 sm:text-xs sm:font-semibold",
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded border text-[11px] font-bold leading-none transition-colors sm:h-9 sm:w-9 sm:rounded-md sm:border sm:text-xs sm:font-semibold",
           isOn
             ? "border-primary bg-primary text-primary-foreground"
             : "border-border bg-card hover:bg-accent",
@@ -170,7 +170,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
       {/* Upper jaw */}
       <div className="space-y-1">
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Upper</p>
-        <div className="flex justify-center gap-0.5 sm:gap-1">
+        <div className="flex justify-center gap-px sm:gap-1">
           {rows.upperRight.map((n) => <Tooth key={String(n)} value={n} />)}
           <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.upperLeft.map((n) => <Tooth key={String(n)} value={n} />)}
@@ -181,7 +181,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
 
       {/* Lower jaw */}
       <div className="space-y-1">
-        <div className="flex justify-center gap-0.5 sm:gap-1">
+        <div className="flex justify-center gap-px sm:gap-1">
           {rows.lowerRight.map((n) => <Tooth key={String(n)} value={n} />)}
           <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.lowerLeft.map((n) => <Tooth key={String(n)} value={n} />)}
