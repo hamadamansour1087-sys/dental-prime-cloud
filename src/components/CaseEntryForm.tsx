@@ -129,11 +129,11 @@ interface SmartDefaults {
   lastShade?: string;
 }
 
-const newItem = (defaults?: SmartDefaults): CaseEntryItem => ({
+const newItem = (_defaults?: SmartDefaults): CaseEntryItem => ({
   id: crypto.randomUUID(),
-  work_type_id: defaults?.lastWorkTypeId ?? "",
+  work_type_id: "",
   tooth_numbers: "",
-  shade: defaults?.lastShade ?? "",
+  shade: "",
   units: "1",
   unit_price: "",
 });
