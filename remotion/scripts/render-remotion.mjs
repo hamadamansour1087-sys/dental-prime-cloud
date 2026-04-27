@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const bundled = await bundle({
   entryPoint: path.resolve(__dirname, "../src/index.ts"),
+  publicDir: path.resolve(__dirname, "../public"),
   webpackOverride: (config) => config,
 });
 
