@@ -181,7 +181,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
 
       {/* Lower jaw */}
       <div className="space-y-1">
-        <div className="flex justify-center gap-px sm:gap-1">
+        <div className="flex justify-center gap-0.5 sm:gap-1">
           {rows.lowerRight.map((n) => <Tooth key={String(n)} value={n} />)}
           <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.lowerLeft.map((n) => <Tooth key={String(n)} value={n} />)}
