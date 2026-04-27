@@ -55,6 +55,33 @@ export type Database = {
           },
         ]
       }
+      backup_reminders: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          id: string
+          lab_id: string
+          reminder_date: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          id?: string
+          lab_id: string
+          reminder_date?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          id?: string
+          lab_id?: string
+          reminder_date?: string
+        }
+        Relationships: []
+      }
       case_attachments: {
         Row: {
           case_id: string
