@@ -170,7 +170,7 @@ export function ToothChart({ value, onChange }: ToothChartProps) {
       {/* Upper jaw */}
       <div className="space-y-1">
         <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">Upper</p>
-        <div className="flex justify-center gap-px sm:gap-1">
+        <div className="flex justify-center gap-0.5 sm:gap-1">
           {rows.upperRight.map((n) => <Tooth key={String(n)} value={n} />)}
           <div className="mx-px w-px bg-border sm:mx-1" />
           {rows.upperLeft.map((n) => <Tooth key={String(n)} value={n} />)}
