@@ -43,7 +43,7 @@ function AgentDoctorDetail() {
       ]);
       const cases = casesRes.data ?? [];
       const payments = paymentsRes.data ?? [];
-      const charges = cases.filter((c) => c.status !== "cancelled").reduce((s, c) => s + Number(c.price ?? 0), 0);
+      const charges = cases.filter((c) => c.status === "delivered").reduce((s, c) => s + Number(c.price ?? 0), 0);
       const paid = payments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
       return { cases, payments, charges, paid };
     },
