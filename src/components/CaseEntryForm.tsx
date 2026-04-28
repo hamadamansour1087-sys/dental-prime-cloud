@@ -293,6 +293,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   const [items, setItems] = useState<CaseEntryItem[]>([newItem()]);
   const [files, setFiles] = useState<PendingFileMeta[]>([]);
   const [dueAuto, setDueAuto] = useState(true);
+  const [noDiagnosis, setNoDiagnosis] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [labName, setLabName] = useState<string | undefined>();
@@ -470,7 +471,9 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     if (!labId) return toast.error("معرّف المعمل غير متوفر");
     if (!form.doctor_id) return toast.error("اختر الطبيب");
     const validItems = items.filter((it) => it.work_type_id);
-    if (!validItems.length) return toast.error("أضف نوع عمل واحد على الأقل");
+    if (!validItems.length && !noDiagnosis) {
+      return toast.error("أضف نوع عمل أو فعّل خيار «بدون تشخيص»");
+    }
 
     setSubmitting(true);
     try {
@@ -521,6 +524,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }, 0);
       const allShades = Array.from(new Set(validItems.map((it) => it.shade.trim()).filter(Boolean))).join(", ");
 
+      const noDxMarker = "[بدون تشخيص — يحتاج إكمال البيانات]";
+      const baseNotes = isPortal && trimmedName
+        ? `المريض: ${trimmedName}${form.notes ? `\n${form.notes}` : ""}`
+        : form.notes || null;
+      const finalNotes = noDiagnosis
+        ? `${noDxMarker}${baseNotes ? `\n${baseNotes}` : ""}`
+        : baseNotes;
+
       const { data: created, error } = await supabase
         .from("cases")
         .insert({
@@ -528,18 +539,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           case_number: caseNum as string,
           doctor_id: form.doctor_id,
           patient_id: patientId,
-          work_type_id: first.work_type_id || null,
+          work_type_id: first?.work_type_id || null,
           workflow_id: wf?.id ?? null,
           current_stage_id: startStage?.id ?? null,
           shade: allShades || null,
           tooth_numbers: allTeeth || null,
-          units: totalUnits,
+          units: totalUnits || 1,
           price: totalPrice || null,
           due_date: form.due_date || null,
-          notes:
-            isPortal && trimmedName
-              ? `المريض: ${trimmedName}${form.notes ? `\n${form.notes}` : ""}`
-              : form.notes || null,
+          notes: finalNotes,
           status: isPortal ? "pending_approval" : "active",
         })
         .select()
@@ -608,11 +616,13 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
 
       // Save smart defaults
-      savePrefs({
-        lastDoctorId: form.doctor_id,
-        lastWorkTypeId: validItems[0].work_type_id,
-        lastShade: validItems[0].shade,
-      });
+      if (validItems.length) {
+        savePrefs({
+          lastDoctorId: form.doctor_id,
+          lastWorkTypeId: validItems[0].work_type_id,
+          lastShade: validItems[0].shade,
+        });
+      }
 
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -635,7 +645,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           caseNumber: created.case_number,
           doctorName,
           patientName: form.patient_name,
-          workTypes: workTypeNames,
+          workTypes: workTypeNames || "بدون تشخيص",
           shade: allShades,
           units: totalUnits,
           dueDate: form.due_date,
@@ -645,6 +655,9 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
 
       toast.success(successMsg);
+      if (noDiagnosis) {
+        toast.warning("تذكير: هذه الحالة بدون تشخيص — لا تنسَ إضافة نوع العمل والأسنان لاحقًا", { duration: 6000 });
+      }
 
       if (submitMode === "save_new") {
         resetForm(true); // keep doctor for bulk entry
@@ -698,7 +711,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   }, 0);
   const totalUnits = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
   const itemsValid = items.filter((it) => it.work_type_id).length > 0;
-  const canSubmit = !!form.doctor_id && itemsValid && !submitting;
+  const canSubmit = !!form.doctor_id && (itemsValid || noDiagnosis) && !submitting;
 
   // ---------- UI ----------
   return (
@@ -980,23 +993,42 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           <section className="space-y-4 lg:col-span-7">
             {/* Items */}
             <div className="rounded-xl border bg-card p-4 shadow-xs">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                   <Briefcase className="h-4 w-4" /> عناصر العمل
                   <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                     {items.length}
                   </span>
                 </h2>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setItems((p) => [...p, newItem(loadPrefs())])}
-                  className="h-8"
-                >
-                  <Plus className="ml-1 h-3.5 w-3.5" /> عنصر
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={noDiagnosis ? "default" : "outline"}
+                    onClick={() => setNoDiagnosis((v) => !v)}
+                    className="h-8"
+                    title="حفظ الحالة بدون تحديد نوع/أسنان — يتم التذكير لاحقًا"
+                  >
+                    {noDiagnosis ? "✓ بدون تشخيص" : "بدون تشخيص"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setItems((p) => [...p, newItem(loadPrefs())])}
+                    className="h-8"
+                  >
+                    <Plus className="ml-1 h-3.5 w-3.5" /> عنصر
+                  </Button>
+                </div>
               </div>
+
+              {noDiagnosis && (
+                <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-50 p-2 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                  ⚠️ سيتم حفظ الحالة بدون نوع عمل أو أسنان. تذكّر إكمال البيانات لاحقًا من صفحة الحالة.
+                </div>
+              )}
+
 
               <div className="space-y-3">
                 {items.map((it, idx) => (

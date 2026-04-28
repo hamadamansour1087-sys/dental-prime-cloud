@@ -131,7 +131,8 @@ function DashboardPage() {
       const { data } = await supabase
         .from("cases")
         .select("doctor_id, price, doctors(name, clinic_name)")
-        .gte("date_received", monthStart)
+        .eq("status", "delivered")
+        .gte("date_delivered", monthStart)
         .not("doctor_id", "is", null);
       const map = new Map<string, { name: string; clinic: string; count: number; revenue: number }>();
       data?.forEach((c) => {

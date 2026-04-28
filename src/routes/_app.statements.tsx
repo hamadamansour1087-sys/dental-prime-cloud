@@ -79,12 +79,12 @@ function StatementsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("id, case_number, date_received, price, status, notes, tooth_numbers, patients(name), work_types(name)")
+        .select("id, case_number, date_received, date_delivered, price, status, notes, tooth_numbers, patients(name), work_types(name)")
         .eq("doctor_id", doctorId)
-        .gte("date_received", fromStr)
-        .lte("date_received", toStr)
-        .neq("status", "cancelled")
-        .order("date_received");
+        .eq("status", "delivered")
+        .gte("date_delivered", fromStr)
+        .lte("date_delivered", toStr + "T23:59:59")
+        .order("date_delivered");
       if (error) throw error;
       return data ?? [];
     },
@@ -113,7 +113,7 @@ function StatementsPage() {
     // Group cases by month
     const monthMap = new Map<string, { date: Date; total: number; count: number }>();
     (cases ?? []).forEach((c) => {
-      const d = new Date(c.date_received);
+      const d = new Date(c.date_delivered ?? c.date_received);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const cur = monthMap.get(key) ?? { date: new Date(d.getFullYear(), d.getMonth(), 1), total: 0, count: 0 };
       cur.total += Number(c.price ?? 0);

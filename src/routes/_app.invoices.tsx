@@ -52,12 +52,12 @@ function InvoicesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
-        .select("id, case_number, date_received, tooth_numbers, units, shade, price, status, patients(name), work_types(name)")
+        .select("id, case_number, date_received, date_delivered, tooth_numbers, units, shade, price, status, patients(name), work_types(name)")
         .eq("doctor_id", doctorId)
-        .gte("date_received", periodStart.toISOString().slice(0, 10))
-        .lt("date_received", periodEnd.toISOString().slice(0, 10))
-        .neq("status", "cancelled")
-        .order("date_received");
+        .eq("status", "delivered")
+        .gte("date_delivered", periodStart.toISOString())
+        .lt("date_delivered", periodEnd.toISOString())
+        .order("date_delivered");
       if (error) throw error;
       return data ?? [];
     },
