@@ -993,23 +993,42 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           <section className="space-y-4 lg:col-span-7">
             {/* Items */}
             <div className="rounded-xl border bg-card p-4 shadow-xs">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                   <Briefcase className="h-4 w-4" /> عناصر العمل
                   <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                     {items.length}
                   </span>
                 </h2>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setItems((p) => [...p, newItem(loadPrefs())])}
-                  className="h-8"
-                >
-                  <Plus className="ml-1 h-3.5 w-3.5" /> عنصر
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={noDiagnosis ? "default" : "outline"}
+                    onClick={() => setNoDiagnosis((v) => !v)}
+                    className="h-8"
+                    title="حفظ الحالة بدون تحديد نوع/أسنان — يتم التذكير لاحقًا"
+                  >
+                    {noDiagnosis ? "✓ بدون تشخيص" : "بدون تشخيص"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setItems((p) => [...p, newItem(loadPrefs())])}
+                    className="h-8"
+                  >
+                    <Plus className="ml-1 h-3.5 w-3.5" /> عنصر
+                  </Button>
+                </div>
               </div>
+
+              {noDiagnosis && (
+                <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-50 p-2 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                  ⚠️ سيتم حفظ الحالة بدون نوع عمل أو أسنان. تذكّر إكمال البيانات لاحقًا من صفحة الحالة.
+                </div>
+              )}
+
 
               <div className="space-y-3">
                 {items.map((it, idx) => (
