@@ -471,7 +471,9 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     if (!labId) return toast.error("معرّف المعمل غير متوفر");
     if (!form.doctor_id) return toast.error("اختر الطبيب");
     const validItems = items.filter((it) => it.work_type_id);
-    if (!validItems.length) return toast.error("أضف نوع عمل واحد على الأقل");
+    if (!validItems.length && !noDiagnosis) {
+      return toast.error("أضف نوع عمل أو فعّل خيار «بدون تشخيص»");
+    }
 
     setSubmitting(true);
     try {
