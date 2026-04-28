@@ -113,7 +113,7 @@ function StatementsPage() {
     // Group cases by month
     const monthMap = new Map<string, { date: Date; total: number; count: number }>();
     (cases ?? []).forEach((c) => {
-      const d = new Date(c.date_received);
+      const d = new Date(c.date_delivered ?? c.date_received);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const cur = monthMap.get(key) ?? { date: new Date(d.getFullYear(), d.getMonth(), 1), total: 0, count: 0 };
       cur.total += Number(c.price ?? 0);
