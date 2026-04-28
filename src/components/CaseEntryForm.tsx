@@ -293,6 +293,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   const [items, setItems] = useState<CaseEntryItem[]>([newItem()]);
   const [files, setFiles] = useState<PendingFileMeta[]>([]);
   const [dueAuto, setDueAuto] = useState(true);
+  const [noDiagnosis, setNoDiagnosis] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [labName, setLabName] = useState<string | undefined>();
