@@ -22,9 +22,21 @@ function AppLayout() {
   const [scanOpen, setScanOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
+  const [graceExpired, setGraceExpired] = useState(false);
   useGlobalSearchHotkey(setSearchOpen);
 
-  if (loading) {
+  // Give the auth state a brief grace period after login so that we don't
+  // flash "ليس حساب معمل" while the profile/roles are still being fetched.
+  useEffect(() => {
+    if (user && (!profile || !labId)) {
+      setGraceExpired(false);
+      const t = setTimeout(() => setGraceExpired(true), 1500);
+      return () => clearTimeout(t);
+    }
+    setGraceExpired(false);
+  }, [user, profile, labId]);
+
+  if (loading || (user && (!profile || !labId) && !graceExpired)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
