@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Navigate, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ScanLine, Search, LogOut } from "lucide-react";
