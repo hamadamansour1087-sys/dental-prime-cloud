@@ -711,7 +711,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   }, 0);
   const totalUnits = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
   const itemsValid = items.filter((it) => it.work_type_id).length > 0;
-  const canSubmit = !!form.doctor_id && itemsValid && !submitting;
+  const canSubmit = !!form.doctor_id && (itemsValid || noDiagnosis) && !submitting;
 
   // ---------- UI ----------
   return (
