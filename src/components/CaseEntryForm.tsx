@@ -616,11 +616,13 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
 
       // Save smart defaults
-      savePrefs({
-        lastDoctorId: form.doctor_id,
-        lastWorkTypeId: validItems[0].work_type_id,
-        lastShade: validItems[0].shade,
-      });
+      if (validItems.length) {
+        savePrefs({
+          lastDoctorId: form.doctor_id,
+          lastWorkTypeId: validItems[0].work_type_id,
+          lastShade: validItems[0].shade,
+        });
+      }
 
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -643,7 +645,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           caseNumber: created.case_number,
           doctorName,
           patientName: form.patient_name,
-          workTypes: workTypeNames,
+          workTypes: workTypeNames || "بدون تشخيص",
           shade: allShades,
           units: totalUnits,
           dueDate: form.due_date,
@@ -653,6 +655,9 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }
 
       toast.success(successMsg);
+      if (noDiagnosis) {
+        toast.warning("تذكير: هذه الحالة بدون تشخيص — لا تنسَ إضافة نوع العمل والأسنان لاحقًا", { duration: 6000 });
+      }
 
       if (submitMode === "save_new") {
         resetForm(true); // keep doctor for bulk entry
