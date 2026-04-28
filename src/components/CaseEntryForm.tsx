@@ -524,6 +524,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       }, 0);
       const allShades = Array.from(new Set(validItems.map((it) => it.shade.trim()).filter(Boolean))).join(", ");
 
+      const noDxMarker = "[بدون تشخيص — يحتاج إكمال البيانات]";
+      const baseNotes = isPortal && trimmedName
+        ? `المريض: ${trimmedName}${form.notes ? `\n${form.notes}` : ""}`
+        : form.notes || null;
+      const finalNotes = noDiagnosis
+        ? `${noDxMarker}${baseNotes ? `\n${baseNotes}` : ""}`
+        : baseNotes;
+
       const { data: created, error } = await supabase
         .from("cases")
         .insert({
@@ -531,18 +539,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           case_number: caseNum as string,
           doctor_id: form.doctor_id,
           patient_id: patientId,
-          work_type_id: first.work_type_id || null,
+          work_type_id: first?.work_type_id || null,
           workflow_id: wf?.id ?? null,
           current_stage_id: startStage?.id ?? null,
           shade: allShades || null,
           tooth_numbers: allTeeth || null,
-          units: totalUnits,
+          units: totalUnits || 1,
           price: totalPrice || null,
           due_date: form.due_date || null,
-          notes:
-            isPortal && trimmedName
-              ? `المريض: ${trimmedName}${form.notes ? `\n${form.notes}` : ""}`
-              : form.notes || null,
+          notes: finalNotes,
           status: isPortal ? "pending_approval" : "active",
         })
         .select()
