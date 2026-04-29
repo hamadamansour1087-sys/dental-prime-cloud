@@ -1134,37 +1134,40 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                       e.target.value = "";
                     }}
                   />
-                  <input
-                    ref={photoRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    hidden
-                    onChange={(e) => {
-                      addFiles(e.target.files, "photo");
-                      e.target.value = "";
-                    }}
-                  />
-                  <input
-                    ref={scanRef}
-                    type="file"
-                    accept=".stl,.ply,.obj,.zip,.3mf,.dcm"
-                    multiple
-                    hidden
-                    onChange={(e) => {
-                      addFiles(e.target.files, "scan");
-                      e.target.value = "";
-                    }}
-                  />
                   <Button type="button" size="sm" variant="outline" onClick={() => setCameraOpen(true)} className="h-8">
                     <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
                   </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()} className="h-8">
+                  {/* Photo picker — uses <label> to avoid programmatic click()
+                      which on some mobile browsers can unload the page. */}
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground">
                     <ImageIcon className="ml-1 h-3.5 w-3.5" /> صور
-                  </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => scanRef.current?.click()} className="h-8">
+                    <input
+                      ref={photoRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => {
+                        addFiles(e.target.files, "photo");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {/* Scan picker — same pattern */}
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground">
                     <FileBox className="ml-1 h-3.5 w-3.5" /> إسكان
-                  </Button>
+                    <input
+                      ref={scanRef}
+                      type="file"
+                      accept=".stl,.ply,.obj,.zip,.3mf,.dcm"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => {
+                        addFiles(e.target.files, "scan");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 
