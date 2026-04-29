@@ -699,9 +699,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, items, files, submitting]);
 
-  // Auto-focus first field on mount
+  // Auto-focus doctor picker on mount (admin mode) so user starts by choosing a doctor
   useEffect(() => {
-    window.setTimeout(() => firstFieldRef.current?.focus(), 100);
+    if (mode === "admin" && !fixedDoctorId && !form.doctor_id) {
+      window.setTimeout(() => setDoctorPickerOpen(true), 150);
+    } else {
+      window.setTimeout(() => firstFieldRef.current?.focus(), 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------- derived ----------
