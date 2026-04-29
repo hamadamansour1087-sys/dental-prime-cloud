@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye } from "lucide-react";
+import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 import { toast } from "sonner";
 import { QuadrantsView } from "@/components/QuadrantsView";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
@@ -47,6 +48,7 @@ function CaseDetailsPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [scanPreview, setScanPreview] = useState<{ url: string; name: string } | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
@@ -573,7 +575,13 @@ function CaseDetailsPage() {
             <p className="py-4 text-center text-sm text-muted-foreground">لا توجد ملفات</p>
           ) : (
             <div className="space-y-2">
-              {scans.map((a) => (
+              {scans.map((a) => {
+                const ext = a.file_name?.split(".").pop()?.toLowerCase() ?? "";
+                const is3D = ["stl", "ply", "obj", "3mf", "zip"].includes(ext);
+                const isImage = ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+                const isPdf = ext === "pdf";
+                const canPreview = is3D || isImage || isPdf;
+                return (
                 <div key={a.id} className="flex items-center justify-between gap-2 rounded-md border bg-card p-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <FileBox className="h-5 w-5 shrink-0 text-blue-600" />
@@ -586,6 +594,21 @@ function CaseDetailsPage() {
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    {canPreview && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        title="معاينة"
+                        onClick={() => {
+                          if (is3D) setScanPreview({ url: a.url, name: a.file_name });
+                          else if (isImage) setPreviewUrl(a.url);
+                          else window.open(a.url, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => downloadFile(a.url, a.file_name)}>
                       <Download className="h-4 w-4" />
                     </Button>
@@ -594,7 +617,8 @@ function CaseDetailsPage() {
                     </Button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -620,6 +644,13 @@ function CaseDetailsPage() {
           <img src={previewUrl} alt="preview" className="max-h-full max-w-full rounded-lg object-contain" />
         </div>
       )}
+      {/* 3D scan preview */}
+      <ScanPreviewDialog
+        open={!!scanPreview}
+        onOpenChange={(v) => !v && setScanPreview(null)}
+        url={scanPreview?.url}
+        fileName={scanPreview?.name}
+      />
     </div>
   );
 }
