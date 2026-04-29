@@ -606,8 +606,11 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           });
         }
 
-        // Parallel uploads (4 at a time)
-        const CONCURRENCY = 4;
+        // Upload attachments without blocking case registration for too long.
+        // Large scan files are uploaded sequentially to avoid mobile/network failures.
+        const scanFiles = files.filter((f) => f.kind === "scan");
+        const otherFiles = files.filter((f) => f.kind !== "scan");
+        let uploadFailures = 0;
         const uploadOne = async (pf: PendingFileMeta) => {
           const blob = fileBlobsRef.current.get(pf.id);
           if (!blob) return;
@@ -621,10 +624,11 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             upsert: false,
           });
           if (upErr) {
+            uploadFailures += 1;
             toast.error(`فشل رفع ${pf.name}: ${upErr.message}`);
             return;
           }
-          await supabase.from("case_attachments").insert({
+          const { error: attErr } = await supabase.from("case_attachments").insert({
             lab_id: labId,
             case_id: created.id,
             storage_path: path,
@@ -633,9 +637,20 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             mime_type: pf.type || null,
             kind: pf.kind,
           });
+          if (attErr) {
+            uploadFailures += 1;
+            toast.error(`تم رفع ${pf.name} لكن تعذر ربطه بالحالة`);
+          }
         };
-        for (let i = 0; i < files.length; i += CONCURRENCY) {
-          await Promise.all(files.slice(i, i + CONCURRENCY).map(uploadOne));
+        for (const scanFile of scanFiles) {
+          await uploadOne(scanFile);
+        }
+        const OTHER_CONCURRENCY = 3;
+        for (let i = 0; i < otherFiles.length; i += OTHER_CONCURRENCY) {
+          await Promise.all(otherFiles.slice(i, i + OTHER_CONCURRENCY).map(uploadOne));
+        }
+        if (uploadFailures > 0) {
+          toast.warning("تم حفظ الحالة، لكن بعض ملفات الإسكان لم ترفع بسبب الاتصال. أعد رفعها من صفحة الحالة.", { duration: 8000 });
         }
       }
 

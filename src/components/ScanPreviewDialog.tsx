@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileBox, Loader2 } from "lucide-react";
 
 interface Props {
@@ -29,6 +29,19 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
     let disposed = false;
     let renderer: any;
     let animationId: number;
+    let resizeObserver: ResizeObserver | undefined;
+
+    const waitForContainerSize = async () => {
+      for (let i = 0; i < 20; i += 1) {
+        const container = containerRef.current;
+        const width = container?.clientWidth ?? 0;
+        const height = container?.clientHeight ?? 0;
+        if (width > 40 && height > 40) return { width, height };
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      const container = containerRef.current;
+      return { width: Math.max(container?.clientWidth ?? 320, 320), height: Math.max(container?.clientHeight ?? 400, 320) };
+    };
 
     const init = async () => {
       setLoading(true);
@@ -38,14 +51,14 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         const { OrbitControls } = await import("three/examples/jsm/controls/OrbitControls.js");
 
         const container = containerRef.current!;
-        const width = container.clientWidth;
-        const height = container.clientHeight || 400;
+        const { width, height } = await waitForContainerSize();
+        if (disposed) return;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0a);
+        scene.background = new THREE.Color(0xf8fafc);
 
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
-        camera.position.set(0, 0, 200);
+        camera.position.set(120, 80, 220);
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -53,7 +66,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         container.innerHTML = "";
         container.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.75));
         const dir1 = new THREE.DirectionalLight(0xffffff, 0.8);
         dir1.position.set(1, 1, 1);
         scene.add(dir1);
@@ -76,21 +89,26 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         }
 
         let mesh: any;
+        const material = new THREE.MeshPhongMaterial({ color: 0xd9dde3, specular: 0x333333, shininess: 40, side: THREE.DoubleSide });
         if (ext === "stl") {
           const { STLLoader } = await import("three/examples/jsm/loaders/STLLoader.js");
           const geometry = new STLLoader().parse(buffer as ArrayBuffer);
           geometry.computeVertexNormals();
-          const material = new THREE.MeshPhongMaterial({ color: 0xe8e8e8, specular: 0x222222, shininess: 30 });
           mesh = new THREE.Mesh(geometry, material);
         } else if (ext === "ply") {
           const { PLYLoader } = await import("three/examples/jsm/loaders/PLYLoader.js");
           const geometry = new PLYLoader().parse(buffer as ArrayBuffer);
           geometry.computeVertexNormals();
-          const material = new THREE.MeshPhongMaterial({ color: 0xe8e8e8, specular: 0x222222, shininess: 30 });
           mesh = new THREE.Mesh(geometry, material);
         } else if (ext === "obj") {
           const { OBJLoader } = await import("three/examples/jsm/loaders/OBJLoader.js");
           mesh = new OBJLoader().parse(buffer as string);
+          mesh.traverse?.((child: any) => {
+            if (child.isMesh) {
+              child.material = material;
+              child.geometry?.computeVertexNormals?.();
+            }
+          });
         }
 
         if (!mesh) throw new Error("فشل تحميل الملف");
@@ -101,12 +119,19 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         const size = box.getSize(new THREE.Vector3());
         mesh.position.sub(center);
         const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const scale = 100 / maxDim;
+        const scale = 120 / maxDim;
         mesh.scale.setScalar(scale);
         scene.add(mesh);
 
-        camera.position.set(0, 0, 180);
-        controls.target.set(0, 0, 0);
+        const fittedBox = new THREE.Box3().setFromObject(mesh);
+        const sphere = fittedBox.getBoundingSphere(new THREE.Sphere());
+        const radius = Math.max(sphere.radius, 10);
+        const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 1.25;
+        camera.near = Math.max(distance / 100, 0.1);
+        camera.far = distance * 100;
+        camera.position.set(radius * 0.8, radius * 0.55, distance);
+        camera.updateProjectionMatrix();
+        controls.target.copy(sphere.center);
         controls.update();
 
         const animate = () => {
@@ -118,14 +143,16 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         animate();
 
         const onResize = () => {
-          if (!container) return;
+          if (!container || disposed) return;
           const w = container.clientWidth;
           const h = container.clientHeight || 400;
+          if (w <= 0 || h <= 0) return;
           camera.aspect = w / h;
           camera.updateProjectionMatrix();
           renderer.setSize(w, h);
         };
-        window.addEventListener("resize", onResize);
+        resizeObserver = new ResizeObserver(onResize);
+        resizeObserver.observe(container);
 
         setLoading(false);
       } catch (e: any) {
@@ -138,10 +165,12 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
     return () => {
       disposed = true;
       if (animationId) cancelAnimationFrame(animationId);
+      resizeObserver?.disconnect();
       if (renderer) {
         renderer.dispose?.();
         renderer.forceContextLoss?.();
       }
+      if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [open, supported, file, url, ext]);
 
@@ -153,17 +182,20 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
             <FileBox className="h-5 w-5" />
             <span dir="ltr" className="truncate text-sm">{name}</span>
           </DialogTitle>
+          <DialogDescription>
+            معاينة ملف الإسكان قبل حفظ الحالة.
+          </DialogDescription>
         </DialogHeader>
         {supported ? (
-          <div className="relative h-[400px] w-full overflow-hidden rounded-lg border bg-black">
+          <div className="relative h-[420px] min-h-[320px] w-full overflow-hidden rounded-lg border bg-muted/20">
             <div ref={containerRef} className="h-full w-full" />
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground">
                 <Loader2 className="ml-2 h-5 w-5 animate-spin" /> جارٍ تحميل المعاينة...
               </div>
             )}
             {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-4 text-center text-sm text-destructive">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/90 p-4 text-center text-sm text-destructive">
                 {error}
               </div>
             )}
