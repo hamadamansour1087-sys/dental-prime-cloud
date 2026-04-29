@@ -1252,6 +1252,12 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           addFiles(dt.files, "photo");
         }}
       />
+      <ScanPreviewDialog
+        open={!!scanPreviewId}
+        onOpenChange={(v) => !v && setScanPreviewId(null)}
+        file={scanPreviewId ? fileBlobsRef.current.get(scanPreviewId) ?? null : null}
+        fileName={scanPreviewId ? files.find((f) => f.id === scanPreviewId)?.name : undefined}
+      />
     </div>
   );
 }
