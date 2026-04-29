@@ -182,17 +182,20 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
             <FileBox className="h-5 w-5" />
             <span dir="ltr" className="truncate text-sm">{name}</span>
           </DialogTitle>
+          <DialogDescription>
+            معاينة ملف الإسكان قبل حفظ الحالة.
+          </DialogDescription>
         </DialogHeader>
         {supported ? (
-          <div className="relative h-[400px] w-full overflow-hidden rounded-lg border bg-black">
+          <div className="relative h-[420px] min-h-[320px] w-full overflow-hidden rounded-lg border bg-muted/20">
             <div ref={containerRef} className="h-full w-full" />
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground">
                 <Loader2 className="ml-2 h-5 w-5 animate-spin" /> جارٍ تحميل المعاينة...
               </div>
             )}
             {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-4 text-center text-sm text-destructive">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/90 p-4 text-center text-sm text-destructive">
                 {error}
               </div>
             )}
