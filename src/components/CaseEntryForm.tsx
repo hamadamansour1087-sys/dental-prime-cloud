@@ -1224,6 +1224,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           </Button>
         </div>
       </div>
+      <InlineCameraDialog
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        onCapture={(file) => {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          addFiles(dt.files, "photo");
+        }}
+      />
     </div>
   );
 }
