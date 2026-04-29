@@ -299,6 +299,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   const [draftRestored, setDraftRestored] = useState(false);
   const [labName, setLabName] = useState<string | undefined>();
   const [doctorPickerOpen, setDoctorPickerOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const cameraRef = useRef<HTMLInputElement>(null);
