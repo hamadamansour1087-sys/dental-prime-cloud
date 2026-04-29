@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye } from "lucide-react";
+import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 import { toast } from "sonner";
 import { QuadrantsView } from "@/components/QuadrantsView";
 import { CaseLabelDialog } from "@/components/CaseLabelDialog";
@@ -47,6 +48,7 @@ function CaseDetailsPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [scanPreview, setScanPreview] = useState<{ url: string; name: string } | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
   const [stageOpen, setStageOpen] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
