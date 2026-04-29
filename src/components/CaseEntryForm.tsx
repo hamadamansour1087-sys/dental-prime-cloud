@@ -460,8 +460,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       } catch {
         /* ignore */
       }
-      // Refocus first field for rapid re-entry
-      window.setTimeout(() => firstFieldRef.current?.focus(), 50);
+      // Refocus: if doctor not preserved, open doctor picker; else focus patient name
+      window.setTimeout(() => {
+        if (mode === "admin" && !preserveDoctor && !fixedDoctorId) {
+          setDoctorPickerOpen(true);
+        } else {
+          firstFieldRef.current?.focus();
+        }
+      }, 50);
     },
     [files, form.doctor_id, form.clinic_id, fixedDoctorId],
   );
