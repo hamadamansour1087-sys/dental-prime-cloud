@@ -644,6 +644,13 @@ function CaseDetailsPage() {
           <img src={previewUrl} alt="preview" className="max-h-full max-w-full rounded-lg object-contain" />
         </div>
       )}
+      {/* 3D scan preview */}
+      <ScanPreviewDialog
+        open={!!scanPreview}
+        onOpenChange={(v) => !v && setScanPreview(null)}
+        url={scanPreview?.url}
+        fileName={scanPreview?.name}
+      />
     </div>
   );
 }
