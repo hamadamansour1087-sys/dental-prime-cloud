@@ -59,6 +59,7 @@ import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { ToothChart } from "@/components/ToothChart";
 import { ShadeSelector } from "@/components/ShadeSelector";
 import { InlineCameraDialog } from "@/components/InlineCameraDialog";
+import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 
 // ----------------------------------------------------------------------------
 // Types
@@ -171,38 +172,52 @@ const savePrefs = (prefs: SmartDefaults) => {
 const FileGrid = memo(function FileGrid({
   files,
   onRemove,
+  onPreview,
 }: {
   files: PendingFileMeta[];
   onRemove: (id: string) => void;
+  onPreview?: (id: string) => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-      {files.map((f) => (
-        <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background shadow-xs">
-          {f.previewUrl ? (
-            <img src={f.previewUrl} alt={f.name} loading="lazy" decoding="async" className="h-24 w-full object-cover" />
-          ) : (
-            <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
-              <FileBox className="h-6 w-6 text-muted-foreground" />
-              <span className="line-clamp-2 text-[10px] text-muted-foreground" dir="ltr">
-                {f.name}
+      {files.map((f) => {
+        const canPreview = f.kind === "scan" && /\.(stl|ply|obj)$/i.test(f.name);
+        return (
+          <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background shadow-xs">
+            {f.previewUrl ? (
+              <img src={f.previewUrl} alt={f.name} loading="lazy" decoding="async" className="h-24 w-full object-cover" />
+            ) : (
+              <button
+                type="button"
+                onClick={() => canPreview && onPreview?.(f.id)}
+                className={cn(
+                  "flex h-24 w-full flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center",
+                  canPreview && "cursor-pointer hover:bg-muted/70",
+                )}
+                title={canPreview ? "اضغط للمعاينة 3D" : f.name}
+              >
+                <FileBox className="h-6 w-6 text-muted-foreground" />
+                <span className="line-clamp-2 text-[10px] text-muted-foreground" dir="ltr">
+                  {f.name}
+                </span>
+                {canPreview && <span className="text-[9px] font-bold text-primary">معاينة 3D</span>}
+              </button>
+            )}
+            <div className="flex items-center justify-between gap-1 p-1.5">
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                  f.kind === "scan" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                }`}
+              >
+                {f.kind === "scan" ? "إسكان" : "صورة"}
               </span>
+              <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
+                <Trash2 className="h-3 w-3 text-destructive" />
+              </Button>
             </div>
-          )}
-          <div className="flex items-center justify-between gap-1 p-1.5">
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                f.kind === "scan" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-              }`}
-            >
-              {f.kind === "scan" ? "إسكان" : "صورة"}
-            </span>
-            <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
-              <Trash2 className="h-3 w-3 text-destructive" />
-            </Button>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 });
@@ -300,6 +315,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   const [labName, setLabName] = useState<string | undefined>();
   const [doctorPickerOpen, setDoctorPickerOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [scanPreviewId, setScanPreviewId] = useState<string | null>(null);
 
   const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -1134,37 +1150,40 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                       e.target.value = "";
                     }}
                   />
-                  <input
-                    ref={photoRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    hidden
-                    onChange={(e) => {
-                      addFiles(e.target.files, "photo");
-                      e.target.value = "";
-                    }}
-                  />
-                  <input
-                    ref={scanRef}
-                    type="file"
-                    accept=".stl,.ply,.obj,.zip,.3mf,.dcm"
-                    multiple
-                    hidden
-                    onChange={(e) => {
-                      addFiles(e.target.files, "scan");
-                      e.target.value = "";
-                    }}
-                  />
                   <Button type="button" size="sm" variant="outline" onClick={() => setCameraOpen(true)} className="h-8">
                     <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
                   </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()} className="h-8">
+                  {/* Photo picker — uses <label> to avoid programmatic click()
+                      which on some mobile browsers can unload the page. */}
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground">
                     <ImageIcon className="ml-1 h-3.5 w-3.5" /> صور
-                  </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => scanRef.current?.click()} className="h-8">
+                    <input
+                      ref={photoRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => {
+                        addFiles(e.target.files, "photo");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {/* Scan picker — same pattern */}
+                  <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground">
                     <FileBox className="ml-1 h-3.5 w-3.5" /> إسكان
-                  </Button>
+                    <input
+                      ref={scanRef}
+                      type="file"
+                      accept=".stl,.ply,.obj,.zip,.3mf,.dcm"
+                      multiple
+                      className="sr-only"
+                      onChange={(e) => {
+                        addFiles(e.target.files, "scan");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -1179,7 +1198,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                     اسحب الملفات هنا أو استخدم الأزرار أعلاه
                   </div>
                 ) : (
-                  <FileGrid files={files} onRemove={removeFile} />
+                  <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
                 )}
               </div>
             </div>
@@ -1232,6 +1251,12 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           dt.items.add(file);
           addFiles(dt.files, "photo");
         }}
+      />
+      <ScanPreviewDialog
+        open={!!scanPreviewId}
+        onOpenChange={(v) => !v && setScanPreviewId(null)}
+        file={scanPreviewId ? fileBlobsRef.current.get(scanPreviewId) ?? null : null}
+        fileName={scanPreviewId ? files.find((f) => f.id === scanPreviewId)?.name : undefined}
       />
     </div>
   );
