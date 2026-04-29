@@ -107,7 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!isSameSession(sess, scoped)) return;
 
-      setLoading(true);
+      // Keep background auth refreshes silent. Showing the global loading
+      // screen here unmounts active forms on mobile after returning from
+      // camera/file pickers, which clears the unsaved case entry state.
       if (sess) writeScopedSession(scopeRef.current, sess);
       setTimeout(() => {
         applySession(sess).finally(() => setLoading(false));
