@@ -1198,7 +1198,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                     اسحب الملفات هنا أو استخدم الأزرار أعلاه
                   </div>
                 ) : (
-                  <FileGrid files={files} onRemove={removeFile} />
+                  <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
                 )}
               </div>
             </div>
