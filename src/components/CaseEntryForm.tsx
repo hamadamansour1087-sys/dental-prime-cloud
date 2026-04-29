@@ -31,6 +31,7 @@ import {
   Camera,
   Check,
   ChevronsUpDown,
+  Eye,
   FileBox,
   ImageIcon,
   Keyboard,
@@ -181,7 +182,8 @@ const FileGrid = memo(function FileGrid({
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
       {files.map((f) => {
-        const canPreview = f.kind === "scan" && /\.(stl|ply|obj)$/i.test(f.name);
+        const canOpenPreview = f.kind === "scan";
+        const canPreview3d = f.kind === "scan" && /\.(stl|ply|obj|3mf)$/i.test(f.name);
         return (
           <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background shadow-xs">
             {f.previewUrl ? (
@@ -189,18 +191,18 @@ const FileGrid = memo(function FileGrid({
             ) : (
               <button
                 type="button"
-                onClick={() => canPreview && onPreview?.(f.id)}
+                onClick={() => canOpenPreview && onPreview?.(f.id)}
                 className={cn(
                   "flex h-24 w-full flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center",
-                  canPreview && "cursor-pointer hover:bg-muted/70",
+                  canOpenPreview && "cursor-pointer hover:bg-muted/70",
                 )}
-                title={canPreview ? "اضغط للمعاينة 3D" : f.name}
+                title={canOpenPreview ? "اضغط للمعاينة" : f.name}
               >
                 <FileBox className="h-6 w-6 text-muted-foreground" />
                 <span className="line-clamp-2 text-[10px] text-muted-foreground" dir="ltr">
                   {f.name}
                 </span>
-                {canPreview && <span className="text-[9px] font-bold text-primary">معاينة 3D</span>}
+                {canOpenPreview && <span className="text-[9px] font-bold text-primary">{canPreview3d ? "معاينة 3D" : "عرض الملف"}</span>}
               </button>
             )}
             <div className="flex items-center justify-between gap-1 p-1.5">
@@ -211,6 +213,11 @@ const FileGrid = memo(function FileGrid({
               >
                 {f.kind === "scan" ? "إسكان" : "صورة"}
               </span>
+              {canOpenPreview && (
+                <Button type="button" size="sm" variant="secondary" className="h-6 px-2 text-[10px]" onClick={() => onPreview?.(f.id)}>
+                  <Eye className="ml-1 h-3 w-3" /> معاينة
+                </Button>
+              )}
               <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
                 <Trash2 className="h-3 w-3 text-destructive" />
               </Button>
@@ -606,20 +613,24 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           });
         }
 
-        // Upload attachments without blocking case registration for too long.
-        // Large scan files are uploaded sequentially to avoid mobile/network failures.
-        const scanFiles = files.filter((f) => f.kind === "scan");
-        const otherFiles = files.filter((f) => f.kind !== "scan");
-        let uploadFailures = 0;
-        const uploadOne = async (pf: PendingFileMeta) => {
-          const blob = fileBlobsRef.current.get(pf.id);
-          if (!blob) return;
+        // Snapshot blobs now, then upload in the background so case saving stays fast.
+        const attachmentFiles = files
+          .map((f) => ({ ...f, blob: fileBlobsRef.current.get(f.id) }))
+          .filter((f): f is PendingFileMeta & { blob: File } => !!f.blob);
+
+        const uploadAttachments = async () => {
+          if (!attachmentFiles.length) return;
+          const toastId = toast.loading(`تم حفظ الحالة، جاري رفع ${attachmentFiles.length} ملف في الخلفية...`);
+          const scanFiles = attachmentFiles.filter((f) => f.kind === "scan");
+          const otherFiles = attachmentFiles.filter((f) => f.kind !== "scan");
+          let uploadFailures = 0;
+          const uploadOne = async (pf: PendingFileMeta & { blob: File }) => {
           const safeName = pf.name.replace(/[^\w.\-]+/g, "_");
           const bucket = isPortal ? "case-attachments" : "case-media";
           const path = isPortal
             ? `${labId}/${created.id}/${Date.now()}_${safeName}`
             : `${labId}/${created.id}/${pf.kind}/${Date.now()}_${safeName}`;
-          const { error: upErr } = await supabase.storage.from(bucket).upload(path, blob, {
+          const { error: upErr } = await supabase.storage.from(bucket).upload(path, pf.blob, {
             contentType: pf.type || undefined,
             upsert: false,
           });
@@ -642,16 +653,22 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             toast.error(`تم رفع ${pf.name} لكن تعذر ربطه بالحالة`);
           }
         };
-        for (const scanFile of scanFiles) {
-          await uploadOne(scanFile);
-        }
-        const OTHER_CONCURRENCY = 3;
-        for (let i = 0; i < otherFiles.length; i += OTHER_CONCURRENCY) {
-          await Promise.all(otherFiles.slice(i, i + OTHER_CONCURRENCY).map(uploadOne));
-        }
-        if (uploadFailures > 0) {
-          toast.warning("تم حفظ الحالة، لكن بعض ملفات الإسكان لم ترفع بسبب الاتصال. أعد رفعها من صفحة الحالة.", { duration: 8000 });
-        }
+          const SCAN_CONCURRENCY = 2;
+          for (let i = 0; i < scanFiles.length; i += SCAN_CONCURRENCY) {
+            await Promise.all(scanFiles.slice(i, i + SCAN_CONCURRENCY).map(uploadOne));
+          }
+          const OTHER_CONCURRENCY = 3;
+          for (let i = 0; i < otherFiles.length; i += OTHER_CONCURRENCY) {
+            await Promise.all(otherFiles.slice(i, i + OTHER_CONCURRENCY).map(uploadOne));
+          }
+          if (uploadFailures > 0) {
+            toast.warning("تم حفظ الحالة، لكن بعض الملفات لم ترفع بسبب الاتصال. أعد رفعها من صفحة الحالة.", { duration: 8000 });
+            toast.dismiss(toastId);
+          } else {
+            toast.success("اكتمل رفع ملفات الحالة", { id: toastId });
+          }
+        };
+        void uploadAttachments();
       }
 
       // Save smart defaults
