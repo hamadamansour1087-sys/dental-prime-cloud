@@ -1156,7 +1156,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                       e.target.value = "";
                     }}
                   />
-                  <Button type="button" size="sm" variant="outline" onClick={() => cameraRef.current?.click()} className="h-8">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setCameraOpen(true)} className="h-8">
                     <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
                   </Button>
                   <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()} className="h-8">
