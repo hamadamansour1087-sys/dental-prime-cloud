@@ -78,7 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const init = async () => {
       setLoading(true);
-      const scoped = readScopedSession(scopeRef.current);
+      let scoped = readScopedSession(scopeRef.current);
+
+      // Fallback: if no scoped session in sessionStorage (e.g., new tab),
+      // adopt the active Supabase session from localStorage so the user
+      // doesn't get bounced to login or see the wrong-account screen.
+      if (!scoped) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          scoped = data.session;
+          writeScopedSession(scopeRef.current, data.session);
+        }
+      }
+
       if (!scoped) {
         resetState();
         if (mounted) setLoading(false);
