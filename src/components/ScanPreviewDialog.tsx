@@ -2,6 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileBox, Loader2 } from "lucide-react";
 
+type ThreeObject = {
+  isMesh?: boolean;
+  material?: unknown;
+  geometry?: { computeVertexNormals?: () => void };
+  traverse?: (callback: (child: ThreeObject) => void) => void;
+  position: { sub: (value: unknown) => void };
+  scale: { setScalar: (value: number) => void };
+};
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -12,8 +21,8 @@ interface Props {
 }
 
 /**
- * 3D preview dialog for dental scan files (STL / PLY / OBJ).
- * Other formats (.zip, .3mf, .dcm) show a simple file info card.
+ * 3D preview dialog for dental scan files (STL / PLY / OBJ / 3MF).
+ * Other formats (.zip, .dcm) show a simple file info card.
  */
 export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,12 +31,12 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
 
   const name = fileName ?? file?.name ?? "";
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
-  const supported = ["stl", "ply", "obj"].includes(ext);
+  const supported = ["stl", "ply", "obj", "3mf"].includes(ext);
 
   useEffect(() => {
     if (!open || !supported || !containerRef.current) return;
     let disposed = false;
-    let renderer: any;
+    let renderer: { dispose?: () => void; forceContextLoss?: () => void; render: (scene: unknown, camera: unknown) => void; setPixelRatio: (value: number) => void; setSize: (width: number, height: number) => void; domElement: HTMLCanvasElement } | undefined;
     let animationId: number;
     let resizeObserver: ResizeObserver | undefined;
 
@@ -60,9 +69,12 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
         camera.position.set(120, 80, 220);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.setSize(width, height);
+        renderer.domElement.style.display = "block";
+        renderer.domElement.style.width = "100%";
+        renderer.domElement.style.height = "100%";
         container.innerHTML = "";
         container.appendChild(renderer.domElement);
 
@@ -88,7 +100,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
           throw new Error("لا يوجد ملف للمعاينة");
         }
 
-        let mesh: any;
+        let mesh: ThreeObject | undefined;
         const material = new THREE.MeshPhongMaterial({ color: 0xd9dde3, specular: 0x333333, shininess: 40, side: THREE.DoubleSide });
         if (ext === "stl") {
           const { STLLoader } = await import("three/examples/jsm/loaders/STLLoader.js");
@@ -103,11 +115,20 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         } else if (ext === "obj") {
           const { OBJLoader } = await import("three/examples/jsm/loaders/OBJLoader.js");
           mesh = new OBJLoader().parse(buffer as string);
-          mesh.traverse?.((child: any) => {
+          mesh.traverse?.((child) => {
             if (child.isMesh) {
               child.material = material;
               child.geometry?.computeVertexNormals?.();
             }
+          });
+        } else if (ext === "3mf") {
+          const { ThreeMFLoader } = await import("three/examples/jsm/loaders/3MFLoader.js");
+          mesh = new ThreeMFLoader().parse(buffer as ArrayBuffer) as unknown as ThreeObject;
+          mesh.traverse?.((child) => {
+            if (child.isMesh && !child.material) {
+              child.material = material;
+            }
+            child.geometry?.computeVertexNormals?.();
           });
         }
 
@@ -138,7 +159,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
           if (disposed) return;
           animationId = requestAnimationFrame(animate);
           controls.update();
-          renderer.render(scene, camera);
+          renderer?.render(scene, camera);
         };
         animate();
 
