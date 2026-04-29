@@ -58,6 +58,7 @@ import { cn } from "@/lib/utils";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { ToothChart } from "@/components/ToothChart";
 import { ShadeSelector } from "@/components/ShadeSelector";
+import { InlineCameraDialog } from "@/components/InlineCameraDialog";
 
 // ----------------------------------------------------------------------------
 // Types
