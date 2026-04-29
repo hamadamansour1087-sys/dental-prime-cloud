@@ -357,9 +357,18 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     queryFn: async () =>
       ((await supabase
         .from("work_types")
-        .select("id, name")
+        .select("id, name, category_id")
         .eq("is_active", true)
-        .order("name")).data ?? []) as WorkTypeOption[],
+        .order("name")).data ?? []) as (WorkTypeOption & { category_id: string | null })[],
+  });
+
+  const { data: workCategories } = useQuery({
+    queryKey: ["work-categories-entry", labId],
+    enabled: !!labId,
+    queryFn: async () =>
+      ((await supabase
+        .from("work_type_categories")
+        .select("id, avg_delivery_days")).data ?? []) as { id: string; avg_delivery_days: number | null }[],
   });
 
   const { data: stages } = useQuery({
@@ -391,7 +400,17 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   }, [DRAFT_KEY]);
 
   // ---------- predicted due date ----------
-  const baseLeadDays = (stages ?? []).reduce((s: number, st: { estimated_days: number | null }) => s + (Number(st.estimated_days) || 0), 0) || 5;
+  // 1) أساس من مراحل سير العمل
+  const stagesLeadDays = (stages ?? []).reduce((s: number, st: { estimated_days: number | null }) => s + (Number(st.estimated_days) || 0), 0);
+  // 2) أساس من فئات أنواع العمل المختارة (نأخذ الأعلى لأن الفئة الأبطأ تحدد التسليم)
+  const catMap = new Map((workCategories ?? []).map((c) => [c.id, Number(c.avg_delivery_days) || 0]));
+  const wtCatMap = new Map((workTypes ?? []).map((w: any) => [w.id, w.category_id as string | null]));
+  const selectedCategoryDays = items
+    .map((it) => (it.work_type_id ? catMap.get(wtCatMap.get(it.work_type_id) ?? "") ?? 0 : 0))
+    .filter((d) => d > 0);
+  const categoryLeadDays = selectedCategoryDays.length ? Math.max(...selectedCategoryDays) : 0;
+  // الأساس النهائي: الأعلى بين سير العمل وفئة نوع العمل
+  const baseLeadDays = Math.max(stagesLeadDays, categoryLeadDays) || 5;
   const validItemsCount = items.filter((it) => it.work_type_id).length;
   const totalUnitsForPrediction = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
   const extraDays = Math.max(0, validItemsCount - 1) + Math.max(0, Math.ceil((totalUnitsForPrediction - 3) / 3));
