@@ -109,10 +109,15 @@ function CaseDetailsPage() {
         .select("*")
         .eq("case_id", caseId)
         .order("created_at");
-      const withUrls = (data ?? []).map((a) => {
-        const { data: pub } = supabase.storage.from("case-media").getPublicUrl(a.storage_path);
-        return { ...a, url: pub.publicUrl };
-      });
+      const rows = data ?? [];
+      const withUrls = await Promise.all(
+        rows.map(async (a) => {
+          const { data: signed } = await supabase.storage
+            .from("case-media")
+            .createSignedUrl(a.storage_path, 60 * 60);
+          return { ...a, url: signed?.signedUrl ?? "" };
+        })
+      );
       return withUrls;
     },
   });
