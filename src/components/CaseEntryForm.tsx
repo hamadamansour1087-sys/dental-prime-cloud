@@ -1122,6 +1122,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                   )}
                 </h2>
                 <div className="flex flex-wrap gap-1.5">
+                  {/* Hidden legacy camera input kept as fallback (not used by the button) */}
                   <input
                     ref={cameraRef}
                     type="file"
