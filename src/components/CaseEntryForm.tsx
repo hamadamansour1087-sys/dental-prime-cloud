@@ -172,38 +172,52 @@ const savePrefs = (prefs: SmartDefaults) => {
 const FileGrid = memo(function FileGrid({
   files,
   onRemove,
+  onPreview,
 }: {
   files: PendingFileMeta[];
   onRemove: (id: string) => void;
+  onPreview?: (id: string) => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-      {files.map((f) => (
-        <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background shadow-xs">
-          {f.previewUrl ? (
-            <img src={f.previewUrl} alt={f.name} loading="lazy" decoding="async" className="h-24 w-full object-cover" />
-          ) : (
-            <div className="flex h-24 flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center">
-              <FileBox className="h-6 w-6 text-muted-foreground" />
-              <span className="line-clamp-2 text-[10px] text-muted-foreground" dir="ltr">
-                {f.name}
+      {files.map((f) => {
+        const canPreview = f.kind === "scan" && /\.(stl|ply|obj)$/i.test(f.name);
+        return (
+          <div key={f.id} className="group relative overflow-hidden rounded-md border bg-background shadow-xs">
+            {f.previewUrl ? (
+              <img src={f.previewUrl} alt={f.name} loading="lazy" decoding="async" className="h-24 w-full object-cover" />
+            ) : (
+              <button
+                type="button"
+                onClick={() => canPreview && onPreview?.(f.id)}
+                className={cn(
+                  "flex h-24 w-full flex-col items-center justify-center gap-1 bg-muted/40 p-2 text-center",
+                  canPreview && "cursor-pointer hover:bg-muted/70",
+                )}
+                title={canPreview ? "اضغط للمعاينة 3D" : f.name}
+              >
+                <FileBox className="h-6 w-6 text-muted-foreground" />
+                <span className="line-clamp-2 text-[10px] text-muted-foreground" dir="ltr">
+                  {f.name}
+                </span>
+                {canPreview && <span className="text-[9px] font-bold text-primary">معاينة 3D</span>}
+              </button>
+            )}
+            <div className="flex items-center justify-between gap-1 p-1.5">
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                  f.kind === "scan" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                }`}
+              >
+                {f.kind === "scan" ? "إسكان" : "صورة"}
               </span>
+              <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
+                <Trash2 className="h-3 w-3 text-destructive" />
+              </Button>
             </div>
-          )}
-          <div className="flex items-center justify-between gap-1 p-1.5">
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                f.kind === "scan" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-              }`}
-            >
-              {f.kind === "scan" ? "إسكان" : "صورة"}
-            </span>
-            <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => onRemove(f.id)}>
-              <Trash2 className="h-3 w-3 text-destructive" />
-            </Button>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 });
