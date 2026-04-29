@@ -19,8 +19,8 @@ interface Props {
 }
 
 /**
- * 3D preview dialog for dental scan files (STL / PLY / OBJ / 3MF).
- * Other formats (.zip, .dcm) show a simple file info card.
+ * 3D preview dialog for dental scan files (STL / PLY / OBJ / 3MF / ZIP containing one of them).
+ * Other formats (.dcm) show a simple file info card.
  */
 export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,7 +29,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
 
   const name = fileName ?? file?.name ?? "";
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
-  const supported = ["stl", "ply", "obj", "3mf"].includes(ext);
+  const supported = ["stl", "ply", "obj", "3mf", "zip"].includes(ext);
 
   useEffect(() => {
     if (!open || !supported || !containerRef.current) return;
@@ -90,6 +90,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
 
         // Read file
         let buffer: ArrayBuffer | string;
+        let modelExt = ext;
         if (file) {
           buffer = ext === "obj" ? await file.text() : await file.arrayBuffer();
         } else if (url) {
@@ -99,19 +100,35 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
           throw new Error("لا يوجد ملف للمعاينة");
         }
 
+        if (modelExt === "zip") {
+          const { unzipSync, strFromU8 } = await import("fflate");
+          const entries = unzipSync(new Uint8Array(buffer as ArrayBuffer));
+          const entryName = Object.keys(entries).find((entry) => /\.(stl|ply|obj|3mf)$/i.test(entry));
+          if (!entryName) throw new Error("ملف ZIP لا يحتوي على STL أو PLY أو OBJ أو 3MF للمعاينة");
+          modelExt = entryName.split(".").pop()?.toLowerCase() ?? "";
+          const bytes = entries[entryName];
+          if (modelExt === "obj") {
+            buffer = strFromU8(bytes);
+          } else {
+            const copy = new ArrayBuffer(bytes.byteLength);
+            new Uint8Array(copy).set(bytes);
+            buffer = copy;
+          }
+        }
+
         let mesh: Object3D | undefined;
         const material = new THREE.MeshPhongMaterial({ color: 0xd9dde3, specular: 0x333333, shininess: 40, side: THREE.DoubleSide });
-        if (ext === "stl") {
+        if (modelExt === "stl") {
           const { STLLoader } = await import("three/examples/jsm/loaders/STLLoader.js");
           const geometry = new STLLoader().parse(buffer as ArrayBuffer);
           geometry.computeVertexNormals();
           mesh = new THREE.Mesh(geometry, material);
-        } else if (ext === "ply") {
+        } else if (modelExt === "ply") {
           const { PLYLoader } = await import("three/examples/jsm/loaders/PLYLoader.js");
           const geometry = new PLYLoader().parse(buffer as ArrayBuffer);
           geometry.computeVertexNormals();
           mesh = new THREE.Mesh(geometry, material);
-        } else if (ext === "obj") {
+        } else if (modelExt === "obj") {
           const { OBJLoader } = await import("three/examples/jsm/loaders/OBJLoader.js");
           mesh = new OBJLoader().parse(buffer as string);
           mesh.traverse?.((child) => {
@@ -121,7 +138,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
               item.geometry?.computeVertexNormals?.();
             }
           });
-        } else if (ext === "3mf") {
+        } else if (modelExt === "3mf") {
           const { ThreeMFLoader } = await import("three/examples/jsm/loaders/3MFLoader.js");
           mesh = new ThreeMFLoader().parse(buffer as ArrayBuffer);
           mesh.traverse?.((child) => {
