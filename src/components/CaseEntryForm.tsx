@@ -58,6 +58,7 @@ import { cn } from "@/lib/utils";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { ToothChart } from "@/components/ToothChart";
 import { ShadeSelector } from "@/components/ShadeSelector";
+import { InlineCameraDialog } from "@/components/InlineCameraDialog";
 
 // ----------------------------------------------------------------------------
 // Types
@@ -298,6 +299,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   const [draftRestored, setDraftRestored] = useState(false);
   const [labName, setLabName] = useState<string | undefined>();
   const [doctorPickerOpen, setDoctorPickerOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -458,8 +460,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       } catch {
         /* ignore */
       }
-      // Refocus first field for rapid re-entry
-      window.setTimeout(() => firstFieldRef.current?.focus(), 50);
+      // Refocus: if doctor not preserved, open doctor picker; else focus patient name
+      window.setTimeout(() => {
+        if (mode === "admin" && !preserveDoctor && !fixedDoctorId) {
+          setDoctorPickerOpen(true);
+        } else {
+          firstFieldRef.current?.focus();
+        }
+      }, 50);
     },
     [files, form.doctor_id, form.clinic_id, fixedDoctorId],
   );
@@ -697,9 +705,14 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, items, files, submitting]);
 
-  // Auto-focus first field on mount
+  // Auto-focus doctor picker on mount (admin mode) so user starts by choosing a doctor
   useEffect(() => {
-    window.setTimeout(() => firstFieldRef.current?.focus(), 100);
+    if (mode === "admin" && !fixedDoctorId && !form.doctor_id) {
+      window.setTimeout(() => setDoctorPickerOpen(true), 150);
+    } else {
+      window.setTimeout(() => firstFieldRef.current?.focus(), 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------- derived ----------
@@ -1109,6 +1122,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                   )}
                 </h2>
                 <div className="flex flex-wrap gap-1.5">
+                  {/* Hidden legacy camera input kept as fallback (not used by the button) */}
                   <input
                     ref={cameraRef}
                     type="file"
@@ -1142,7 +1156,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                       e.target.value = "";
                     }}
                   />
-                  <Button type="button" size="sm" variant="outline" onClick={() => cameraRef.current?.click()} className="h-8">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setCameraOpen(true)} className="h-8">
                     <Camera className="ml-1 h-3.5 w-3.5" /> كاميرا
                   </Button>
                   <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()} className="h-8">
@@ -1210,6 +1224,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           </Button>
         </div>
       </div>
+      <InlineCameraDialog
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        onCapture={(file) => {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          addFiles(dt.files, "photo");
+        }}
+      />
     </div>
   );
 }
