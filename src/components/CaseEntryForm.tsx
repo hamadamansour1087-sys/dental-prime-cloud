@@ -357,9 +357,18 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
     queryFn: async () =>
       ((await supabase
         .from("work_types")
-        .select("id, name")
+        .select("id, name, category_id")
         .eq("is_active", true)
-        .order("name")).data ?? []) as WorkTypeOption[],
+        .order("name")).data ?? []) as (WorkTypeOption & { category_id: string | null })[],
+  });
+
+  const { data: workCategories } = useQuery({
+    queryKey: ["work-categories-entry", labId],
+    enabled: !!labId,
+    queryFn: async () =>
+      ((await supabase
+        .from("work_type_categories")
+        .select("id, avg_delivery_days")).data ?? []) as { id: string; avg_delivery_days: number | null }[],
   });
 
   const { data: stages } = useQuery({
