@@ -415,4 +415,63 @@
     background-size: 200% 100%;
     animation: shimmer 1.6s infinite;
   }
+
+  /* Staggered children animation */
+  @keyframes staggerIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-stagger > * {
+    animation: staggerIn 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 50ms; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 100ms; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 150ms; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 200ms; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 250ms; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+  .animate-stagger > *:nth-child(7) { animation-delay: 350ms; }
+  .animate-stagger > *:nth-child(8) { animation-delay: 400ms; }
+
+  /* Glass card */
+  .glass-card {
+    background: color-mix(in oklab, var(--color-card) 85%, transparent);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    border: 1px solid color-mix(in oklab, var(--color-border) 60%, transparent);
+  }
+
+  /* Hover lift */
+  .hover-lift {
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Active press */
+  .active-press:active {
+    transform: scale(0.98);
+  }
+
+  /* Number counter animation */
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-count-up {
+    animation: countUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  /* Smooth gradient text shimmer for loading */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-gradient-text {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+  }
 }
