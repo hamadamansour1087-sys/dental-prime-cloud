@@ -1085,13 +1085,13 @@ function CasesPage() {
           {stages?.map((stage) => {
             const stageCases = filteredCases.filter((c) => c.current_stage_id === stage.id) ?? [];
             return (
-              <div key={stage.id} className="rounded-lg border bg-card p-3">
+              <div key={stage.id} className="rounded-2xl border border-border/60 bg-card/50 p-3 shadow-xs">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: stage.color }} />
-                    <span className="font-semibold">{stage.name}</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-2.5 w-2.5 rounded-full ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: stage.color, boxShadow: `0 0 8px ${stage.color}40` }} />
+                    <span className="font-medium text-sm">{stage.name}</span>
                   </div>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{stageCases.length}</span>
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium tabular-nums">{stageCases.length}</span>
                 </div>
                 <div className="space-y-2">
                   {stageCases.map((c) => {
