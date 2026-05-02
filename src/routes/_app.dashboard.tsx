@@ -168,7 +168,7 @@ function DashboardPage() {
       .join("");
 
   return (
-    <div className="space-y-5 md:space-y-6" dir="rtl">
+    <div className="space-y-5 md:space-y-6 animate-stagger" dir="rtl">
       {/* Greeting Header */}
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3 md:gap-4">
@@ -208,7 +208,7 @@ function DashboardPage() {
         {/* Hero: Revenue + Stage Distribution (8 cols) */}
         <Link
           to="/invoices"
-          className="lg:col-span-8 group bg-card rounded-3xl p-6 md:p-8 shadow-elegant border border-border/60 relative overflow-hidden transition-all hover:shadow-lg"
+          className="lg:col-span-8 group bg-card rounded-3xl p-6 md:p-8 shadow-elegant border border-border/60 relative overflow-hidden hover-lift active-press"
         >
           <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl bg-primary/10 pointer-events-none" />
           <div className="absolute -bottom-32 -right-16 w-72 h-72 rounded-full blur-3xl bg-warning/10 pointer-events-none" />
@@ -272,7 +272,7 @@ function DashboardPage() {
         <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-4 md:gap-5">
           <Link
             to="/cases"
-            className="bg-card rounded-3xl p-5 md:p-6 shadow-elegant border-t-4 border-t-destructive border-x border-b border-border/60 hover:shadow-lg transition-all flex flex-col justify-between min-h-[120px] lg:min-h-0 lg:flex-1"
+            className="bg-card rounded-3xl p-5 md:p-6 shadow-elegant border-t-4 border-t-destructive border-x border-b border-border/60 hover-lift active-press flex flex-col justify-between min-h-[120px] lg:min-h-0 lg:flex-1"
           >
             <div className="flex items-start justify-between">
               <h3 className="text-muted-foreground text-xs md:text-sm">حالات متأخرة</h3>
@@ -288,7 +288,7 @@ function DashboardPage() {
 
           <Link
             to="/cases"
-            className="bg-card rounded-3xl p-5 md:p-6 shadow-elegant border-t-4 border-t-success border-x border-b border-border/60 hover:shadow-lg transition-all flex flex-col justify-between min-h-[120px] lg:min-h-0 lg:flex-1"
+            className="bg-card rounded-3xl p-5 md:p-6 shadow-elegant border-t-4 border-t-success border-x border-b border-border/60 hover-lift active-press flex flex-col justify-between min-h-[120px] lg:min-h-0 lg:flex-1"
           >
             <div className="flex items-start justify-between">
               <h3 className="text-muted-foreground text-xs md:text-sm">تسليمات اليوم</h3>
@@ -306,7 +306,7 @@ function DashboardPage() {
         {/* Mini KPIs (3 cards on desktop, 3 cols mobile) */}
         <Link
           to="/cases"
-          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover:shadow-lg transition-all flex items-center justify-between gap-3"
+          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover-lift active-press flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-10 md:size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -324,7 +324,7 @@ function DashboardPage() {
 
         <Link
           to="/doctors"
-          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover:shadow-lg transition-all flex items-center justify-between gap-3"
+          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover-lift active-press flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-10 md:size-11 rounded-2xl bg-accent text-accent-foreground flex items-center justify-center shrink-0">
@@ -342,7 +342,7 @@ function DashboardPage() {
 
         <Link
           to="/cases"
-          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover:shadow-lg transition-all flex items-center justify-between gap-3"
+          className="lg:col-span-4 bg-card rounded-3xl p-5 md:p-6 shadow-elegant border border-border/60 hover-lift active-press flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-10 md:size-11 rounded-2xl bg-warning/15 text-warning flex items-center justify-center shrink-0">
