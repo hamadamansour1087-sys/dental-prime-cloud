@@ -988,8 +988,8 @@ function CasesPage() {
       </div>
 
       {view === "table" ? (
-        <div className="rounded-lg border bg-card">
-          <Table>
+        <div className="rounded-2xl border border-border/60 bg-card shadow-xs overflow-hidden">
+          <Table className="[&_th]:bg-muted/40 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[110px]">رقم الحالة</TableHead>
