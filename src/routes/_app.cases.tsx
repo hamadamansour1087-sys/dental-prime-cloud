@@ -1012,7 +1012,7 @@ function CasesPage() {
                 return (
                   <TableRow
                     key={c.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer group transition-colors hover:bg-muted/30"
                     onDoubleClick={() => goToCase(c.id)}
                     onContextMenu={(event) => openCaseContextMenu(event, c)}
                   >
