@@ -949,19 +949,19 @@ function CasesPage() {
         </Dialog>
       </div>
 
-      {/* Toolbar: search + filter + view toggle */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-card border border-border/60 p-2.5 shadow-xs">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="بحث برقم الحالة، الطبيب، المريض، نوع العمل..."
-            className="pr-9"
+            className="pr-9 border-0 bg-muted/50 rounded-xl focus-visible:ring-1"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="كل المراحل" /></SelectTrigger>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/60"><SelectValue placeholder="كل المراحل" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل المراحل</SelectItem>
             {stages?.map((s) => (
@@ -974,15 +974,15 @@ function CasesPage() {
           onChange={setDateFilter}
           placeholder="فلتر التاريخ"
           title="تصفية حسب تاريخ دخول المرحلة الحالية"
-          className="w-[200px]"
+          className="w-[200px] rounded-xl"
         />
-        <span className="text-xs text-muted-foreground">{filteredCases.length} حالة</span>
-        <div className="ms-auto flex gap-1 rounded-md border p-0.5">
-          <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8">
-            <TableIcon className="ml-1 h-3.5 w-3.5" /> جدول
+        <span className="text-xs text-muted-foreground tabular-nums bg-muted/50 px-2.5 py-1 rounded-lg">{filteredCases.length} حالة</span>
+        <div className="ms-auto flex gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-0.5">
+          <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8 rounded-lg gap-1.5">
+            <TableIcon className="h-3.5 w-3.5" /> جدول
           </Button>
-          <Button size="sm" variant={view === "kanban" ? "default" : "ghost"} onClick={() => setView("kanban")} className="h-8">
-            <LayoutGrid className="ml-1 h-3.5 w-3.5" /> بطاقات
+          <Button size="sm" variant={view === "kanban" ? "default" : "ghost"} onClick={() => setView("kanban")} className="h-8 rounded-lg gap-1.5">
+            <LayoutGrid className="h-3.5 w-3.5" /> بطاقات
           </Button>
         </div>
       </div>
