@@ -739,10 +739,14 @@ function CasesPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">الحالات</h1>
-        <Button onClick={() => navigate({ to: "/cases/new" })}>
-          <Plus className="ml-1 h-4 w-4" />حالة جديدة
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-medium tracking-tight">الحالات</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">إدارة ومتابعة جميع حالات المعمل</p>
+        </div>
+        <Button onClick={() => navigate({ to: "/cases/new" })} className="rounded-xl shadow-sm h-10 px-5 gap-2">
+          <Plus className="h-4 w-4" />حالة جديدة
         </Button>
         {/* Legacy dialog kept hidden for fallback; new screen lives at /cases/new */}
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
