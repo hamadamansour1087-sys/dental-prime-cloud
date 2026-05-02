@@ -631,7 +631,7 @@ function CasesPage() {
       {contextMenu && (
         <div
           dir="rtl"
-          className="fixed z-50 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+          className="fixed z-50 w-56 rounded-xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated"
           style={{ left: contextMenuLeft, top: contextMenuTop }}
           onClick={(event) => event.stopPropagation()}
         >
