@@ -124,8 +124,10 @@ function AppLayout() {
         </div>
       </header>
 
-      <main className="flex-1 p-4 md:p-6 animate-fade-in-up">
-        <Outlet />
+      <main className="flex-1 p-4 md:p-6 lg:p-8 animate-fade-in-up" dir="rtl">
+        <div className="mx-auto max-w-[1400px]">
+          <Outlet />
+        </div>
       </main>
 
       <QrScannerDialog open={scanOpen} onOpenChange={setScanOpen} />

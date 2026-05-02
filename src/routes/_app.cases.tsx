@@ -631,7 +631,7 @@ function CasesPage() {
       {contextMenu && (
         <div
           dir="rtl"
-          className="fixed z-50 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+          className="fixed z-50 w-56 rounded-xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated"
           style={{ left: contextMenuLeft, top: contextMenuTop }}
           onClick={(event) => event.stopPropagation()}
         >
@@ -739,10 +739,14 @@ function CasesPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">الحالات</h1>
-        <Button onClick={() => navigate({ to: "/cases/new" })}>
-          <Plus className="ml-1 h-4 w-4" />حالة جديدة
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-medium tracking-tight">الحالات</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">إدارة ومتابعة جميع حالات المعمل</p>
+        </div>
+        <Button onClick={() => navigate({ to: "/cases/new" })} className="rounded-xl shadow-sm h-10 px-5 gap-2">
+          <Plus className="h-4 w-4" />حالة جديدة
         </Button>
         {/* Legacy dialog kept hidden for fallback; new screen lives at /cases/new */}
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
@@ -945,19 +949,19 @@ function CasesPage() {
         </Dialog>
       </div>
 
-      {/* Toolbar: search + filter + view toggle */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-card border border-border/60 p-2.5 shadow-xs">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="بحث برقم الحالة، الطبيب، المريض، نوع العمل..."
-            className="pr-9"
+            className="pr-9 border-0 bg-muted/50 rounded-xl focus-visible:ring-1"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="كل المراحل" /></SelectTrigger>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/60"><SelectValue placeholder="كل المراحل" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل المراحل</SelectItem>
             {stages?.map((s) => (
@@ -970,22 +974,22 @@ function CasesPage() {
           onChange={setDateFilter}
           placeholder="فلتر التاريخ"
           title="تصفية حسب تاريخ دخول المرحلة الحالية"
-          className="w-[200px]"
+          className="w-[200px] rounded-xl"
         />
-        <span className="text-xs text-muted-foreground">{filteredCases.length} حالة</span>
-        <div className="ms-auto flex gap-1 rounded-md border p-0.5">
-          <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8">
-            <TableIcon className="ml-1 h-3.5 w-3.5" /> جدول
+        <span className="text-xs text-muted-foreground tabular-nums bg-muted/50 px-2.5 py-1 rounded-lg">{filteredCases.length} حالة</span>
+        <div className="ms-auto flex gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-0.5">
+          <Button size="sm" variant={view === "table" ? "default" : "ghost"} onClick={() => setView("table")} className="h-8 rounded-lg gap-1.5">
+            <TableIcon className="h-3.5 w-3.5" /> جدول
           </Button>
-          <Button size="sm" variant={view === "kanban" ? "default" : "ghost"} onClick={() => setView("kanban")} className="h-8">
-            <LayoutGrid className="ml-1 h-3.5 w-3.5" /> بطاقات
+          <Button size="sm" variant={view === "kanban" ? "default" : "ghost"} onClick={() => setView("kanban")} className="h-8 rounded-lg gap-1.5">
+            <LayoutGrid className="h-3.5 w-3.5" /> بطاقات
           </Button>
         </div>
       </div>
 
       {view === "table" ? (
-        <div className="rounded-lg border bg-card">
-          <Table>
+        <div className="rounded-2xl border border-border/60 bg-card shadow-xs overflow-hidden">
+          <Table className="[&_th]:bg-muted/40 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-muted-foreground">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[110px]">رقم الحالة</TableHead>
@@ -1008,7 +1012,7 @@ function CasesPage() {
                 return (
                   <TableRow
                     key={c.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer group transition-colors hover:bg-muted/30"
                     onDoubleClick={() => goToCase(c.id)}
                     onContextMenu={(event) => openCaseContextMenu(event, c)}
                   >
@@ -1071,8 +1075,9 @@ function CasesPage() {
               )}
             </TableBody>
           </Table>
-          <p className="border-t bg-muted/30 px-3 py-1.5 text-[11px] text-muted-foreground">
-            💡 اضغط بالزر الأيمن على أي حالة لعرض القائمة السريعة
+          <p className="border-t border-border/40 bg-muted/20 px-4 py-2 text-[11px] text-muted-foreground flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-primary/40" />
+            اضغط بالزر الأيمن على أي حالة لعرض القائمة السريعة
           </p>
         </div>
       ) : (
@@ -1080,13 +1085,13 @@ function CasesPage() {
           {stages?.map((stage) => {
             const stageCases = filteredCases.filter((c) => c.current_stage_id === stage.id) ?? [];
             return (
-              <div key={stage.id} className="rounded-lg border bg-card p-3">
+              <div key={stage.id} className="rounded-2xl border border-border/60 bg-card/50 p-3 shadow-xs">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: stage.color }} />
-                    <span className="font-semibold">{stage.name}</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-2.5 w-2.5 rounded-full ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: stage.color, boxShadow: `0 0 8px ${stage.color}40` }} />
+                    <span className="font-medium text-sm">{stage.name}</span>
                   </div>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{stageCases.length}</span>
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium tabular-nums">{stageCases.length}</span>
                 </div>
                 <div className="space-y-2">
                   {stageCases.map((c) => {
