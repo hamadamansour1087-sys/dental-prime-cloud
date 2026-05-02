@@ -110,9 +110,9 @@ export function TopNav() {
           <Link
             key={item.url}
             to={item.url}
-            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap active-press ${
               isActive(item.url)
-                ? "bg-primary text-primary-foreground shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
@@ -128,9 +128,9 @@ export function TopNav() {
           return (
             <DropdownMenu key={group.label}>
               <DropdownMenuTrigger
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active-press ${
                   groupActive
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-accent text-accent-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
