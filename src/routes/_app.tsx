@@ -76,11 +76,11 @@ function AppLayout() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background gradient-mesh">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-card/75 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65 shadow-xs">
+      <header className="sticky top-0 z-20 border-b border-border/40 glass-card shadow-xs">
         <div className="flex h-14 items-center gap-3 px-4">
           {/* Brand */}
-          <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-display font-extrabold text-base shadow-glow">
+          <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-display font-extrabold text-base shadow-glow group-hover:shadow-lg transition-shadow">
               H
             </div>
             <div className="hidden sm:block leading-tight">
@@ -102,22 +102,22 @@ function AppLayout() {
               variant="outline"
               size="sm"
               onClick={() => setSearchOpen(true)}
-              className="gap-2 text-muted-foreground hover:text-foreground"
+              className="gap-2 text-muted-foreground hover:text-foreground rounded-xl border-border/60 hover:border-primary/30 transition-all"
               title="بحث عام (Ctrl+K)"
             >
               <Search className="h-4 w-4" />
               <span className="hidden lg:inline">بحث...</span>
-              <kbd className="hidden xl:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <kbd className="hidden xl:inline-flex h-5 select-none items-center gap-0.5 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                 ⌘K
               </kbd>
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setScanOpen(true)} title="مسح كود حالة">
+            <Button variant="ghost" size="icon" onClick={() => setScanOpen(true)} title="مسح كود حالة" className="rounded-xl hover:bg-accent/60 transition-colors">
               <ScanLine className="h-4 w-4" />
             </Button>
             <NotificationsBell />
             <PortalNotificationsBell variant="lab" />
             <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="تسجيل الخروج">
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="تسجيل الخروج" className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-colors">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
