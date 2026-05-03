@@ -41,7 +41,7 @@ export function CaseReport({
       }}
     >
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "3px solid #0e7490", paddingBottom: "12px", marginBottom: "16px" }}>
+      <div data-pdf-section style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "3px solid #0e7490", paddingBottom: "12px", marginBottom: "16px" }}>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           {lab.logo_url ? (
             <img src={lab.logo_url} alt="logo" crossOrigin="anonymous" style={{ height: "56px", width: "56px", objectFit: "contain", borderRadius: "8px" }} />
@@ -66,7 +66,7 @@ export function CaseReport({
       </div>
 
       {/* Info grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+      <div data-pdf-section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
         <InfoBlock title="بيانات الطبيب">
           <Field label="الاسم" value={caseRow.doctors?.name ?? "—"} bold />
           <Field label="الهاتف" value={caseRow.doctors?.phone ?? "—"} ltr />
@@ -90,7 +90,7 @@ export function CaseReport({
 
       {/* Items */}
       {items.length > 0 && (
-        <div style={{ marginBottom: "14px" }}>
+        <div data-pdf-section style={{ marginBottom: "14px" }}>
           <SectionTitle>عناصر العمل</SectionTitle>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px" }}>
             <thead>
@@ -129,7 +129,7 @@ export function CaseReport({
 
       {/* Stage history */}
       {stageHistory.length > 0 && (
-        <div style={{ marginBottom: "14px" }}>
+        <div data-pdf-section style={{ marginBottom: "14px" }}>
           <SectionTitle>الخط الزمني للمراحل</SectionTitle>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px" }}>
             <thead>
@@ -162,7 +162,7 @@ export function CaseReport({
 
       {/* Notes */}
       {caseRow.notes && (
-        <div style={{ marginBottom: "14px" }}>
+        <div data-pdf-section style={{ marginBottom: "14px" }}>
           <SectionTitle>ملاحظات</SectionTitle>
           <div style={{ border: "1px solid #fed7aa", background: "#fff7ed", borderRadius: "8px", padding: "10px 12px", whiteSpace: "pre-wrap", fontSize: "11px", color: "#7c2d12" }}>
             {caseRow.notes}
@@ -171,7 +171,7 @@ export function CaseReport({
       )}
 
       {/* Footer */}
-      <div style={{ marginTop: "20px", borderTop: "1px solid #e2e8f0", paddingTop: "8px", fontSize: "9px", color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
+      <div data-pdf-section style={{ marginTop: "20px", borderTop: "1px solid #e2e8f0", paddingTop: "8px", fontSize: "9px", color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
         <span>تقرير تم إنشاؤه آلياً</span>
         <span>{lab.name} · {format(new Date(), "dd/MM/yyyy HH:mm")}</span>
       </div>
