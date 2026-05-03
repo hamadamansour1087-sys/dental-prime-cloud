@@ -676,9 +676,14 @@ function CasesPage() {
             <button
               type="button"
               className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              onClick={() => updateCaseStatus(contextMenu.caseData.id, "delivered")}
+              onClick={() => {
+                const id = contextMenu.caseData.id;
+                setContextMenu(null);
+                setDeliveryCaseId(id);
+                setDeliveryOpen(true);
+              }}
             >
-              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
+              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تسليم الحالة
             </button>
           )}
 
