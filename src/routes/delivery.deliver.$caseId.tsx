@@ -147,16 +147,16 @@ function DeliverPage() {
       if (error) throw new Error(error.message);
 
       // Auto-record tracking point for delivery
-      if (coords) {
-        await supabase.from("agent_tracking_points").insert({
-          lab_id: caseRow?.lab_id ?? "",
-          agent_id: "", // filled by RLS current_agent_id()
+      if (coords && agentRow) {
+        supabase.from("agent_tracking_points").insert({
+          lab_id: agentRow.lab_id,
+          agent_id: agentRow.id,
           event_type: "delivery",
           latitude: coords.lat,
           longitude: coords.lng,
           location_accuracy: coords.acc,
           case_id: caseId,
-          doctor_id: (caseRow?.doctors as any)?.id,
+          doctor_id: caseRow?.doctor_id ?? null,
           notes: `تسليم حالة ${caseRow?.case_number ?? ""}`,
         }).then(() => {}); // fire-and-forget
       }
