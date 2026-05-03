@@ -56,6 +56,7 @@ function DeliverPage() {
     },
   });
 
+  const requestLocation = () => {
     if (!navigator.geolocation) { setGpsError("المتصفح لا يدعم تحديد الموقع"); return; }
     setGpsLoading(true); setGpsError(null);
     navigator.geolocation.getCurrentPosition(
