@@ -65,7 +65,7 @@ function AgentDoctorDetail() {
         <Card className="p-4">
           <p className="text-lg font-bold">{doctor.name}</p>
           {doctor.clinic_name && <p className="text-xs text-muted-foreground">{doctor.clinic_name}</p>}
-          <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="rounded bg-muted p-2">
               <p className="text-xs text-muted-foreground">الرصيد المستحق</p>
               <p className={`text-xl font-bold ${balance > 0 ? "text-destructive" : "text-primary"}`}>
@@ -75,6 +75,10 @@ function AgentDoctorDetail() {
             <div className="rounded bg-muted p-2">
               <p className="text-xs text-muted-foreground">المدفوع</p>
               <p className="text-xl font-bold text-primary">{(ledger?.paid ?? 0).toFixed(2)}</p>
+            </div>
+            <div className="rounded bg-muted p-2">
+              <p className="text-xs text-muted-foreground">قيد المراجعة</p>
+              <p className="text-xl font-bold text-amber-500">{(ledger?.pendingTotal ?? 0).toFixed(2)}</p>
             </div>
           </div>
           <Button className="w-full mt-3" onClick={() => setCollectOpen(true)}>
