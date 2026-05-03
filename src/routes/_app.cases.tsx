@@ -1018,7 +1018,8 @@ function CasesPage() {
                 <TableHead className="w-[130px]">دخول المرحلة</TableHead>
                 <TableHead>الفني</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
-                <TableHead>تاريخ التسليم</TableHead>
+                <TableHead>التسليم المتوقع</TableHead>
+                <TableHead>التسليم الفعلي</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
