@@ -67,7 +67,7 @@ export function InvoiceReport({
       }}
     >
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "3px solid #0e7490", paddingBottom: "12px", marginBottom: "16px" }}>
+      <div data-pdf-section style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "3px solid #0e7490", paddingBottom: "12px", marginBottom: "16px" }}>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           {lab.logo_url ? (
             <img src={lab.logo_url} alt="logo" crossOrigin="anonymous" style={{ height: "56px", width: "56px", objectFit: "contain", borderRadius: "8px" }} />
@@ -94,7 +94,7 @@ export function InvoiceReport({
       </div>
 
       {/* Doctor info */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+      <div data-pdf-section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
         <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "8px", padding: "10px 12px" }}>
           <div style={{ fontSize: "9px", color: "#0369a1", fontWeight: 600, marginBottom: "4px" }}>إلى السيد الطبيب</div>
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#0c4a6e" }}>{doctor.name}</div>
@@ -120,7 +120,7 @@ export function InvoiceReport({
       </div>
 
       {/* Table */}
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", marginBottom: "12px" }}>
+      <table data-pdf-section style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", marginBottom: "12px" }}>
         <thead>
           <tr style={{ background: "linear-gradient(135deg, #0e7490, #06b6d4)", color: "#fff" }}>
             <th style={th}>رقم الحالة</th>
@@ -165,7 +165,7 @@ export function InvoiceReport({
       </table>
 
       {/* Totals */}
-      <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "12px" }}>
+      <div data-pdf-section style={{ display: "flex", justifyContent: "flex-start", marginTop: "12px" }}>
         <div style={{ width: "55%", border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" }}>
           <Row label="إجمالي حالات الشهر" value={itemsTotal} currency={currency} />
           <Row label="رصيد أول المدة" value={opening} currency={currency} muted />

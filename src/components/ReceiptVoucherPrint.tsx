@@ -56,7 +56,7 @@ export const ReceiptVoucherPrint = forwardRef<HTMLDivElement, { data: ReceiptVou
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #000", paddingBottom: 10, marginBottom: 16 }}>
+        <div data-pdf-section style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #000", paddingBottom: 10, marginBottom: 16 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             {data.lab?.logo_url ? (
               <img src={data.lab.logo_url} alt="logo" crossOrigin="anonymous" style={{ width: 64, height: 64, objectFit: "contain" }} />
@@ -74,7 +74,7 @@ export const ReceiptVoucherPrint = forwardRef<HTMLDivElement, { data: ReceiptVou
         </div>
 
         {/* Voucher meta */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+        <div data-pdf-section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
           <div style={{ border: "1px solid #555", padding: "6px 10px" }}>
             <span style={{ fontWeight: 700 }}>رقم السند: </span>
             <span style={{ fontFamily: "monospace" }}>{data.voucherNumber}</span>

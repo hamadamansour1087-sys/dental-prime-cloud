@@ -133,6 +133,7 @@ export function StatementReport({
     >
       {/* === Brand Header Bar === */}
       <div
+        data-pdf-section
         style={{
           display: "flex",
           alignItems: "center",
@@ -216,6 +217,7 @@ export function StatementReport({
 
       {/* === Meta info bar === */}
       <div
+        data-pdf-section
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
@@ -276,6 +278,7 @@ export function StatementReport({
 
       {/* === Table === */}
       <table
+        data-pdf-section
         style={{
           width: "100%",
           borderCollapse: "collapse",
@@ -350,6 +353,7 @@ export function StatementReport({
 
       {/* === Footer summary === */}
       <div
+        data-pdf-section
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",

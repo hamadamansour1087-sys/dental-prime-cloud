@@ -2,46 +2,107 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
 
 export async function exportElementToPdf(element: HTMLElement, fileName: string) {
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    logging: false,
-    imageSmoothing: true,
-    imageSmoothingQuality: "high",
-    windowWidth: Math.max(element.scrollWidth, element.clientWidth),
-    windowHeight: Math.max(element.scrollHeight, element.clientHeight),
-  });
+  const A4_WIDTH_MM = 210;
+  const A4_HEIGHT_MM = 297;
+  const MARGIN_MM = 8;
+  const CONTENT_WIDTH_MM = A4_WIDTH_MM - MARGIN_MM * 2;
+  const CONTENT_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_MM * 2;
+  const SECTION_GAP_MM = 3;
 
-  const imgData = canvas.toDataURL("image/png");
+  // Try section-based rendering first
+  const sections = Array.from(element.querySelectorAll("[data-pdf-section]")) as HTMLElement[];
+
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 8;
-  const usableWidth = pageWidth - margin * 2;
-  const ratio = canvas.height / canvas.width;
-  const imgHeight = usableWidth * ratio;
 
-  if (imgHeight <= pageHeight - margin * 2) {
-    pdf.addImage(imgData, "PNG", margin, margin, usableWidth, imgHeight);
+  if (sections.length > 1) {
+    let currentY = MARGIN_MM;
+
+    for (const section of sections) {
+      const canvas = await html2canvas(section, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        imageSmoothing: true,
+        imageSmoothingQuality: "high",
+      });
+
+      const scaleFactor = CONTENT_WIDTH_MM / (canvas.width / 2);
+      const heightMM = (canvas.height / 2) * scaleFactor;
+
+      const remaining = A4_HEIGHT_MM - MARGIN_MM - currentY;
+
+      if (heightMM > remaining && currentY > MARGIN_MM + 1) {
+        pdf.addPage();
+        currentY = MARGIN_MM;
+      }
+
+      // If a single section is taller than a page, fall back to slicing it
+      if (heightMM > CONTENT_HEIGHT_MM) {
+        const pageCanvasPx = (CONTENT_HEIGHT_MM / CONTENT_WIDTH_MM) * canvas.width;
+        let renderedPx = 0;
+        while (renderedPx < canvas.height) {
+          const sliceH = Math.min(pageCanvasPx, canvas.height - renderedPx);
+          const slice = document.createElement("canvas");
+          slice.width = canvas.width;
+          slice.height = sliceH;
+          const ctx = slice.getContext("2d")!;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, slice.width, slice.height);
+          ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          const sliceData = slice.toDataURL("image/png");
+          const sliceMMH = (sliceH / canvas.width) * CONTENT_WIDTH_MM;
+          if (renderedPx > 0 || currentY > MARGIN_MM + 1) pdf.addPage();
+          currentY = MARGIN_MM;
+          pdf.addImage(sliceData, "PNG", MARGIN_MM, currentY, CONTENT_WIDTH_MM, sliceMMH);
+          renderedPx += sliceH;
+          currentY += sliceMMH;
+        }
+      } else {
+        const imgData = canvas.toDataURL("image/png");
+        pdf.addImage(imgData, "PNG", MARGIN_MM, currentY, CONTENT_WIDTH_MM, heightMM);
+        currentY += heightMM + SECTION_GAP_MM;
+      }
+    }
   } else {
-    const pageCanvasHeightPx = ((pageHeight - margin * 2) / usableWidth) * canvas.width;
-    let renderedPx = 0;
-    while (renderedPx < canvas.height) {
-      const sliceHeight = Math.min(pageCanvasHeightPx, canvas.height - renderedPx);
-      const slice = document.createElement("canvas");
-      slice.width = canvas.width;
-      slice.height = sliceHeight;
-      const ctx = slice.getContext("2d");
-      if (!ctx) throw new Error("تعذر تجهيز صفحة PDF");
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, slice.width, slice.height);
-      ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-      const sliceData = slice.toDataURL("image/png");
-      const sliceImgHeight = (sliceHeight / canvas.width) * usableWidth;
-      if (renderedPx > 0) pdf.addPage();
-      pdf.addImage(sliceData, "PNG", margin, margin, usableWidth, sliceImgHeight);
-      renderedPx += sliceHeight;
+    // Fallback: capture entire element as before
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      imageSmoothing: true,
+      imageSmoothingQuality: "high",
+      windowWidth: Math.max(element.scrollWidth, element.clientWidth),
+      windowHeight: Math.max(element.scrollHeight, element.clientHeight),
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const usableWidth = CONTENT_WIDTH_MM;
+    const ratio = canvas.height / canvas.width;
+    const imgHeight = usableWidth * ratio;
+
+    if (imgHeight <= CONTENT_HEIGHT_MM) {
+      pdf.addImage(imgData, "PNG", MARGIN_MM, MARGIN_MM, usableWidth, imgHeight);
+    } else {
+      const pageCanvasHeightPx = (CONTENT_HEIGHT_MM / usableWidth) * canvas.width;
+      let renderedPx = 0;
+      while (renderedPx < canvas.height) {
+        const sliceHeight = Math.min(pageCanvasHeightPx, canvas.height - renderedPx);
+        const slice = document.createElement("canvas");
+        slice.width = canvas.width;
+        slice.height = sliceHeight;
+        const ctx = slice.getContext("2d");
+        if (!ctx) throw new Error("تعذر تجهيز صفحة PDF");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, slice.width, slice.height);
+        ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+        const sliceData = slice.toDataURL("image/png");
+        const sliceImgHeight = (sliceHeight / canvas.width) * usableWidth;
+        if (renderedPx > 0) pdf.addPage();
+        pdf.addImage(sliceData, "PNG", MARGIN_MM, MARGIN_MM, usableWidth, sliceImgHeight);
+        renderedPx += sliceHeight;
+      }
     }
   }
 
@@ -50,7 +111,6 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     navigator.userAgent,
   );
 
-  // On mobile: try Web Share API first (works on iOS/Android), then fall back to direct download.
   if (isMobile) {
     try {
       const file = new File([blob], fileName, { type: "application/pdf" });
@@ -77,7 +137,6 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     return;
   }
 
-  // Desktop: open in new tab so the browser's PDF viewer shows it.
   const url = URL.createObjectURL(blob);
   const win = window.open(url, "_blank");
   if (!win) {
