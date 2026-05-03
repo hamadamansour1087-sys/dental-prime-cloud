@@ -11,6 +11,7 @@ import { PortalNotificationsBell } from "@/components/PortalNotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 import { TopNav } from "@/components/TopNav";
 import { BackupReminderDialog, shouldRemindBackup } from "@/components/BackupReminderDialog";
+import { TrialBanner, useTrialExpired } from "@/components/TrialBanner";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
