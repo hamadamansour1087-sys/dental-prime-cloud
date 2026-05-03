@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Phone, Mail, MapPin, Trash2, Power, PowerOff, Settings, Stethoscope, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { PortalAccountButton } from "@/components/PortalAccountButton";
@@ -69,14 +70,6 @@ function DoctorsPage() {
     qc.invalidateQueries({ queryKey: ["doctors"] });
   };
 
-  const initials = (name: string) =>
-    name
-      .replace(/^د\.?\s*/, "")
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((s) => s[0])
-      .join("");
-
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -118,106 +111,121 @@ function DoctorsPage() {
         </span>
       </div>
 
-      {/* Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-stagger">
-        {doctors?.map((d: any) => (
-          <div
-            key={d.id}
-            className={`group rounded-2xl border border-border/60 bg-card p-5 shadow-xs transition-all hover:shadow-md hover:border-border ${!d.is_active ? "opacity-55" : ""}`}
-          >
-            {/* Top row: avatar + name + actions */}
-            <div className="flex items-start gap-3.5">
-              <div className="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
-                {initials(d.name) || <Stethoscope className="size-5" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-sm truncate">{d.name}</h3>
-                  {!d.is_active && (
-                    <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium pill-destructive">غير مفعّل</span>
+      {/* Table */}
+      <div className="rounded-2xl border border-border/60 bg-card shadow-xs overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/30">
+              <TableHead className="text-right">الاسم</TableHead>
+              <TableHead className="text-right">المحافظة</TableHead>
+              <TableHead className="text-right">الهاتف</TableHead>
+              <TableHead className="text-right">البريد</TableHead>
+              <TableHead className="text-right">العيادات</TableHead>
+              <TableHead className="text-right">رصيد أول المدة</TableHead>
+              <TableHead className="text-right">الحالة</TableHead>
+              <TableHead className="text-right">البورتال</TableHead>
+              <TableHead className="text-right w-[120px]">إجراءات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {doctors?.map((d: any) => (
+              <TableRow key={d.id} className={`group ${!d.is_active ? "opacity-55" : ""}`}>
+                <TableCell className="font-medium">{d.name}</TableCell>
+                <TableCell>
+                  {d.governorate ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 shrink-0" />{d.governorate}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {d.phone ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Phone className="h-3 w-3 shrink-0" />{d.phone}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {d.email ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground" dir="ltr">
+                      <Mail className="h-3 w-3 shrink-0" />{d.email}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {d.doctor_clinics?.length > 0 ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Building2 className="h-3 w-3 shrink-0" />{d.doctor_clinics.length}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {Number(d.opening_balance) !== 0 ? (
+                    <span className="text-xs font-medium tabular-nums text-primary">{Number(d.opening_balance).toFixed(2)}</span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {d.is_active ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600">مفعّل</span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">غير مفعّل</span>
                   )}
-                </div>
-                {d.governorate && (
-                  <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                    <MapPin className="h-3 w-3" />{d.governorate}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <EditDoctorDialog doctor={d} />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 rounded-lg"
-                  title={d.is_active ? "تعطيل" : "تفعيل"}
-                  onClick={() => toggleActive(d.id, d.is_active)}
-                >
-                  {d.is_active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg text-destructive" title="حذف">
-                      <Trash2 className="h-3.5 w-3.5" />
+                </TableCell>
+                <TableCell>
+                  <PortalAccountButton doctor={d} onDone={() => qc.invalidateQueries({ queryKey: ["doctors"] })} />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-0.5">
+                    <EditDoctorDialog doctor={d} />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 rounded-lg"
+                      title={d.is_active ? "تعطيل" : "تفعيل"}
+                      onClick={() => toggleActive(d.id, d.is_active)}
+                    >
+                      {d.is_active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent dir="rtl">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>حذف الطبيب؟</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        هل أنت متأكد من حذف "{d.name}"؟ لا يمكن التراجع عن هذا الإجراء.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteDoctor(d.id)}>حذف</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-
-            {/* Contact info */}
-            <div className="mt-4 space-y-1.5 text-sm">
-              {d.doctor_clinics?.length > 0 && (
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Building2 className="h-3 w-3" />
-                  {d.doctor_clinics.length} عيادة
-                </p>
-              )}
-              {d.phone && (
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Phone className="h-3 w-3" />{d.phone}
-                </p>
-              )}
-              {d.email && (
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground" dir="ltr">
-                  <Mail className="h-3 w-3" />{d.email}
-                </p>
-              )}
-              {Number(d.opening_balance) !== 0 && (
-                <p className="text-xs font-medium tabular-nums">
-                  رصيد أول المدة: <span className="text-primary">{Number(d.opening_balance).toFixed(2)}</span>
-                </p>
-              )}
-            </div>
-
-            {/* Portal button */}
-            <div className="mt-3 pt-3 border-t border-border/40">
-              <PortalAccountButton doctor={d} onDone={() => qc.invalidateQueries({ queryKey: ["doctors"] })} />
-            </div>
-          </div>
-        ))}
-        {!doctors?.length && (
-          <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-            <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
-              <Stethoscope className="size-7 text-muted-foreground" />
-            </div>
-            <p className="text-sm text-muted-foreground">لا يوجد أطباء بعد</p>
-            <Button asChild variant="outline" size="sm" className="mt-3 rounded-xl">
-              <Link to="/settings">إضافة طبيب جديد</Link>
-            </Button>
-          </div>
-        )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg text-destructive" title="حذف">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent dir="rtl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>حذف الطبيب؟</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            هل أنت متأكد من حذف "{d.name}"؟ لا يمكن التراجع عن هذا الإجراء.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteDoctor(d.id)}>حذف</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!doctors?.length && (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-16">
+                  <div className="flex flex-col items-center">
+                    <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                      <Stethoscope className="size-7 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">لا يوجد أطباء بعد</p>
+                    <Button asChild variant="outline" size="sm" className="mt-3 rounded-xl">
+                      <Link to="/settings">إضافة طبيب جديد</Link>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
