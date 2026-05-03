@@ -1075,10 +1075,11 @@ function CasesPage() {
                     </TableCell>
                     <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
+                      {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-emerald-600 dark:text-emerald-400">
                       {c.date_delivered
                         ? format(new Date(c.date_delivered), "dd/MM/yyyy")
-                        : c.due_date
-                        ? format(new Date(c.due_date), "dd/MM/yyyy")
                         : "—"}
                     </TableCell>
                   </TableRow>
