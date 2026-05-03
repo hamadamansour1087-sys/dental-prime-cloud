@@ -37,15 +37,18 @@ function AgentDoctorDetail() {
   const { data: ledger } = useQuery({
     queryKey: ["doctor-ledger-agent", doctorId],
     queryFn: async () => {
-      const [casesRes, paymentsRes] = await Promise.all([
+      const [casesRes, paymentsRes, pendingRes] = await Promise.all([
         supabase.from("cases").select("id, case_number, date_received, price, status").eq("doctor_id", doctorId).order("date_received", { ascending: false }).limit(30),
         supabase.from("payments").select("id, payment_date, amount, method").eq("doctor_id", doctorId).order("payment_date", { ascending: false }).limit(30),
+        supabase.from("pending_payments").select("id, collected_at, amount, method, status").eq("doctor_id", doctorId).eq("status", "pending").order("collected_at", { ascending: false }).limit(30),
       ]);
       const cases = casesRes.data ?? [];
       const payments = paymentsRes.data ?? [];
+      const pendingPayments = pendingRes.data ?? [];
       const charges = cases.filter((c) => c.status === "delivered").reduce((s, c) => s + Number(c.price ?? 0), 0);
       const paid = payments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
-      return { cases, payments, charges, paid };
+      const pendingTotal = pendingPayments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
+      return { cases, payments, pendingPayments, charges, paid, pendingTotal };
     },
   });
 
