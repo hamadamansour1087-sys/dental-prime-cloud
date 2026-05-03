@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeliveryRouteImport } from './routes/delivery'
@@ -69,6 +70,11 @@ import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -352,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -468,6 +476,7 @@ export interface FileRoutesById {
   '/delivery': typeof DeliveryRouteWithChildren
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
@@ -527,6 +536,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/portal'
+    | '/register'
     | '/signup'
     | '/backup'
     | '/cases'
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/portal'
+    | '/register'
     | '/signup'
     | '/backup'
     | '/cases'
@@ -642,6 +653,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/login'
     | '/portal'
+    | '/register'
     | '/signup'
     | '/_app/backup'
     | '/_app/cases'
@@ -701,6 +713,7 @@ export interface RootRouteChildren {
   DeliveryRoute: typeof DeliveryRouteWithChildren
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
+  RegisterRoute: typeof RegisterRoute
   SignupRoute: typeof SignupRoute
   ApiAgentResolveLoginRoute: typeof ApiAgentResolveLoginRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
@@ -721,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -1234,6 +1254,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeliveryRoute: DeliveryRouteWithChildren,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
+  RegisterRoute: RegisterRoute,
   SignupRoute: SignupRoute,
   ApiAgentResolveLoginRoute: ApiAgentResolveLoginRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
