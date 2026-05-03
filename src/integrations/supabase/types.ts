@@ -2205,12 +2205,12 @@ export type Database = {
       create_followup_case: {
         Args: {
           _case_type: string
-          _charge_mode?: string
+          _charge_mode: string
           _custom_price?: number
           _due_date?: string
           _notes?: string
           _parent_case_id: string
-          _with_new_work?: boolean
+          _with_new_work: boolean
         }
         Returns: string
       }
