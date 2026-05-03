@@ -1087,7 +1087,7 @@ function CasesPage() {
               })}
               {!filteredCases.length && (
                 <TableRow>
-                  <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
                     لا توجد حالات
                   </TableCell>
                 </TableRow>
