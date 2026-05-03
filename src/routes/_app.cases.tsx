@@ -615,6 +615,15 @@ function CasesPage() {
         }}
       />
 
+      <DeliveryDialog
+        open={deliveryOpen}
+        onOpenChange={setDeliveryOpen}
+        caseId={deliveryCaseId}
+        onDelivered={() => {
+          qc.invalidateQueries({ queryKey: ["cases"] });
+        }}
+      />
+
       {followup && (
         <FollowupCaseDialog
           open={!!followup}
