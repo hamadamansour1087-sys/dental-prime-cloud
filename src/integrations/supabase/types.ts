@@ -1000,6 +1000,60 @@ export type Database = {
           },
         ]
       }
+      lab_requests: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_lab_id: string | null
+          email: string | null
+          id: string
+          lab_name: string
+          notes: string | null
+          owner_name: string
+          phone: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_lab_id?: string | null
+          email?: string | null
+          id?: string
+          lab_name: string
+          notes?: string | null
+          owner_name: string
+          phone?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_lab_id?: string | null
+          email?: string | null
+          id?: string
+          lab_name?: string
+          notes?: string | null
+          owner_name?: string
+          phone?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       labs: {
         Row: {
           address: string | null
@@ -1015,7 +1069,10 @@ export type Database = {
           name: string
           phone: string | null
           settings: Json
+          subscription_status: string
           timezone: string
+          trial_days: number
+          trial_start_date: string | null
           updated_at: string
         }
         Insert: {
@@ -1032,7 +1089,10 @@ export type Database = {
           name: string
           phone?: string | null
           settings?: Json
+          subscription_status?: string
           timezone?: string
+          trial_days?: number
+          trial_start_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -1049,7 +1109,10 @@ export type Database = {
           name?: string
           phone?: string | null
           settings?: Json
+          subscription_status?: string
           timezone?: string
+          trial_days?: number
+          trial_start_date?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2194,6 +2257,10 @@ export type Database = {
       }
       agent_can_see_doctor: { Args: { _doctor_id: string }; Returns: boolean }
       agent_daily_summary: { Args: { _date?: string }; Returns: Json }
+      approve_lab_request: {
+        Args: { _request_id: string; _trial_days?: number }
+        Returns: string
+      }
       approve_pending_case: {
         Args: { _case_id: string; _workflow_id?: string }
         Returns: string
@@ -2252,6 +2319,7 @@ export type Database = {
       is_lab_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_manager_or_admin: { Args: { _lab_id: string }; Returns: boolean }
       is_lab_member: { Args: { _lab_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       reject_pending_case: {
         Args: { _case_id: string; _reason?: string }
         Returns: undefined
