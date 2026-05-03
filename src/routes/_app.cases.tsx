@@ -298,6 +298,26 @@ function CasesPage() {
     },
   });
 
+  // Fetch delivery agent name per case
+  const { data: deliveryAgents } = useQuery({
+    queryKey: ["cases-delivery-agents", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_deliveries")
+        .select("case_id, delivery_agents(name)")
+        .eq("lab_id", labId!)
+        .order("delivered_at", { ascending: false });
+      const map = new Map<string, string>();
+      data?.forEach((d: any) => {
+        if (!map.has(d.case_id) && d.delivery_agents?.name) {
+          map.set(d.case_id, d.delivery_agents.name);
+        }
+      });
+      return map;
+    },
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
