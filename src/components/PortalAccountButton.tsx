@@ -172,14 +172,25 @@ export function PortalAccountButton({
               <Switch checked={doctor.portal_enabled} onCheckedChange={togglePortal} />
             </div>
 
-            <div className="rounded-md border border-warning/40 bg-warning/5 p-3">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-warning-foreground">
-                <ShieldAlert className="h-3.5 w-3.5" />
+            <div className="rounded-md border p-3">
+              <p className="flex items-center gap-1.5 text-sm font-medium">
+                <RefreshCw className="h-3.5 w-3.5" />
                 إعادة تعيين كلمة المرور
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                لتغيير كلمة المرور احذف الحساب من قاعدة البيانات وأعد إنشاءه — أو اطلب من الطبيب تغييرها بنفسه لاحقاً.
+                سيتم توليد كلمة سر جديدة بدون حذف الحساب أو بياناته.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 h-7 text-xs"
+                disabled={busy}
+                onClick={resetPassword}
+              >
+                <RefreshCw className={`ml-1 h-3 w-3 ${busy ? "animate-spin" : ""}`} />
+                {busy ? "جارٍ التوليد..." : "توليد كلمة سر جديدة"}
+              </Button>
             </div>
           </div>
         ) : (
