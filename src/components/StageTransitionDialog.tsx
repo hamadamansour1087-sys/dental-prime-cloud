@@ -86,7 +86,22 @@ export function StageTransitionDialog({
     return stages.filter((s) => s.order_index > from && s.order_index < toStage.order_index);
   }, [stages, currentStage, toStage]);
 
+  // Check if the case has items (diagnosis)
+  const { data: caseItemsCount } = useQuery({
+    queryKey: ["case-items-count", caseId],
+    enabled: !!caseId && open,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("case_items")
+        .select("id", { count: "exact", head: true })
+        .eq("case_id", caseId);
+      return count ?? 0;
+    },
+  });
+
   const requiresTechnician = toStage?.code === "ready";
+  const blockedCodes = ["try_in_1", "try_in_2", "ready"];
+  const isBlockedNoItems = caseItemsCount === 0 && toStage && blockedCodes.includes(toStage.code ?? "");
 
   useEffect(() => {
     if (!open) {
