@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
-import { Plus, Trash2, Printer, FileDown, FileSpreadsheet, Receipt } from "lucide-react";
+import { Plus, Trash2, Printer, FileDown, FileSpreadsheet, Receipt, History, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { renderReportToPdf } from "@/lib/reportRenderer";
 import { printElement } from "@/lib/print";
 import { ReceiptVoucherPrint, type ReceiptVoucherData, type ReceiptLine } from "@/components/ReceiptVoucherPrint";
@@ -52,7 +53,9 @@ export function ReceiptVoucherDialog({
     { ...newLine(), doctor_id: defaultDoctorId ?? "" },
   ]);
   const [preview, setPreview] = useState<ReceiptVoucherData | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const linesContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: doctors } = useQuery({
     queryKey: ["doctors-receipt-voucher", labId],
@@ -73,6 +76,20 @@ export function ReceiptVoucherDialog({
       (await supabase.from("labs").select("name, phone, address, logo_url, currency").eq("id", labId!).maybeSingle()).data,
   });
 
+  // Fetch recent payments for the history panel
+  const { data: recentPayments } = useQuery({
+    queryKey: ["recent-payments-history", labId],
+    enabled: !!labId && open,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("payments")
+        .select("id, amount, payment_date, method, reference, notes, doctors(name)")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      return data ?? [];
+    },
+  });
+
   const total = useMemo(
     () => lines.reduce((s, l) => s + (parseFloat(l.amount) || 0), 0),
     [lines],
@@ -85,6 +102,40 @@ export function ReceiptVoucherDialog({
     setNotes("");
     setPreview(null);
   };
+
+  // Keyboard: Enter on amount field adds new line, Tab navigates naturally
+  const handleAmountKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, lineId: string, idx: number) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const currentLine = lines.find(l => l.id === lineId);
+      if (currentLine && parseFloat(currentLine.amount) > 0) {
+        const nl = newLine();
+        setLines(ls => [...ls, nl]);
+        // Focus the new line's doctor select after render
+        setTimeout(() => {
+          const container = linesContainerRef.current;
+          if (container) {
+            const lastRow = container.querySelector(`[data-line-index="${idx + 1}"]`);
+            const doctorTrigger = lastRow?.querySelector('[data-doctor-select]') as HTMLButtonElement;
+            doctorTrigger?.focus();
+          }
+        }, 100);
+      }
+    }
+  }, [lines]);
+
+  // Keyboard: Ctrl+S to save
+  useEffect(() => {
+    if (!open || preview) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (total > 0) handleSaveAndPreview();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, preview, total]);
 
   const buildVoucherData = (voucherNumber: string): ReceiptVoucherData => {
     const accountName = accounts?.find((a) => a.id === cashAccountId)?.name;
@@ -116,14 +167,6 @@ export function ReceiptVoucherDialog({
     if (!labId) return "لا يوجد معمل نشط";
     const valid = lines.filter((l) => l.doctor_id && parseFloat(l.amount) > 0);
     if (!valid.length) return "أضف دفعة واحدة على الأقل بطبيب ومبلغ صحيح";
-    const seen = new Set<string>();
-    for (const l of valid) {
-      const key = `${l.doctor_id}-${l.method}-${l.reference}`;
-      if (seen.has(key) && !l.reference) {
-        // duplicate same doctor+method without reference — warn only
-      }
-      seen.add(key);
-    }
     return null;
   };
 
@@ -133,7 +176,6 @@ export function ReceiptVoucherDialog({
     const valid = lines.filter((l) => l.doctor_id && parseFloat(l.amount) > 0);
     const voucherNumber = `REC-${format(new Date(), "yyyyMMdd")}-${Date.now().toString().slice(-6)}`;
 
-    // 1) Insert payments rows
     const paymentsPayload = valid.map((l) => ({
       lab_id: labId!,
       doctor_id: l.doctor_id,
@@ -147,7 +189,6 @@ export function ReceiptVoucherDialog({
     const { error: payErr } = await supabase.from("payments").insert(paymentsPayload);
     if (payErr) { toast.error(payErr.message); return null; }
 
-    // 2) Insert one voucher record (aggregate total) for the receipt voucher trail
     const totalAmount = valid.reduce((s, l) => s + parseFloat(l.amount), 0);
     const firstDoctor = doctors?.find((d) => d.id === valid[0].doctor_id);
     const description =
@@ -167,10 +208,11 @@ export function ReceiptVoucherDialog({
       description,
       notes: notes || null,
     });
-    if (vErr) { /* غير حرج للطبيب */ console.warn(vErr); }
+    if (vErr) { console.warn(vErr); }
 
     qc.invalidateQueries({ queryKey: ["statement-payments"] });
     qc.invalidateQueries({ queryKey: ["vouchers"] });
+    qc.invalidateQueries({ queryKey: ["recent-payments-history"] });
     toast.success(`تم حفظ السند ${voucherNumber}`);
     return { voucherNumber };
   };
@@ -208,7 +250,6 @@ export function ReceiptVoucherDialog({
       try { return format(new Date(preview.voucherDate), "dd/MM/yyyy"); } catch { return preview.voucherDate; }
     })();
 
-    // Build AOA (array of arrays) for full control over header & layout
     const aoa: any[][] = [];
     aoa.push([labName]);
     if (preview.lab?.phone) aoa.push([`هاتف: ${preview.lab.phone}`]);
@@ -218,10 +259,9 @@ export function ReceiptVoucherDialog({
     aoa.push(["رقم السند", preview.voucherNumber, "", "التاريخ", dateFmt]);
     if (preview.cashAccountName) aoa.push(["الخزنة المستلمة", preview.cashAccountName]);
     aoa.push([]);
-    // table header
     const headers = ["م", "اسم الطبيب", "المحافظة", "طريقة الدفع", "المرجع", `المبلغ (${currency})`, "ملاحظات"];
     aoa.push(headers);
-    const dataStartRow = aoa.length; // 1-based for next push
+    const dataStartRow = aoa.length;
     preview.lines.forEach((l, i) => {
       aoa.push([
         i + 1,
@@ -233,27 +273,23 @@ export function ReceiptVoucherDialog({
         l.notes ?? "",
       ]);
     });
-    const total = preview.lines.reduce((s, l) => s + l.amount, 0);
-    aoa.push(["", "الإجمالي", "", "", "", Number(total.toFixed(2)), ""]);
+    const totalExcel = preview.lines.reduce((s, l) => s + l.amount, 0);
+    aoa.push(["", "الإجمالي", "", "", "", Number(totalExcel.toFixed(2)), ""]);
     if (preview.notes) {
       aoa.push([]);
       aoa.push(["ملاحظات", preview.notes]);
     }
 
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    // RTL sheet view
     (ws as any)["!views"] = [{ RTL: true }];
-    // Column widths
     ws["!cols"] = [
       { wch: 5 }, { wch: 26 }, { wch: 14 }, { wch: 14 },
       { wch: 20 }, { wch: 14 }, { wch: 28 },
     ];
-    // Merge title rows across columns
     ws["!merges"] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, // lab name
-      { s: { r: 4, c: 0 }, e: { r: 4, c: 6 } }, // سند قبض
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 6 } },
     ];
-    // Format amount column as number with 2 decimals
     const amountCol = 5;
     for (let r = dataStartRow; r < aoa.length; r++) {
       const cellRef = XLSX.utils.encode_cell({ r, c: amountCol });
@@ -269,12 +305,22 @@ export function ReceiptVoucherDialog({
     XLSX.writeFile(wb, `receipt-${preview.voucherNumber}.xlsx`);
   };
 
+  const methodLabel = (m: string) => {
+    switch (m) {
+      case "cash": return "نقدي";
+      case "transfer": return "تحويل";
+      case "cheque": return "شيك";
+      case "card": return "بطاقة";
+      default: return m || "—";
+    }
+  };
+
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) reset();
+        if (!v) { reset(); setShowHistory(false); }
       }}
     >
       <DialogTrigger asChild>
@@ -284,165 +330,233 @@ export function ReceiptVoucherDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent dir="rtl" className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{preview ? `سند القبض ${preview.voucherNumber}` : "إنشاء سند قبض"}</DialogTitle>
-        </DialogHeader>
+      <DialogContent dir="rtl" className="max-w-6xl max-h-[90vh] overflow-y-auto p-0">
+        <div className="flex min-h-[60vh]">
+          {/* Main form area */}
+          <div className={`flex-1 p-6 transition-all duration-200 ${showHistory ? "border-l border-border" : ""}`}>
+            <DialogHeader className="mb-4">
+              <div className="flex items-center justify-between">
+                <DialogTitle>{preview ? `سند القبض ${preview.voucherNumber}` : "إنشاء سند قبض"}</DialogTitle>
+                {!preview && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="gap-1.5 text-muted-foreground"
+                  >
+                    <History className="h-4 w-4" />
+                    {showHistory ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                    <span className="text-xs">الدفعات السابقة</span>
+                  </Button>
+                )}
+              </div>
+            </DialogHeader>
 
-        {!preview && (
-          <div className="space-y-4">
-            {/* Header info */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <Label>تاريخ السند</Label>
-                <Input type="date" value={voucherDate} onChange={(e) => setVoucherDate(e.target.value)} />
-              </div>
-              <div>
-                <Label>الخزنة المستلمة</Label>
-                <Select value={cashAccountId} onValueChange={setCashAccountId}>
-                  <SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger>
-                  <SelectContent>
-                    {accounts?.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            {!preview && (
+              <div className="space-y-4">
+                {/* Keyboard hint */}
+                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono">Enter</kbd>
+                  <span>إضافة سطر جديد</span>
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono">Tab</kbd>
+                  <span>التنقل بين الحقول</span>
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono">Ctrl+S</kbd>
+                  <span>حفظ</span>
+                </div>
 
-            {/* Lines */}
-            <div className="rounded-lg border">
-              <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2">
-                <h3 className="text-sm font-semibold">دفعات السند ({lines.length})</h3>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setLines((ls) => [...ls, newLine()])}
-                >
-                  <Plus className="ml-1 h-3.5 w-3.5" /> إضافة دفعة
-                </Button>
-              </div>
-              <div className="divide-y">
-                {lines.map((l, idx) => (
-                  <div key={l.id} className="grid grid-cols-12 items-end gap-2 p-3">
-                    <div className="col-span-12 sm:col-span-4">
-                      <Label className="text-xs">الطبيب</Label>
-                      <Select
-                        value={l.doctor_id}
-                        onValueChange={(v) =>
-                          setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, doctor_id: v } : x)))
-                        }
-                      >
-                        <SelectTrigger><SelectValue placeholder="اختر طبيب" /></SelectTrigger>
-                        <SelectContent>
-                          {doctors?.map((d) => (
-                            <SelectItem key={d.id} value={d.id}>
-                              {d.name}{d.governorate ? ` — ${d.governorate}` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-6 sm:col-span-2">
-                      <Label className="text-xs">المبلغ</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={l.amount}
-                        onChange={(e) =>
-                          setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, amount: e.target.value } : x)))
-                        }
-                      />
-                    </div>
-                    <div className="col-span-6 sm:col-span-2">
-                      <Label className="text-xs">طريقة الدفع</Label>
-                      <Select
-                        value={l.method}
-                        onValueChange={(v) =>
-                          setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, method: v } : x)))
-                        }
-                      >
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">نقدي</SelectItem>
-                          <SelectItem value="transfer">تحويل</SelectItem>
-                          <SelectItem value="cheque">شيك</SelectItem>
-                          <SelectItem value="card">بطاقة</SelectItem>
-                          <SelectItem value="other">أخرى</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-10 sm:col-span-3">
-                      <Label className="text-xs">المرجع / رقم العملية</Label>
-                      <Input
-                        value={l.reference}
-                        onChange={(e) =>
-                          setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, reference: e.target.value } : x)))
-                        }
-                      />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1 flex justify-end">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        disabled={lines.length === 1}
-                        onClick={() => setLines((ls) => ls.filter((x) => x.id !== l.id))}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                    <span className="col-span-12 text-xs text-muted-foreground">دفعة #{idx + 1}</span>
+                {/* Header info */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label>تاريخ السند</Label>
+                    <Input type="date" value={voucherDate} onChange={(e) => setVoucherDate(e.target.value)} tabIndex={1} />
                   </div>
-                ))}
-              </div>
-              <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-2 text-sm">
-                <span className="font-semibold">إجمالي السند</span>
-                <span className="font-mono text-lg font-bold text-primary">{total.toFixed(2)}</span>
-              </div>
-            </div>
+                  <div>
+                    <Label>الخزنة المستلمة</Label>
+                    <Select value={cashAccountId} onValueChange={setCashAccountId}>
+                      <SelectTrigger tabIndex={2}><SelectValue placeholder="اختياري" /></SelectTrigger>
+                      <SelectContent>
+                        {accounts?.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div>
-              <Label>ملاحظات السند</Label>
-              <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
-            </div>
+                {/* Lines */}
+                <div className="rounded-lg border" ref={linesContainerRef}>
+                  <div className="flex items-center justify-between border-b bg-muted/40 px-3 py-2">
+                    <h3 className="text-sm font-semibold">دفعات السند ({lines.length})</h3>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setLines((ls) => [...ls, newLine()])}
+                      tabIndex={-1}
+                    >
+                      <Plus className="ml-1 h-3.5 w-3.5" /> إضافة دفعة
+                    </Button>
+                  </div>
+                  <div className="divide-y">
+                    {lines.map((l, idx) => (
+                      <div key={l.id} className="grid grid-cols-12 items-end gap-2 p-3" data-line-index={idx}>
+                        <div className="col-span-12 sm:col-span-4">
+                          <Label className="text-xs">الطبيب</Label>
+                          <Select
+                            value={l.doctor_id}
+                            onValueChange={(v) =>
+                              setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, doctor_id: v } : x)))
+                            }
+                          >
+                            <SelectTrigger data-doctor-select tabIndex={10 + idx * 10}><SelectValue placeholder="اختر طبيب" /></SelectTrigger>
+                            <SelectContent>
+                              {doctors?.map((d) => (
+                                <SelectItem key={d.id} value={d.id}>
+                                  {d.name}{d.governorate ? ` — ${d.governorate}` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-6 sm:col-span-2">
+                          <Label className="text-xs">المبلغ</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={l.amount}
+                            tabIndex={11 + idx * 10}
+                            onChange={(e) =>
+                              setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, amount: e.target.value } : x)))
+                            }
+                            onKeyDown={(e) => handleAmountKeyDown(e, l.id, idx)}
+                          />
+                        </div>
+                        <div className="col-span-6 sm:col-span-2">
+                          <Label className="text-xs">طريقة الدفع</Label>
+                          <Select
+                            value={l.method}
+                            onValueChange={(v) =>
+                              setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, method: v } : x)))
+                            }
+                          >
+                            <SelectTrigger tabIndex={12 + idx * 10}><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="cash">نقدي</SelectItem>
+                              <SelectItem value="transfer">تحويل</SelectItem>
+                              <SelectItem value="cheque">شيك</SelectItem>
+                              <SelectItem value="card">بطاقة</SelectItem>
+                              <SelectItem value="other">أخرى</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-10 sm:col-span-3">
+                          <Label className="text-xs">المرجع / رقم العملية</Label>
+                          <Input
+                            value={l.reference}
+                            tabIndex={13 + idx * 10}
+                            onChange={(e) =>
+                              setLines((ls) => ls.map((x) => (x.id === l.id ? { ...x, reference: e.target.value } : x)))
+                            }
+                          />
+                        </div>
+                        <div className="col-span-2 sm:col-span-1 flex justify-end">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            disabled={lines.length === 1}
+                            tabIndex={-1}
+                            onClick={() => setLines((ls) => ls.filter((x) => x.id !== l.id))}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <span className="col-span-12 text-xs text-muted-foreground">دفعة #{idx + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-2 text-sm">
+                    <span className="font-semibold">إجمالي السند</span>
+                    <span className="font-mono text-lg font-bold text-primary">{total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>ملاحظات السند</Label>
+                  <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+                </div>
+              </div>
+            )}
+
+            {preview && (
+              <div className="space-y-3">
+                <p className="rounded border bg-muted/30 p-3 text-sm text-muted-foreground">
+                  تم حفظ السند بنجاح. يمكنك الآن طباعته أو تصديره.
+                </p>
+                <div className="overflow-auto rounded border bg-white">
+                  <div style={{ transform: "scale(0.55)", transformOrigin: "top right", width: "210mm" }}>
+                    <ReceiptVoucherPrint ref={printRef} data={preview} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2 sm:flex-row mt-4">
+              {!preview && (
+                <Button onClick={handleSaveAndPreview} disabled={total <= 0}>
+                  حفظ السند وعرض المعاينة
+                </Button>
+              )}
+              {preview && (
+                <>
+                  <Button variant="outline" onClick={handleExcel}>
+                    <FileSpreadsheet className="ml-1 h-4 w-4" /> Excel
+                  </Button>
+                  <Button variant="outline" onClick={handlePdf}>
+                    <FileDown className="ml-1 h-4 w-4" /> PDF
+                  </Button>
+                  <Button onClick={handlePrint}>
+                    <Printer className="ml-1 h-4 w-4" /> طباعة
+                  </Button>
+                  <Button variant="ghost" onClick={() => setOpen(false)}>إغلاق</Button>
+                </>
+              )}
+            </DialogFooter>
           </div>
-        )}
 
-        {preview && (
-          <div className="space-y-3">
-            <p className="rounded border bg-muted/30 p-3 text-sm text-muted-foreground">
-              تم حفظ السند بنجاح. يمكنك الآن طباعته أو تصديره.
-            </p>
-            {/* Live preview (scaled to fit dialog) */}
-            <div className="overflow-auto rounded border bg-white">
-              <div style={{ transform: "scale(0.55)", transformOrigin: "top right", width: "210mm" }}>
-                <ReceiptVoucherPrint ref={printRef} data={preview} />
+          {/* History panel - right side */}
+          {showHistory && !preview && (
+            <div className="w-72 shrink-0 border-r border-border bg-muted/20 p-4 overflow-y-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">الدفعات المسجلة</h3>
               </div>
+              {(!recentPayments || recentPayments.length === 0) ? (
+                <p className="text-xs text-muted-foreground text-center py-6">لا توجد دفعات سابقة</p>
+              ) : (
+                <div className="space-y-2">
+                  {recentPayments.map((p: any) => (
+                    <div key={p.id} className="rounded-lg border bg-card p-2.5 space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground">{(p.doctors as any)?.name ?? "—"}</span>
+                        <span className="font-mono font-bold text-primary">{Number(p.amount).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span>{p.payment_date}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {methodLabel(p.method)}
+                        </Badge>
+                      </div>
+                      {p.reference && (
+                        <p className="text-muted-foreground truncate" title={p.reference}>
+                          {p.reference}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
-
-        <DialogFooter className="gap-2 sm:flex-row">
-          {!preview && (
-            <Button onClick={handleSaveAndPreview} disabled={total <= 0}>
-              حفظ السند وعرض المعاينة
-            </Button>
           )}
-          {preview && (
-            <>
-              <Button variant="outline" onClick={handleExcel}>
-                <FileSpreadsheet className="ml-1 h-4 w-4" /> Excel
-              </Button>
-              <Button variant="outline" onClick={handlePdf}>
-                <FileDown className="ml-1 h-4 w-4" /> PDF
-              </Button>
-              <Button onClick={handlePrint}>
-                <Printer className="ml-1 h-4 w-4" /> طباعة
-              </Button>
-              <Button variant="ghost" onClick={() => setOpen(false)}>إغلاق</Button>
-            </>
-          )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
