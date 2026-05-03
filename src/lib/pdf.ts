@@ -20,7 +20,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
 
     for (const section of sections) {
       const canvas = await html2canvas(section, {
-        scale: 2,
+        scale: SCALE,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
@@ -28,8 +28,8 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
         imageSmoothingQuality: "high",
       });
 
-      const scaleFactor = CONTENT_WIDTH_MM / (canvas.width / 2);
-      const heightMM = (canvas.height / 2) * scaleFactor;
+      const scaleFactor = CONTENT_WIDTH_MM / (canvas.width / SCALE);
+      const heightMM = (canvas.height / SCALE) * scaleFactor;
 
       const remaining = A4_HEIGHT_MM - MARGIN_MM - currentY;
 
