@@ -21,12 +21,24 @@ export function printElement(element: HTMLElement, title: string) {
     ${styles}
     <style>
       @page { size: A4; margin: 10mm; }
-      html, body { margin: 0; padding: 0; background: white; color: black; font-family: 'Cairo','Tajawal',system-ui,sans-serif; }
-      .print-shell { padding: 0; }
+      html, body { margin: 0; padding: 0; background: #f1f5f9; color: black; font-family: 'Cairo','Tajawal',system-ui,sans-serif; }
+      .print-toolbar { position: sticky; top: 0; z-index: 100; background: #1e293b; color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+      .print-toolbar button { background: #0e7490; color: #fff; border: none; padding: 8px 24px; border-radius: 6px; font-size: 14px; cursor: pointer; font-family: inherit; }
+      .print-toolbar button:hover { background: #0891b2; }
+      .print-shell { max-width: 210mm; margin: 20px auto; background: white; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
       .print\\:hidden { display: none !important; }
+      @media print {
+        .print-toolbar { display: none !important; }
+        html, body { background: white; }
+        .print-shell { margin: 0; box-shadow: none; max-width: none; }
+      }
     </style>
   </head>
   <body>
+    <div class="print-toolbar">
+      <button onclick="window.print()">🖨️ طباعة</button>
+      <span style="font-size:13px;">${title}</span>
+    </div>
     <div class="print-shell">${element.outerHTML}</div>
   </body>
 </html>`;
@@ -78,7 +90,7 @@ export function printElement(element: HTMLElement, title: string) {
     return;
   }
 
-  // Desktop: separate window
+  // Desktop: separate window with preview
   const printWindow = window.open("", "_blank", "width=1100,height=900");
   if (!printWindow) {
     toast.error("تعذر فتح نافذة الطباعة. تأكد من السماح بالنوافذ المنبثقة.");
@@ -86,12 +98,7 @@ export function printElement(element: HTMLElement, title: string) {
   }
 
   printWindow.document.open();
-  printWindow.document.write(
-    html.replace(
-      "</body>",
-      `<script>window.onload = () => { setTimeout(() => { window.focus(); window.print(); window.close(); }, 300); };</script></body>`,
-    ),
-  );
+  printWindow.document.write(html);
   printWindow.document.close();
 }
 

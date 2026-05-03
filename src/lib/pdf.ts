@@ -7,7 +7,8 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
   const MARGIN_MM = 8;
   const CONTENT_WIDTH_MM = A4_WIDTH_MM - MARGIN_MM * 2;
   const CONTENT_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_MM * 2;
-  const SECTION_GAP_MM = 3;
+  const SECTION_GAP_MM = 2;
+  const SCALE = 3; // Higher scale for clearer Arabic text
 
   // Try section-based rendering first
   const sections = Array.from(element.querySelectorAll("[data-pdf-section]")) as HTMLElement[];
@@ -19,7 +20,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
 
     for (const section of sections) {
       const canvas = await html2canvas(section, {
-        scale: 2,
+        scale: SCALE,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
@@ -27,8 +28,8 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
         imageSmoothingQuality: "high",
       });
 
-      const scaleFactor = CONTENT_WIDTH_MM / (canvas.width / 2);
-      const heightMM = (canvas.height / 2) * scaleFactor;
+      const scaleFactor = CONTENT_WIDTH_MM / (canvas.width / SCALE);
+      const heightMM = (canvas.height / SCALE) * scaleFactor;
 
       const remaining = A4_HEIGHT_MM - MARGIN_MM - currentY;
 
@@ -67,7 +68,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
   } else {
     // Fallback: capture entire element as before
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: SCALE,
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,

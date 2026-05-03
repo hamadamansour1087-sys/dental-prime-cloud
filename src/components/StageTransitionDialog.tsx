@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -85,7 +86,22 @@ export function StageTransitionDialog({
     return stages.filter((s) => s.order_index > from && s.order_index < toStage.order_index);
   }, [stages, currentStage, toStage]);
 
+  // Check if the case has items (diagnosis)
+  const { data: caseItemsCount } = useQuery({
+    queryKey: ["case-items-count", caseId],
+    enabled: !!caseId && open,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("case_items")
+        .select("id", { count: "exact", head: true })
+        .eq("case_id", caseId);
+      return count ?? 0;
+    },
+  });
+
   const requiresTechnician = toStage?.code === "ready";
+  const blockedCodes = ["try_in_1", "try_in_2", "ready"];
+  const isBlockedNoItems = caseItemsCount === 0 && toStage && blockedCodes.includes(toStage.code ?? "");
 
   useEffect(() => {
     if (!open) {
@@ -178,6 +194,13 @@ export function StageTransitionDialog({
             </div>
           )}
 
+          {isBlockedNoItems && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>لا يمكن نقل الحالة لـ "{toStage?.name}" بدون إضافة عناصر عمل (تشخيص). يرجى إضافة عناصر العمل أولاً.</span>
+            </div>
+          )}
+
           {requiresTechnician && (
             <div>
               <Label>الفني المسؤول *</Label>
@@ -212,7 +235,7 @@ export function StageTransitionDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={submit} disabled={submitting || !toStageId || (requiresTechnician && !technicianId)}>
+          <Button onClick={submit} disabled={submitting || !toStageId || (requiresTechnician && !technicianId) || !!isBlockedNoItems}>
             {submitting ? "جارٍ..." : "نقل"}
           </Button>
         </DialogFooter>
