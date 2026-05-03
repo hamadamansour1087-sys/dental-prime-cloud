@@ -119,7 +119,7 @@ function AgentDoctorDetail() {
       </Tabs>
 
       {collectOpen && doctor && (
-        <CollectDialog doctorId={doctor.id} doctorName={doctor.name} onClose={() => setCollectOpen(false)} />
+        <CollectDialog doctorId={doctor.id} doctorName={doctor.name} onClose={() => { setCollectOpen(false); }} />
       )}
     </div>
   );
