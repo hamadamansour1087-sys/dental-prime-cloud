@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,15 +37,18 @@ function AgentDoctorDetail() {
   const { data: ledger } = useQuery({
     queryKey: ["doctor-ledger-agent", doctorId],
     queryFn: async () => {
-      const [casesRes, paymentsRes] = await Promise.all([
+      const [casesRes, paymentsRes, pendingRes] = await Promise.all([
         supabase.from("cases").select("id, case_number, date_received, price, status").eq("doctor_id", doctorId).order("date_received", { ascending: false }).limit(30),
         supabase.from("payments").select("id, payment_date, amount, method").eq("doctor_id", doctorId).order("payment_date", { ascending: false }).limit(30),
+        supabase.from("pending_payments").select("id, collected_at, amount, method, status").eq("doctor_id", doctorId).eq("status", "pending").order("collected_at", { ascending: false }).limit(30),
       ]);
       const cases = casesRes.data ?? [];
       const payments = paymentsRes.data ?? [];
+      const pendingPayments = pendingRes.data ?? [];
       const charges = cases.filter((c) => c.status === "delivered").reduce((s, c) => s + Number(c.price ?? 0), 0);
       const paid = payments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
-      return { cases, payments, charges, paid };
+      const pendingTotal = pendingPayments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
+      return { cases, payments, pendingPayments, charges, paid, pendingTotal };
     },
   });
 
@@ -62,7 +65,7 @@ function AgentDoctorDetail() {
         <Card className="p-4">
           <p className="text-lg font-bold">{doctor.name}</p>
           {doctor.clinic_name && <p className="text-xs text-muted-foreground">{doctor.clinic_name}</p>}
-          <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="rounded bg-muted p-2">
               <p className="text-xs text-muted-foreground">الرصيد المستحق</p>
               <p className={`text-xl font-bold ${balance > 0 ? "text-destructive" : "text-primary"}`}>
@@ -72,6 +75,10 @@ function AgentDoctorDetail() {
             <div className="rounded bg-muted p-2">
               <p className="text-xs text-muted-foreground">المدفوع</p>
               <p className="text-xl font-bold text-primary">{(ledger?.paid ?? 0).toFixed(2)}</p>
+            </div>
+            <div className="rounded bg-muted p-2">
+              <p className="text-xs text-muted-foreground">قيد المراجعة</p>
+              <p className="text-xl font-bold text-amber-500">{(ledger?.pendingTotal ?? 0).toFixed(2)}</p>
             </div>
           </div>
           <Button className="w-full mt-3" onClick={() => setCollectOpen(true)}>
@@ -112,7 +119,7 @@ function AgentDoctorDetail() {
       </Tabs>
 
       {collectOpen && doctor && (
-        <CollectDialog doctorId={doctor.id} doctorName={doctor.name} onClose={() => setCollectOpen(false)} />
+        <CollectDialog doctorId={doctor.id} doctorName={doctor.name} onClose={() => { setCollectOpen(false); }} />
       )}
     </div>
   );
@@ -120,6 +127,7 @@ function AgentDoctorDetail() {
 
 function CollectDialog({ doctorId, doctorName, onClose }: { doctorId: string; doctorName: string; onClose: () => void }) {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("cash");
   const [reference, setReference] = useState("");
@@ -154,7 +162,7 @@ function CollectDialog({ doctorId, doctorName, onClose }: { doctorId: string; do
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("أُرسل السند للمراجعة"); onClose(); },
+    onSuccess: () => { toast.success("أُرسل السند للمراجعة"); qc.invalidateQueries({ queryKey: ["doctor-ledger-agent", doctorId] }); qc.invalidateQueries({ queryKey: ["agent-payments"] }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
