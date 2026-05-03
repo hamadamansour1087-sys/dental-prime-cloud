@@ -86,6 +86,30 @@ export function PortalAccountButton({
     }
   };
 
+  const resetPassword = async () => {
+    setBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("يجب تسجيل الدخول");
+      const res = await fetch("/api/reset-doctor-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ doctor_id: doctor.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل إعادة تعيين كلمة المرور");
+      setGeneratedPassword(data.password);
+      toast.success("تم توليد كلمة سر جديدة — انسخها وأرسلها للطبيب");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل غير متوقع");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const togglePortal = async (enabled: boolean) => {
     const { error } = await supabase
       .from("doctors")
