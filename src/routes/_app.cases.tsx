@@ -53,7 +53,7 @@ function newItem(): CaseItemDraft {
 }
 
 function formatArabicDisplayDate(value: string) {
-  if (!value) return "اختر تاريخ التسليم";
+  if (!value) return "اختر تاريخ التسليم المتوقع";
 
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
