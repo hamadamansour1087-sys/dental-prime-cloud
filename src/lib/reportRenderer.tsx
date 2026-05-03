@@ -36,7 +36,7 @@ export async function renderReportToPdf(element: ReactElement, fileName: string)
         : new Promise((res) => { img.onload = res; img.onerror = res; setTimeout(res, 3000); })
     )
   );
-  await new Promise((r) => setTimeout(r, 100));
+  await new Promise((r) => setTimeout(r, 200));
 
   try {
     const target = host.firstElementChild as HTMLElement;
