@@ -1098,9 +1098,14 @@ function CasesPage() {
                       {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                     </TableCell>
                     <TableCell className="text-xs text-emerald-600 dark:text-emerald-400">
-                      {c.date_delivered
-                        ? format(new Date(c.date_delivered), "dd/MM/yyyy")
-                        : "—"}
+                      {c.date_delivered ? (
+                        <div>
+                          <span>{format(new Date(c.date_delivered), "dd/MM/yyyy")}</span>
+                          {deliveryAgents?.get(c.id) && (
+                            <span className="block text-[10px] text-muted-foreground">{deliveryAgents.get(c.id)}</span>
+                          )}
+                        </div>
+                      ) : "—"}
                     </TableCell>
                   </TableRow>
                 );
