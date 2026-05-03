@@ -46,7 +46,16 @@ function DeliverPage() {
     },
   });
 
-  const requestLocation = () => {
+  const { data: agentRow } = useQuery({
+    queryKey: ["delivery-agent-self-id", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("delivery_agents")
+        .select("id, lab_id").eq("user_id", user!.id).eq("is_active", true).maybeSingle();
+      return data;
+    },
+  });
+
     if (!navigator.geolocation) { setGpsError("المتصفح لا يدعم تحديد الموقع"); return; }
     setGpsLoading(true); setGpsError(null);
     navigator.geolocation.getCurrentPosition(
