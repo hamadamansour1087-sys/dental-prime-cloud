@@ -1089,7 +1089,14 @@ function CasesPage() {
                     </TableCell>
                     <TableCell>{c.doctors?.name ?? "—"}</TableCell>
                     <TableCell>{c.patients?.name ?? "—"}</TableCell>
-                    <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {c.work_types?.name ?? "—"}
+                      {c.parent_case_id && c.case_type !== "new" && parentWorkTypes?.get(c.parent_case_id) && parentWorkTypes.get(c.parent_case_id) !== c.work_types?.name && (
+                        <span className="block text-[10px] text-muted-foreground">
+                          الأصلي: {parentWorkTypes.get(c.parent_case_id)}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {stage ? (
                         <span
