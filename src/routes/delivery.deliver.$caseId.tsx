@@ -34,8 +34,8 @@ function DeliverPage() {
     queryFn: async () => {
       const { data } = await supabase.from("cases")
         .select(`
-          id, case_number, date_received, due_date, tooth_numbers, units, shade, notes, price,
-          doctors(name, clinic_name, phone, governorate, address),
+          id, lab_id, case_number, date_received, due_date, tooth_numbers, units, shade, notes, price, doctor_id,
+          doctors(id, name, clinic_name, phone, governorate, address),
           work_types(name),
           case_items(id, units, shade, tooth_numbers, total_price, notes, work_types(name))
         `)
