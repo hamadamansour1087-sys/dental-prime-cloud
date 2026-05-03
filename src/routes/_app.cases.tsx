@@ -318,6 +318,26 @@ function CasesPage() {
     },
   });
 
+  // Fetch parent case work type for followup cases (remake/repair)
+  const { data: parentWorkTypes } = useQuery({
+    queryKey: ["cases-parent-work-types", labId],
+    enabled: !!labId && !!cases,
+    queryFn: async () => {
+      const followups = cases?.filter((c: any) => c.parent_case_id && c.case_type !== "new") ?? [];
+      if (followups.length === 0) return new Map<string, string>();
+      const parentIds = [...new Set(followups.map((c: any) => c.parent_case_id))];
+      const { data } = await supabase
+        .from("cases")
+        .select("id, work_types(name)")
+        .in("id", parentIds);
+      const map = new Map<string, string>();
+      data?.forEach((p: any) => {
+        if (p.work_types?.name) map.set(p.id, p.work_types.name);
+      });
+      return map;
+    },
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
@@ -1069,7 +1089,14 @@ function CasesPage() {
                     </TableCell>
                     <TableCell>{c.doctors?.name ?? "—"}</TableCell>
                     <TableCell>{c.patients?.name ?? "—"}</TableCell>
-                    <TableCell className="text-xs">{c.work_types?.name ?? "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {c.work_types?.name ?? "—"}
+                      {c.parent_case_id && c.case_type !== "new" && parentWorkTypes?.get(c.parent_case_id) && parentWorkTypes.get(c.parent_case_id) !== c.work_types?.name && (
+                        <span className="block text-[10px] text-muted-foreground">
+                          الأصلي: {parentWorkTypes.get(c.parent_case_id)}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {stage ? (
                         <span
@@ -1159,7 +1186,14 @@ function CasesPage() {
                             </div>
                             <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
                             <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
-                            {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
+                            {(c as any).work_types?.name && (
+                              <div className="mt-1 text-xs">
+                                {(c as any).work_types.name}
+                                {(c as any).parent_case_id && (c as any).case_type !== "new" && parentWorkTypes?.get((c as any).parent_case_id) && parentWorkTypes.get((c as any).parent_case_id) !== (c as any).work_types?.name && (
+                                  <span className="block text-[10px] text-muted-foreground">الأصلي: {parentWorkTypes.get((c as any).parent_case_id)}</span>
+                                )}
+                              </div>
+                            )}
                             {c.due_date && (
                               <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
                                 <Calendar className="h-3 w-3" />
