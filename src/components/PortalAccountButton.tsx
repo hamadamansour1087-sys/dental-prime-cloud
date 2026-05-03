@@ -12,7 +12,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { KeyRound, UserCheck, UserX, Copy, RefreshCw, ShieldAlert } from "lucide-react";
+import { KeyRound, UserCheck, UserX, Copy, RefreshCw } from "lucide-react";
 
 interface Doctor {
   id: string;
