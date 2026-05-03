@@ -162,7 +162,7 @@ function CollectDialog({ doctorId, doctorName, onClose }: { doctorId: string; do
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("أُرسل السند للمراجعة"); onClose(); },
+    onSuccess: () => { toast.success("أُرسل السند للمراجعة"); qc.invalidateQueries({ queryKey: ["doctor-ledger-agent", doctorId] }); qc.invalidateQueries({ queryKey: ["agent-payments"] }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
