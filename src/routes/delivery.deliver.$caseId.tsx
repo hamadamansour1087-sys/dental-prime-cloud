@@ -18,6 +18,7 @@ export const Route = createFileRoute("/delivery/deliver/$caseId")({
 });
 
 function DeliverPage() {
+  const { user } = useAuth();
   const { caseId } = Route.useParams();
   const navigate = useNavigate();
   const [recipientName, setRecipientName] = useState("");
