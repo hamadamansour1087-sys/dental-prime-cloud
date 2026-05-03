@@ -194,6 +194,13 @@ export function StageTransitionDialog({
             </div>
           )}
 
+          {isBlockedNoItems && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>لا يمكن نقل الحالة لـ "{toStage?.name}" بدون إضافة عناصر عمل (تشخيص). يرجى إضافة عناصر العمل أولاً.</span>
+            </div>
+          )}
+
           {requiresTechnician && (
             <div>
               <Label>الفني المسؤول *</Label>
