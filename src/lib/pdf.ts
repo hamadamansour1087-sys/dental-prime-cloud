@@ -68,7 +68,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
   } else {
     // Fallback: capture entire element as before
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: SCALE,
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
