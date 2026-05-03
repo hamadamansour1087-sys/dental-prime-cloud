@@ -318,6 +318,26 @@ function CasesPage() {
     },
   });
 
+  // Fetch parent case work type for followup cases (remake/repair)
+  const { data: parentWorkTypes } = useQuery({
+    queryKey: ["cases-parent-work-types", labId],
+    enabled: !!labId && !!cases,
+    queryFn: async () => {
+      const followups = cases?.filter((c: any) => c.parent_case_id && c.case_type !== "new") ?? [];
+      if (followups.length === 0) return new Map<string, string>();
+      const parentIds = [...new Set(followups.map((c: any) => c.parent_case_id))];
+      const { data } = await supabase
+        .from("cases")
+        .select("id, work_types(name)")
+        .in("id", parentIds);
+      const map = new Map<string, string>();
+      data?.forEach((p: any) => {
+        if (p.work_types?.name) map.set(p.id, p.work_types.name);
+      });
+      return map;
+    },
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
