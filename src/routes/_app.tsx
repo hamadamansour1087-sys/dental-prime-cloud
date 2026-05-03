@@ -48,18 +48,10 @@ function AppLayout() {
   if (!user) return <Navigate to="/login" />;
 
   if (!profile || !labId) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4" dir="rtl">
-        <div className="max-w-md rounded-lg border bg-card p-6 text-center">
-          <h2 className="text-lg font-semibold">هذا الحساب ليس حساب معمل</h2>
-          <p className="mt-2 text-sm text-muted-foreground">سجّل الدخول بحساب المعمل الصحيح من صفحة برنامج المعمل.</p>
-          <Button variant="outline" className="mt-4" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-            تسجيل الخروج
-          </Button>
-        </div>
-      </div>
-    );
+    return <PendingLabScreen />;
   }
+
+  const isExpired = trialExpired;
 
   const performLogout = async () => {
     await signOut();
