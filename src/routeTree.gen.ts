@@ -26,6 +26,7 @@ import { Route as DeliveryLoginRouteImport } from './routes/delivery.login'
 import { Route as DeliveryDoctorsRouteImport } from './routes/delivery.doctors'
 import { Route as DeliveryDeliveredRouteImport } from './routes/delivery.delivered'
 import { Route as DeliveryDashboardRouteImport } from './routes/delivery.dashboard'
+import { Route as ApiResetDoctorPasswordRouteImport } from './routes/api/reset-doctor-password'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
@@ -148,6 +149,11 @@ const DeliveryDashboardRoute = DeliveryDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => DeliveryRoute,
+} as any)
+const ApiResetDoctorPasswordRoute = ApiResetDoctorPasswordRouteImport.update({
+  id: '/api/reset-doctor-password',
+  path: '/api/reset-doctor-password',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
   id: '/api/portal-resolve-login',
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/api/reset-doctor-password': typeof ApiResetDoctorPasswordRoute
   '/delivery/dashboard': typeof DeliveryDashboardRoute
   '/delivery/delivered': typeof DeliveryDeliveredRoute
   '/delivery/doctors': typeof DeliveryDoctorsRoute
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/api/reset-doctor-password': typeof ApiResetDoctorPasswordRoute
   '/delivery/dashboard': typeof DeliveryDashboardRoute
   '/delivery/delivered': typeof DeliveryDeliveredRoute
   '/delivery/doctors': typeof DeliveryDoctorsRoute
@@ -495,6 +503,7 @@ export interface FileRoutesById {
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
+  '/api/reset-doctor-password': typeof ApiResetDoctorPasswordRoute
   '/delivery/dashboard': typeof DeliveryDashboardRoute
   '/delivery/delivered': typeof DeliveryDeliveredRoute
   '/delivery/doctors': typeof DeliveryDoctorsRoute
@@ -553,6 +562,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/api/reset-doctor-password'
     | '/delivery/dashboard'
     | '/delivery/delivered'
     | '/delivery/doctors'
@@ -609,6 +619,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/api/reset-doctor-password'
     | '/delivery/dashboard'
     | '/delivery/delivered'
     | '/delivery/doctors'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/api/create-doctor-account'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
+    | '/api/reset-doctor-password'
     | '/delivery/dashboard'
     | '/delivery/delivered'
     | '/delivery/doctors'
@@ -699,6 +711,7 @@ export interface RootRouteChildren {
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
   ApiManageUserRoute: typeof ApiManageUserRoute
   ApiPortalResolveLoginRoute: typeof ApiPortalResolveLoginRoute
+  ApiResetDoctorPasswordRoute: typeof ApiResetDoctorPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -821,6 +834,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/delivery/dashboard'
       preLoaderRoute: typeof DeliveryDashboardRouteImport
       parentRoute: typeof DeliveryRoute
+    }
+    '/api/reset-doctor-password': {
+      id: '/api/reset-doctor-password'
+      path: '/api/reset-doctor-password'
+      fullPath: '/api/reset-doctor-password'
+      preLoaderRoute: typeof ApiResetDoctorPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/portal-resolve-login': {
       id: '/api/portal-resolve-login'
@@ -1224,6 +1244,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
   ApiManageUserRoute: ApiManageUserRoute,
   ApiPortalResolveLoginRoute: ApiPortalResolveLoginRoute,
+  ApiResetDoctorPasswordRoute: ApiResetDoctorPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

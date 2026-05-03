@@ -12,7 +12,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { KeyRound, UserCheck, UserX, Copy, RefreshCw, ShieldAlert } from "lucide-react";
+import { KeyRound, UserCheck, UserX, Copy, RefreshCw } from "lucide-react";
 
 interface Doctor {
   id: string;
@@ -79,6 +79,30 @@ export function PortalAccountButton({
       setGeneratedPassword(data.password);
       toast.success("تم إنشاء الحساب — انسخ البيانات وأرسلها للطبيب");
       onDone?.();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل غير متوقع");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resetPassword = async () => {
+    setBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("يجب تسجيل الدخول");
+      const res = await fetch("/api/reset-doctor-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ doctor_id: doctor.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل إعادة تعيين كلمة المرور");
+      setGeneratedPassword(data.password);
+      toast.success("تم توليد كلمة سر جديدة — انسخها وأرسلها للطبيب");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل غير متوقع");
     } finally {
@@ -172,14 +196,25 @@ export function PortalAccountButton({
               <Switch checked={doctor.portal_enabled} onCheckedChange={togglePortal} />
             </div>
 
-            <div className="rounded-md border border-warning/40 bg-warning/5 p-3">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-warning-foreground">
-                <ShieldAlert className="h-3.5 w-3.5" />
+            <div className="rounded-md border p-3">
+              <p className="flex items-center gap-1.5 text-sm font-medium">
+                <RefreshCw className="h-3.5 w-3.5" />
                 إعادة تعيين كلمة المرور
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                لتغيير كلمة المرور احذف الحساب من قاعدة البيانات وأعد إنشاءه — أو اطلب من الطبيب تغييرها بنفسه لاحقاً.
+                سيتم توليد كلمة سر جديدة بدون حذف الحساب أو بياناته.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 h-7 text-xs"
+                disabled={busy}
+                onClick={resetPassword}
+              >
+                <RefreshCw className={`ml-1 h-3 w-3 ${busy ? "animate-spin" : ""}`} />
+                {busy ? "جارٍ التوليد..." : "توليد كلمة سر جديدة"}
+              </Button>
             </div>
           </div>
         ) : (
