@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   MessageSquare,
+  Building2,
   Truck as TruckIcon,
   Route as RouteIcon,
   Wallet as WalletIcon,
@@ -90,6 +91,7 @@ const groups: NavGroup[] = [
     icon: Settings,
     items: [
       { title: "المستخدمون", url: "/users", icon: Users, adminOnly: true },
+      { title: "طلبات المعامل", url: "/lab-requests", icon: Building2, adminOnly: true },
       { title: "الإعدادات", url: "/settings", icon: Settings, adminOnly: true },
     ],
   },

@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, Navigate, Link, useNavigate } from "@tanstack/
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ScanLine, Search, LogOut } from "lucide-react";
+import { ScanLine, Search, LogOut, Clock } from "lucide-react";
 import { QrScannerDialog } from "@/components/QrScannerDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AIAssistant } from "@/components/AIAssistant";
@@ -11,6 +11,7 @@ import { PortalNotificationsBell } from "@/components/PortalNotificationsBell";
 import { GlobalSearch, useGlobalSearchHotkey } from "@/components/GlobalSearch";
 import { TopNav } from "@/components/TopNav";
 import { BackupReminderDialog, shouldRemindBackup } from "@/components/BackupReminderDialog";
+import { TrialBanner, useTrialExpired } from "@/components/TrialBanner";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -23,10 +24,9 @@ function AppLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [graceExpired, setGraceExpired] = useState(false);
+  const trialExpired = useTrialExpired(labId);
   useGlobalSearchHotkey(setSearchOpen);
 
-  // Give the auth state a brief grace period after login so that we don't
-  // flash "ليس حساب معمل" while the profile/roles are still being fetched.
   useEffect(() => {
     if (user && (!profile || !labId)) {
       setGraceExpired(false);
@@ -49,10 +49,15 @@ function AppLayout() {
   if (!profile || !labId) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4" dir="rtl">
-        <div className="max-w-md rounded-lg border bg-card p-6 text-center">
-          <h2 className="text-lg font-semibold">هذا الحساب ليس حساب معمل</h2>
-          <p className="mt-2 text-sm text-muted-foreground">سجّل الدخول بحساب المعمل الصحيح من صفحة برنامج المعمل.</p>
-          <Button variant="outline" className="mt-4" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center space-y-4">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+            <Clock className="h-7 w-7 text-amber-600" />
+          </div>
+          <h2 className="text-lg font-semibold">بانتظار تفعيل المعمل</h2>
+          <p className="text-sm text-muted-foreground">
+            تم إرسال طلبك بنجاح. سيتم مراجعته من قبل فريق الدعم الفني وسيتم تفعيل معملك في أقرب وقت.
+          </p>
+          <Button variant="outline" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             تسجيل الخروج
           </Button>
         </div>
@@ -66,7 +71,6 @@ function AppLayout() {
   };
 
   const handleLogout = () => {
-    // Only nag admins (they own the data) and only once every 24h
     if (hasRole("admin") && labId && shouldRemindBackup()) {
       setBackupOpen(true);
     } else {
@@ -76,9 +80,9 @@ function AppLayout() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background gradient-mesh">
+      {labId && <TrialBanner labId={labId} />}
       <header className="sticky top-0 z-20 border-b border-border/40 glass-card shadow-xs">
         <div className="flex h-14 items-center gap-3 px-4">
-          {/* Brand */}
           <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground font-display font-extrabold text-base shadow-glow group-hover:shadow-lg transition-shadow">
               H
@@ -91,12 +95,10 @@ function AppLayout() {
             </div>
           </Link>
 
-          {/* Primary nav */}
           <div className="flex-1 min-w-0 flex items-center justify-center">
             <TopNav />
           </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="outline"
@@ -126,7 +128,12 @@ function AppLayout() {
 
       <main className="flex-1 p-4 md:p-6 lg:p-8 animate-fade-in-up" dir="rtl">
         <div className="mx-auto max-w-[1400px]">
-          <Outlet />
+          {trialExpired && (
+            <div className="pointer-events-none select-none opacity-70">
+              <Outlet />
+            </div>
+          )}
+          {!trialExpired && <Outlet />}
         </div>
       </main>
 
