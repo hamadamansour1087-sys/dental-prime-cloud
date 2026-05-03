@@ -127,6 +127,7 @@ function AgentDoctorDetail() {
 
 function CollectDialog({ doctorId, doctorName, onClose }: { doctorId: string; doctorName: string; onClose: () => void }) {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("cash");
   const [reference, setReference] = useState("");
