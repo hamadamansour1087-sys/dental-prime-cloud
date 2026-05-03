@@ -90,7 +90,7 @@ export function printElement(element: HTMLElement, title: string) {
     return;
   }
 
-  // Desktop: separate window
+  // Desktop: separate window with preview
   const printWindow = window.open("", "_blank", "width=1100,height=900");
   if (!printWindow) {
     toast.error("تعذر فتح نافذة الطباعة. تأكد من السماح بالنوافذ المنبثقة.");
@@ -98,12 +98,7 @@ export function printElement(element: HTMLElement, title: string) {
   }
 
   printWindow.document.open();
-  printWindow.document.write(
-    html.replace(
-      "</body>",
-      `<script>window.onload = () => { setTimeout(() => { window.focus(); window.print(); window.close(); }, 300); };</script></body>`,
-    ),
-  );
+  printWindow.document.write(html);
   printWindow.document.close();
 }
 
