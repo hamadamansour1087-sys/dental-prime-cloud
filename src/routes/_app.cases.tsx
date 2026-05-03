@@ -22,6 +22,7 @@ import { StageTransitionDialog } from "@/components/StageTransitionDialog";
 import { ShadeSelector } from "@/components/ShadeSelector";
 import { FollowupCaseDialog } from "@/components/FollowupCaseDialog";
 import { DatePickerInput } from "@/components/ui/date-picker-input";
+import { DeliveryDialog } from "@/components/DeliveryDialog";
 
 export const Route = createFileRoute("/_app/cases")({
   component: CasesPage,
@@ -52,7 +53,7 @@ function newItem(): CaseItemDraft {
 }
 
 function formatArabicDisplayDate(value: string) {
-  if (!value) return "اختر تاريخ التسليم";
+  if (!value) return "اختر تاريخ التسليم المتوقع";
 
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
@@ -90,7 +91,7 @@ function DueDateField({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <Label>تاريخ التسليم</Label>
+        <Label>تاريخ التسليم المتوقع</Label>
         {dueAuto && (
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
             <Sparkles className="h-3 w-3" /> توقع تلقائي
@@ -205,6 +206,8 @@ function CasesPage() {
   const [selectedTransition, setSelectedTransition] = useState<{ caseId: string; workflowId: string | null; currentStageId: string | null; toStageId: string } | null>(null);
   const [followup, setFollowup] = useState<{ caseId: string; caseNumber: string; type: "remake" | "repair" } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; caseData: any } | null>(null);
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const [deliveryCaseId, setDeliveryCaseId] = useState("");
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -612,6 +615,15 @@ function CasesPage() {
         }}
       />
 
+      <DeliveryDialog
+        open={deliveryOpen}
+        onOpenChange={setDeliveryOpen}
+        caseId={deliveryCaseId}
+        onDelivered={() => {
+          qc.invalidateQueries({ queryKey: ["cases"] });
+        }}
+      />
+
       {followup && (
         <FollowupCaseDialog
           open={!!followup}
@@ -673,9 +685,14 @@ function CasesPage() {
             <button
               type="button"
               className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              onClick={() => updateCaseStatus(contextMenu.caseData.id, "delivered")}
+              onClick={() => {
+                const id = contextMenu.caseData.id;
+                setContextMenu(null);
+                setDeliveryCaseId(id);
+                setDeliveryOpen(true);
+              }}
             >
-              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تم التسليم
+              <CheckCircle2 className="ml-2 h-4 w-4 text-emerald-600" /> تسليم الحالة
             </button>
           )}
 
@@ -1001,7 +1018,8 @@ function CasesPage() {
                 <TableHead className="w-[130px]">دخول المرحلة</TableHead>
                 <TableHead>الفني</TableHead>
                 <TableHead className="text-center">الوحدات</TableHead>
-                <TableHead>تاريخ التسليم</TableHead>
+                <TableHead>التسليم المتوقع</TableHead>
+                <TableHead>التسليم الفعلي</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1057,10 +1075,11 @@ function CasesPage() {
                     </TableCell>
                     <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
                     <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
+                      {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-emerald-600 dark:text-emerald-400">
                       {c.date_delivered
                         ? format(new Date(c.date_delivered), "dd/MM/yyyy")
-                        : c.due_date
-                        ? format(new Date(c.due_date), "dd/MM/yyyy")
                         : "—"}
                     </TableCell>
                   </TableRow>
@@ -1068,7 +1087,7 @@ function CasesPage() {
               })}
               {!filteredCases.length && (
                 <TableRow>
-                  <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
                     لا توجد حالات
                   </TableCell>
                 </TableRow>

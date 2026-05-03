@@ -973,7 +973,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
 
                 <div>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <Label className="text-xs font-semibold">تاريخ التسليم</Label>
+                    <Label className="text-xs font-semibold">تاريخ التسليم المتوقع</Label>
                     {dueAuto && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
                         <Sparkles className="h-3 w-3" /> توقع تلقائي

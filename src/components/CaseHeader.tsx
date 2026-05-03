@@ -66,7 +66,13 @@ export function CaseHeader({ caseRow, stage, onBack, onMoveStage, onLabel, onPdf
                 {dueDate && (
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    التسليم {format(dueDate, "dd MMM yyyy", { locale: ar })}
+                    التسليم المتوقع {format(dueDate, "dd MMM yyyy", { locale: ar })}
+                  </span>
+                )}
+                {caseRow.date_delivered && (
+                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    التسليم الفعلي {format(new Date(caseRow.date_delivered), "dd MMM yyyy", { locale: ar })}
                   </span>
                 )}
               </div>
