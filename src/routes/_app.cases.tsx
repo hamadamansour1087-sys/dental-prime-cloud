@@ -298,6 +298,26 @@ function CasesPage() {
     },
   });
 
+  // Fetch delivery agent name per case
+  const { data: deliveryAgents } = useQuery({
+    queryKey: ["cases-delivery-agents", labId],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_deliveries")
+        .select("case_id, delivery_agents(name)")
+        .eq("lab_id", labId!)
+        .order("delivered_at", { ascending: false });
+      const map = new Map<string, string>();
+      data?.forEach((d: any) => {
+        if (!map.has(d.case_id) && d.delivery_agents?.name) {
+          map.set(d.case_id, d.delivery_agents.name);
+        }
+      });
+      return map;
+    },
+  });
+
   const { data: doctors } = useQuery({
     queryKey: ["doctors-select", labId],
     enabled: !!labId,
@@ -1078,9 +1098,14 @@ function CasesPage() {
                       {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                     </TableCell>
                     <TableCell className="text-xs text-emerald-600 dark:text-emerald-400">
-                      {c.date_delivered
-                        ? format(new Date(c.date_delivered), "dd/MM/yyyy")
-                        : "—"}
+                      {c.date_delivered ? (
+                        <div>
+                          <span>{format(new Date(c.date_delivered), "dd/MM/yyyy")}</span>
+                          {deliveryAgents?.get(c.id) && (
+                            <span className="block text-[10px] text-muted-foreground">{deliveryAgents.get(c.id)}</span>
+                          )}
+                        </div>
+                      ) : "—"}
                     </TableCell>
                   </TableRow>
                 );
