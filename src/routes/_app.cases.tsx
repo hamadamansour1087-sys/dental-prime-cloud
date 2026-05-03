@@ -91,7 +91,7 @@ function DueDateField({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <Label>تاريخ التسليم</Label>
+        <Label>تاريخ التسليم المتوقع</Label>
         {dueAuto && (
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
             <Sparkles className="h-3 w-3" /> توقع تلقائي
