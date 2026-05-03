@@ -184,8 +184,8 @@ function LoginPage() {
           <div className="space-y-3 pt-2">
             <p className="text-center text-sm text-muted-foreground">
               ليس لديك حساب؟{" "}
-              <Link to="/signup" className="font-semibold text-primary hover:underline underline-offset-4 transition-colors">
-                أنشئ معمل جديد
+              <Link to="/register" className="font-semibold text-primary hover:underline underline-offset-4 transition-colors">
+                سجّل معملك مجاناً
               </Link>
             </p>
             <div className="flex items-center gap-3">
