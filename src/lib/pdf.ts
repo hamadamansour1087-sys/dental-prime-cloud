@@ -7,7 +7,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
   const MARGIN_MM = 8;
   const CONTENT_WIDTH_MM = A4_WIDTH_MM - MARGIN_MM * 2;
   const CONTENT_HEIGHT_MM = A4_HEIGHT_MM - MARGIN_MM * 2;
-  const SECTION_GAP_MM = 3;
+  const SECTION_GAP_MM = 2;
 
   // Try section-based rendering first
   const sections = Array.from(element.querySelectorAll("[data-pdf-section]")) as HTMLElement[];
