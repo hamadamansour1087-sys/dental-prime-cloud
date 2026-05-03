@@ -42,7 +42,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@remotion/bundler": "^4.0.456",
     "@remotion/cli": "^4.0.456",
-    "@remotion/compositor-linux-x64-musl": "^4.0.456",
+    "@remotion/compositor-linux-x64-musl": "4.0.456",
     "@remotion/fonts": "^4.0.456",
     "@remotion/google-fonts": "^4.0.456",
     "@remotion/player": "^4.0.456",
