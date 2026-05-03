@@ -1186,7 +1186,14 @@ function CasesPage() {
                             </div>
                             <p className="font-medium">{(c as any).doctors?.name ?? "—"}</p>
                             <p className="text-xs text-muted-foreground">{(c as any).patients?.name ?? "—"}</p>
-                            {(c as any).work_types?.name && <p className="mt-1 text-xs">{(c as any).work_types.name}</p>}
+                            {(c as any).work_types?.name && (
+                              <div className="mt-1 text-xs">
+                                {(c as any).work_types.name}
+                                {(c as any).parent_case_id && (c as any).case_type !== "new" && parentWorkTypes?.get((c as any).parent_case_id) && parentWorkTypes.get((c as any).parent_case_id) !== (c as any).work_types?.name && (
+                                  <span className="block text-[10px] text-muted-foreground">الأصلي: {parentWorkTypes.get((c as any).parent_case_id)}</span>
+                                )}
+                              </div>
+                            )}
                             {c.due_date && (
                               <p className={`mt-1 flex items-center gap-1 text-xs ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
                                 <Calendar className="h-3 w-3" />
