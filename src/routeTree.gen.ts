@@ -52,6 +52,7 @@ import { Route as AppPendingPaymentsRouteImport } from './routes/_app.pending-pa
 import { Route as AppPendingCasesRouteImport } from './routes/_app.pending-cases'
 import { Route as AppPatientsRouteImport } from './routes/_app.patients'
 import { Route as AppMessagesRouteImport } from './routes/_app.messages'
+import { Route as AppLabRequestsRouteImport } from './routes/_app.lab-requests'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppInventoryRouteImport } from './routes/_app.inventory'
 import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
@@ -282,6 +283,11 @@ const AppMessagesRoute = AppMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLabRequestsRoute = AppLabRequestsRouteImport.update({
+  id: '/lab-requests',
+  path: '/lab-requests',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInvoicesRoute = AppInvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
@@ -370,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/lab-requests': typeof AppLabRequestsRoute
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/expenses': typeof AppExpensesRoute
   '/inventory': typeof AppInventoryRoute
   '/invoices': typeof AppInvoicesRoute
+  '/lab-requests': typeof AppLabRequestsRoute
   '/messages': typeof AppMessagesRoute
   '/patients': typeof AppPatientsRoute
   '/pending-cases': typeof AppPendingCasesRoute
@@ -488,6 +496,7 @@ export interface FileRoutesById {
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/invoices': typeof AppInvoicesRoute
+  '/_app/lab-requests': typeof AppLabRequestsRoute
   '/_app/messages': typeof AppMessagesRoute
   '/_app/patients': typeof AppPatientsRoute
   '/_app/pending-cases': typeof AppPendingCasesRoute
@@ -548,6 +557,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/lab-requests'
     | '/messages'
     | '/patients'
     | '/pending-cases'
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/inventory'
     | '/invoices'
+    | '/lab-requests'
     | '/messages'
     | '/patients'
     | '/pending-cases'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/_app/expenses'
     | '/_app/inventory'
     | '/_app/invoices'
+    | '/_app/lab-requests'
     | '/_app/messages'
     | '/_app/patients'
     | '/_app/pending-cases'
@@ -1030,6 +1042,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMessagesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab-requests': {
+      id: '/_app/lab-requests'
+      path: '/lab-requests'
+      fullPath: '/lab-requests'
+      preLoaderRoute: typeof AppLabRequestsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/invoices': {
       id: '/_app/invoices'
       path: '/invoices'
@@ -1156,6 +1175,7 @@ interface AppRouteChildren {
   AppExpensesRoute: typeof AppExpensesRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
+  AppLabRequestsRoute: typeof AppLabRequestsRoute
   AppMessagesRoute: typeof AppMessagesRoute
   AppPatientsRoute: typeof AppPatientsRoute
   AppPendingCasesRoute: typeof AppPendingCasesRoute
@@ -1184,6 +1204,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppExpensesRoute: AppExpensesRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppInvoicesRoute: AppInvoicesRoute,
+  AppLabRequestsRoute: AppLabRequestsRoute,
   AppMessagesRoute: AppMessagesRoute,
   AppPatientsRoute: AppPatientsRoute,
   AppPendingCasesRoute: AppPendingCasesRoute,
