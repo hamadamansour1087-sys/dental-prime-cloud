@@ -25,7 +25,7 @@ export const ReelsRoot = () => (
         fps={30}
         width={1080}
         height={1920}
-        defaultProps={{ title: r.title, subtitle: r.subtitle, bullets: r.bullets, color1: r.color1, color2: r.color2, accent: r.accent }}
+        defaultProps={{ title: r.title, subtitle: r.subtitle, bullets: r.bullets, color1: r.color1, color2: r.color2, accent: r.accent, audioFile: `audio/${r.id}.mp3` }}
       />
     ))}
   </>
