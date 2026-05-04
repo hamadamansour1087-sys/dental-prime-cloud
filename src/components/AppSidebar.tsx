@@ -62,6 +62,15 @@ const groups: NavGroup[] = [
     ],
   },
   {
+    label: "التوصيل",
+    items: [
+      { title: "المندوبون", url: "/delivery-agents", icon: Truck },
+      { title: "خطوط السير", url: "/delivery-routes", icon: Truck },
+      { title: "تتبع المندوبين", url: "/agent-tracking", icon: Navigation },
+      { title: "المدفوعات المعلقة", url: "/pending-payments", icon: Wallet },
+    ],
+  },
+  {
     label: "المخازن",
     items: [
       { title: "الموردون", url: "/suppliers", icon: Truck },
