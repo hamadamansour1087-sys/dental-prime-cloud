@@ -46,7 +46,7 @@ export const Route = createFileRoute("/api/agent-resolve-login")({
           return Response.json({ email: match.email });
         } catch (e) {
           await pad(startedAt);
-          return Response.json({ error: e instanceof Error ? e.message : "خطأ" }, { status: 500 });
+          return Response.json({ error: "حدث خطأ داخلي" }, { status: 500 });
         }
       },
     },

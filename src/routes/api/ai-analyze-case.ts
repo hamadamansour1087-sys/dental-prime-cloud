@@ -122,7 +122,7 @@ export const Route = createFileRoute("/api/ai-analyze-case")({
         } catch (e) {
           console.error("analyze-case error:", e);
           return new Response(
-            JSON.stringify({ error: e instanceof Error ? e.message : "خطأ" }),
+            JSON.stringify({ error: "حدث خطأ داخلي" }),
             { status: 500, headers: { "Content-Type": "application/json" } }
           );
         }

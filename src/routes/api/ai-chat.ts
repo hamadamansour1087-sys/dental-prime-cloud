@@ -82,7 +82,7 @@ export const Route = createFileRoute("/api/ai-chat")({
         } catch (e) {
           console.error("ai-chat error:", e);
           return new Response(
-            JSON.stringify({ error: e instanceof Error ? e.message : "خطأ غير معروف" }),
+            JSON.stringify({ error: "حدث خطأ داخلي" }),
             { status: 500, headers: { "Content-Type": "application/json" } }
           );
         }

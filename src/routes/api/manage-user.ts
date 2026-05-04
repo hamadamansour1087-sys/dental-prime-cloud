@@ -183,7 +183,7 @@ export const Route = createFileRoute("/api/manage-user")({
 
           return Response.json({ error: "إجراء غير معروف" }, { status: 400 });
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "خطأ غير متوقع";
+          const msg = "حدث خطأ داخلي";
           return Response.json({ error: msg }, { status: 500 });
         }
       },

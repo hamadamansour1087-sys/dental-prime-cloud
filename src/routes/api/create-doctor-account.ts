@@ -164,7 +164,7 @@ export const Route = createFileRoute("/api/create-doctor-account")({
         } catch (e) {
           console.error("create-doctor-account error:", e);
           return Response.json(
-            { error: e instanceof Error ? e.message : "خطأ غير متوقع" },
+            { error: "حدث خطأ داخلي" },
             { status: 500 },
           );
         }
