@@ -6,11 +6,12 @@ function normalizePhone(p: string): string {
   return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
 }
 
-// Constant-time-ish delay so found vs not-found responses look similar.
-async function pad(startedAt: number, targetMs = 250) {
+async function pad(startedAt: number, targetMs = 300) {
   const elapsed = Date.now() - startedAt;
   if (elapsed < targetMs) await new Promise((r) => setTimeout(r, targetMs - elapsed));
 }
+
+const GENERIC_ERROR = "بيانات الدخول غير صحيحة";
 
 export const Route = createFileRoute("/api/agent-resolve-login")({
   server: {
@@ -23,11 +24,13 @@ export const Route = createFileRoute("/api/agent-resolve-login")({
             await pad(startedAt);
             return Response.json({ error: "محاولات كثيرة، حاول لاحقاً" }, { status: 429 });
           }
-          const body = (await request.json()) as { phone?: string };
+          const body = (await request.json()) as { phone?: string; password?: string };
           const norm = normalizePhone((body.phone ?? "").toString());
-          if (norm.length < 7) {
+          const password = (body.password ?? "").toString();
+
+          if (norm.length < 7 || !password) {
             await pad(startedAt);
-            return Response.json({ error: "رقم الموبايل غير صالح" }, { status: 400 });
+            return Response.json({ error: GENERIC_ERROR }, { status: 401 });
           }
 
           const { data: candidates, error } = await supabaseAdmin
@@ -37,13 +40,35 @@ export const Route = createFileRoute("/api/agent-resolve-login")({
             .eq("is_active", true);
           if (error) {
             await pad(startedAt);
-            return Response.json({ error: "خطأ" }, { status: 500 });
+            return Response.json({ error: GENERIC_ERROR }, { status: 401 });
           }
 
           const match = (candidates ?? []).find((d) => d.phone && normalizePhone(d.phone) === norm);
+          if (!match || !match.email) {
+            await pad(startedAt);
+            return Response.json({ error: GENERIC_ERROR }, { status: 401 });
+          }
+
+          // Sign in server-side — never expose email to client
+          const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
+            email: match.email,
+            password,
+          });
+
           await pad(startedAt);
-          if (!match || !match.email) return Response.json({ error: "لا يوجد حساب بهذا الرقم" }, { status: 404 });
-          return Response.json({ email: match.email });
+          if (authError || !authData.session) {
+            return Response.json({ error: GENERIC_ERROR }, { status: 401 });
+          }
+
+          return Response.json({
+            access_token: authData.session.access_token,
+            refresh_token: authData.session.refresh_token,
+            expires_in: authData.session.expires_in,
+            user: {
+              id: authData.session.user.id,
+              email: authData.session.user.email,
+            },
+          });
         } catch (e) {
           await pad(startedAt);
           return Response.json({ error: "حدث خطأ داخلي" }, { status: 500 });

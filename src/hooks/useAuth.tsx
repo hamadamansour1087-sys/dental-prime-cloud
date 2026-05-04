@@ -78,26 +78,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const init = async () => {
       setLoading(true);
-      let scoped = readScopedSession(scopeRef.current);
+      const scoped = readScopedSession(scopeRef.current);
 
-      // Fallback: if no scoped session in sessionStorage (e.g., new tab),
-      // adopt the active Supabase session from localStorage so the user
-      // doesn't get bounced to login or see the wrong-account screen.
-      if (!scoped) {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          scoped = data.session;
-          writeScopedSession(scopeRef.current, data.session);
-        }
-      }
+      // Always get the real session from Supabase's built-in storage
+      const { data } = await supabase.auth.getSession();
+      const realSession = data.session;
 
-      if (!scoped) {
+      if (!realSession) {
         resetState();
         if (mounted) setLoading(false);
         return;
       }
 
-      await applySession(scoped).finally(() => {
+      // If no scoped session exists, adopt the current Supabase session
+      if (!scoped) {
+        writeScopedSession(scopeRef.current, realSession);
+      } else if (scoped.user?.id && scoped.user.id !== realSession.user.id) {
+        // Scope mismatch — the stored scope doesn't match the active session
+        resetState();
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      await applySession(realSession).finally(() => {
         if (mounted) setLoading(false);
       });
     };
