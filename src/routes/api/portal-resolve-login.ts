@@ -54,9 +54,10 @@ export const Route = createFileRoute("/api/portal-resolve-login")({
 
           return Response.json({ email: match.email });
         } catch (e) {
+          console.error("portal-resolve-login error:", e);
           await pad(startedAt);
           return Response.json(
-            { error: e instanceof Error ? e.message : "خطأ" },
+            { error: "حدث خطأ داخلي" },
             { status: 500 },
           );
         }
