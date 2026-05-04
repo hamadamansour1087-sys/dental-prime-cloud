@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence, Audio, staticFile } from "remotion";
 
 // Using system fonts - Noto Sans Arabic is available
 const FONT = "'Noto Sans Arabic', 'Noto Sans', sans-serif";
@@ -11,9 +11,10 @@ interface ReelProps {
   color1: string;
   color2: string;
   accent: string;
+  audioFile?: string;
 }
 
-export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, color2, accent }) => {
+export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, color2, accent, audioFile }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -51,7 +52,7 @@ export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, co
 
   return (
     <AbsoluteFill style={{ opacity: exitOp }}>
-      {/* Background */}
+      {audioFile && <Audio src={staticFile(audioFile)} volume={1} />}
       <AbsoluteFill style={{
         background: `linear-gradient(160deg, ${color1} 0%, ${color2} 60%, ${color1} 100%)`,
         transform: `scale(${bgPulse})`,

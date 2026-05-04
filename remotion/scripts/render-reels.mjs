@@ -19,6 +19,7 @@ console.log("Bundling...");
 const bundled = await bundle({
   entryPoint: path.resolve(__dirname, "../src/reels-index.ts"),
   webpackOverride: (config) => config,
+  publicDir: path.resolve(__dirname, "../public"),
 });
 
 const browser = await openBrowser("chrome", {
@@ -38,7 +39,6 @@ for (const id of toRender) {
     codec: "h264",
     outputLocation: `/mnt/documents/hamd-reels/${id}.mp4`,
     puppeteerInstance: browser,
-    muted: true,
     concurrency: 1,
   });
   console.log(`✅ ${id} done`);
