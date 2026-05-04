@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Truck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/delivery/login")({
   component: DeliveryLogin,
 });
 
 function DeliveryLogin() {
-  const { signIn, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -27,16 +28,31 @@ function DeliveryLogin() {
     setBusy(true);
     try {
       const res = await fetch("/api/agent-resolve-login", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim() }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim(), password: password.trim() }),
       });
       const data = await res.json();
-      if (!res.ok || !data.email) { toast.error(data.error || "رقم غير مسجّل"); setBusy(false); return; }
-      const { error } = await signIn(data.email, password.trim());
+      if (!res.ok || !data.access_token) {
+        toast.error(data.error || "بيانات الدخول غير صحيحة");
+        setBusy(false);
+        return;
+      }
+      const { error: setErr } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
       setBusy(false);
-      if (error) toast.error("كلمة السر غير صحيحة");
-      else { toast.success("أهلاً بك"); navigate({ to: "/delivery/dashboard" }); }
-    } catch { setBusy(false); toast.error("تعذّر الاتصال"); }
+      if (setErr) {
+        toast.error("بيانات الدخول غير صحيحة");
+      } else {
+        toast.success("أهلاً بك");
+        navigate({ to: "/delivery/dashboard" });
+      }
+    } catch {
+      setBusy(false);
+      toast.error("تعذّر الاتصال");
+    }
   };
 
   return (

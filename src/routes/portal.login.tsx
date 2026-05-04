@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Stethoscope } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/portal/login")({
   component: PortalLoginPage,
 });
 
 function PortalLoginPage() {
-  const { signIn, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -31,22 +32,26 @@ function PortalLoginPage() {
     }
     setBusy(true);
     try {
-      // Resolve phone → internal email
+      // Server-side login — password verified on server, no email exposed
       const res = await fetch("/api/portal-resolve-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim() }),
+        body: JSON.stringify({ phone: phone.trim(), password: password.trim() }),
       });
       const data = await res.json();
-      if (!res.ok || !data.email) {
-        toast.error(data.error || "رقم الموبايل غير مسجّل");
+      if (!res.ok || !data.access_token) {
+        toast.error(data.error || "بيانات الدخول غير صحيحة");
         setBusy(false);
         return;
       }
-      const { error } = await signIn(data.email, password.trim());
+      // Set the session in supabase client using the server-returned tokens
+      const { error: setErr } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
       setBusy(false);
-      if (error) {
-        toast.error("كلمة السر غير صحيحة");
+      if (setErr) {
+        toast.error("بيانات الدخول غير صحيحة");
       } else {
         toast.success("تم تسجيل الدخول");
         navigate({ to: "/portal/dashboard" });
