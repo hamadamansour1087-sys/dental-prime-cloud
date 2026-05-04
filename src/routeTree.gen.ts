@@ -63,6 +63,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts'
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppBackupRouteImport } from './routes/_app.backup'
+import { Route as AppAgentTrackingRouteImport } from './routes/_app.agent-tracking'
 import { Route as DeliveryDoctorDoctorIdRouteImport } from './routes/delivery.doctor.$doctorId'
 import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.deliver.$caseId'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
@@ -338,6 +339,11 @@ const AppBackupRoute = AppBackupRouteImport.update({
   path: '/backup',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAgentTrackingRoute = AppAgentTrackingRouteImport.update({
+  id: '/agent-tracking',
+  path: '/agent-tracking',
+  getParentRoute: () => AppRoute,
+} as any)
 const DeliveryDoctorDoctorIdRoute = DeliveryDoctorDoctorIdRouteImport.update({
   id: '/doctor/$doctorId',
   path: '/doctor/$doctorId',
@@ -366,6 +372,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
@@ -425,6 +432,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
   '/cash-accounts': typeof AppCashAccountsRoute
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/_app/agent-tracking': typeof AppAgentTrackingRoute
   '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
   '/_app/cash-accounts': typeof AppCashAccountsRoute
@@ -547,6 +556,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/agent-tracking'
     | '/backup'
     | '/cases'
     | '/cash-accounts'
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/agent-tracking'
     | '/backup'
     | '/cases'
     | '/cash-accounts'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/_app/agent-tracking'
     | '/_app/backup'
     | '/_app/cases'
     | '/_app/cash-accounts'
@@ -1119,6 +1131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBackupRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/agent-tracking': {
+      id: '/_app/agent-tracking'
+      path: '/agent-tracking'
+      fullPath: '/agent-tracking'
+      preLoaderRoute: typeof AppAgentTrackingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/delivery/doctor/$doctorId': {
       id: '/delivery/doctor/$doctorId'
       path: '/doctor/$doctorId'
@@ -1165,6 +1184,7 @@ const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAgentTrackingRoute: typeof AppAgentTrackingRoute
   AppBackupRoute: typeof AppBackupRoute
   AppCasesRoute: typeof AppCasesRouteWithChildren
   AppCashAccountsRoute: typeof AppCashAccountsRoute
@@ -1194,6 +1214,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAgentTrackingRoute: AppAgentTrackingRoute,
   AppBackupRoute: AppBackupRoute,
   AppCasesRoute: AppCasesRouteWithChildren,
   AppCashAccountsRoute: AppCashAccountsRoute,
