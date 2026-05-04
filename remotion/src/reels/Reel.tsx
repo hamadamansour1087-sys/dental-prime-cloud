@@ -52,7 +52,7 @@ export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, co
 
   return (
     <AbsoluteFill style={{ opacity: exitOp }}>
-      {/* Background */}
+      {audioFile && <Audio src={staticFile(audioFile)} volume={1} />}
       <AbsoluteFill style={{
         background: `linear-gradient(160deg, ${color1} 0%, ${color2} 60%, ${color1} 100%)`,
         transform: `scale(${bgPulse})`,
