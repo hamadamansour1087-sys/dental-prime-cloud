@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence, Audio, staticFile } from "remotion";
 
 // Using system fonts - Noto Sans Arabic is available
 const FONT = "'Noto Sans Arabic', 'Noto Sans', sans-serif";
