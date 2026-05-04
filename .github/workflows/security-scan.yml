@@ -1,0 +1,198 @@
+name: "🔒 Security Scan (SAST + Deps + DAST)"
+
+on:
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. SAST — Static Application Security Testing
+  # ─────────────────────────────────────────────
+  sast:
+    name: "🔍 SAST (CodeQL + ESLint)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: ESLint Security Audit
+        run: bun run lint
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # 2. Dependency Scan — SCA
+  # ─────────────────────────────────────────────
+  dependency-scan:
+    name: "📦 Dependency Scan (SCA)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: npm audit (high + critical)
+        run: |
+          # bun doesn't have audit; use npm for this
+          npx --yes npm@latest audit --audit-level=high --omit=dev || true
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: OSSF Scorecard (supply chain)
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: scorecard-results.json
+          results_format: json
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # 3. Secret Scanning
+  # ─────────────────────────────────────────────
+  secrets-scan:
+    name: "🔑 Secret Leak Detection"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+  # ─────────────────────────────────────────────
+  # 4. DAST — Dynamic Application Security Testing
+  # ─────────────────────────────────────────────
+  dast:
+    name: "🌐 DAST (ZAP Baseline)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Only run on main branch PRs and releases (needs a running app)
+    if: github.event_name == 'release' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build app
+        run: bun run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Start preview server
+        run: |
+          bun run preview --port 4173 &
+          # Wait for server
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173 > /dev/null && break || sleep 2
+          done
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "http://localhost:4173"
+          rules_file_name: ".github/zap-rules.tsv"
+          cmd_options: "-a -j"
+          allow_issue_writing: false
+
+  # ─────────────────────────────────────────────
+  # 5. Summary Report
+  # ─────────────────────────────────────────────
+  report:
+    name: "📋 Security Report"
+    needs: [sast, dependency-scan, secrets-scan]
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - name: Post PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = [
+              { name: 'SAST (CodeQL + ESLint)', status: '${{ needs.sast.result }}' },
+              { name: 'Dependency Scan (SCA)', status: '${{ needs.dependency-scan.result }}' },
+              { name: 'Secret Leak Detection', status: '${{ needs.secrets-scan.result }}' },
+            ];
+            const icon = s => s === 'success' ? '✅' : s === 'skipped' ? '⏭️' : '❌';
+            const rows = jobs.map(j => `| ${icon(j.status)} | ${j.name} | ${j.status} |`).join('\n');
+            const body = `## 🔒 Security Scan Results\n\n| Status | Check | Result |\n|--------|-------|--------|\n${rows}\n\n> Auto-generated by CI/CD Security Pipeline`;
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes('🔒 Security Scan Results'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

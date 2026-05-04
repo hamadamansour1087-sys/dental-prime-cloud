@@ -1,0 +1,4 @@
+10038	IGNORE	(Content Security Policy Header Not Set - handled by Cloudflare)
+10063	IGNORE	(Permissions Policy Header Not Set - not critical)
+10098	IGNORE	(Cross-Domain Misconfiguration - SPA expected behavior)
+10049	IGNORE	(Storable and Cacheable Content - expected for static assets)
