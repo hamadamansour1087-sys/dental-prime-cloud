@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,47 +54,41 @@ function SuperAdminPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
+  const verifySuperAdmin = useCallback(async (nextUser: any | null) => {
+    if (!nextUser) {
+      setUser(null);
+      setAuthed(false);
+      setLoading(false);
+      return;
+    }
+
+    setUser(nextUser);
+    const { data, error } = await supabase
+      .from("super_admins")
+      .select("id")
+      .eq("user_id", nextUser.id)
+      .maybeSingle();
+
+    setAuthed(!error && !!data);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     const check = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      setUser(user);
-      // Check if super admin
-      const { data } = await supabase
-        .from("super_admins")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setAuthed(!!data);
-      setLoading(false);
+        data: { session },
+      } = await supabase.auth.getSession();
+      await verifySuperAdmin(session?.user ?? null);
     };
     check();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!session?.user) {
-        setAuthed(false);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-      setUser(session.user);
-      const { data } = await supabase
-        .from("super_admins")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      setAuthed(!!data);
-      setLoading(false);
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      void verifySuperAdmin(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [verifySuperAdmin]);
 
   if (loading) {
     return (
@@ -104,7 +98,7 @@ function SuperAdminPage() {
     );
   }
 
-  if (!user) return <SuperAdminLogin onSuccess={() => setLoading(true)} />;
+  if (!user) return <SuperAdminLogin onSuccess={(nextUser) => verifySuperAdmin(nextUser)} />;
   if (!authed) return <AccessDenied onLogout={() => { supabase.auth.signOut(); setUser(null); setAuthed(false); }} />;
 
   return <SuperAdminDashboard user={user} />;
