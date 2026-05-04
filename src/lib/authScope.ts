@@ -1,9 +1,10 @@
 import type { Session } from "@supabase/supabase-js";
 
-export type AuthScope = "lab" | "portal" | "delivery";
+export type AuthScope = "lab" | "portal" | "delivery" | "super-admin";
 
 export const getAuthScope = (): AuthScope => {
   if (typeof window === "undefined") return "lab";
+  if (window.location.pathname.startsWith("/super-admin")) return "super-admin";
   if (window.location.pathname.startsWith("/portal")) return "portal";
   if (window.location.pathname.startsWith("/delivery")) return "delivery";
   return "lab";
