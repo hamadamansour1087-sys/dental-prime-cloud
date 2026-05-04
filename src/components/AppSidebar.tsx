@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Settings,
   LogOut,
+  Navigation,
 } from "lucide-react";
 import {
   Sidebar,
