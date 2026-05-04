@@ -55,6 +55,7 @@ function SuperAdminPage() {
   const [user, setUser] = useState<any>(null);
 
   const verifySuperAdmin = useCallback(async (nextUser: any | null) => {
+    console.log("[super-admin] verifySuperAdmin called, user:", nextUser?.id ?? "null");
     if (!nextUser) {
       setUser(null);
       setAuthed(false);
@@ -63,31 +64,50 @@ function SuperAdminPage() {
     }
 
     setUser(nextUser);
-    const { data, error } = await supabase
-      .from("super_admins")
-      .select("id")
-      .eq("user_id", nextUser.id)
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from("super_admins")
+        .select("id")
+        .eq("user_id", nextUser.id)
+        .maybeSingle();
 
-    setAuthed(!error && !!data);
+      console.log("[super-admin] super_admins check:", { data, error: error?.message });
+      setAuthed(!error && !!data);
+    } catch (e: any) {
+      console.error("[super-admin] super_admins query failed:", e?.message);
+      setAuthed(false);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     const check = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      await verifySuperAdmin(session?.user ?? null);
+      console.log("[super-admin] initial check starting...");
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        console.log("[super-admin] getSession result:", session?.user?.id ?? "no session");
+        if (!cancelled) await verifySuperAdmin(session?.user ?? null);
+      } catch (e: any) {
+        console.error("[super-admin] getSession failed:", e?.message);
+        if (!cancelled) setLoading(false);
+      }
     };
     check();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      void verifySuperAdmin(session?.user ?? null);
+      console.log("[super-admin] onAuthStateChange:", _event, session?.user?.id ?? "no session");
+      if (!cancelled) void verifySuperAdmin(session?.user ?? null);
     });
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [verifySuperAdmin]);
 
   if (loading) {
