@@ -14,7 +14,7 @@ interface ReelProps {
   audioFile?: string;
 }
 
-export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, color2, accent }) => {
+export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, color2, accent, audioFile }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
