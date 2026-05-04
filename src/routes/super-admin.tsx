@@ -81,6 +81,7 @@ function SuperAdminPage() {
       if (!session?.user) {
         setAuthed(false);
         setUser(null);
+        setLoading(false);
         return;
       }
       setUser(session.user);
@@ -90,6 +91,7 @@ function SuperAdminPage() {
         .eq("user_id", session.user.id)
         .maybeSingle();
       setAuthed(!!data);
+      setLoading(false);
     });
     return () => subscription.unsubscribe();
   }, []);
