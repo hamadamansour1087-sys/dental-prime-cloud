@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { randomInt } from "crypto";
 
 function normalizePhone(p: string): string {
   return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
@@ -8,7 +9,7 @@ function normalizePhone(p: string): string {
 
 function generatePassword(length = 8): string {
   let s = "";
-  for (let i = 0; i < length; i++) s += Math.floor(Math.random() * 10).toString();
+  for (let i = 0; i < length; i++) s += randomInt(0, 10).toString();
   return s;
 }
 
