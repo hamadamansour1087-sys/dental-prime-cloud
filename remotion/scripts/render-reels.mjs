@@ -19,6 +19,7 @@ console.log("Bundling...");
 const bundled = await bundle({
   entryPoint: path.resolve(__dirname, "../src/reels-index.ts"),
   webpackOverride: (config) => config,
+  publicDir: path.resolve(__dirname, "../public"),
 });
 
 const browser = await openBrowser("chrome", {
