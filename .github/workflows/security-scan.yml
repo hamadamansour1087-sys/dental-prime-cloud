@@ -38,9 +38,35 @@ jobs:
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
+        id: codeql
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript-typescript"
+          output: codeql-results
+
+      - name: Fail on high/critical CodeQL findings
+        run: |
+          if [ -d "codeql-results" ]; then
+            HIGH_COUNT=$(find codeql-results -name '*.sarif' -exec grep -l '"level": "error"' {} \; | wc -l)
+            if [ "$HIGH_COUNT" -gt 0 ]; then
+              echo "::error::CodeQL detected high/critical severity findings"
+              for f in $(find codeql-results -name '*.sarif'); do
+                python3 -c "
+          import json, sys
+          with open('$f') as fh:
+              sarif = json.load(fh)
+          for run in sarif.get('runs', []):
+              for r in run.get('results', []):
+                  if r.get('level') == 'error':
+                      rule_id = r.get('ruleId', 'unknown')
+                      msg = r.get('message', {}).get('text', '')[:120]
+                      print(f'  ❌ {rule_id}: {msg}')
+          "
+              done
+              exit 1
+            fi
+            echo "✅ No high/critical CodeQL findings"
+          fi
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -51,8 +77,32 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: ESLint Security Audit
-        run: bun run lint
-        continue-on-error: true
+        id: eslint
+        run: |
+          bun run lint --format json --output-file eslint-results.json 2>/dev/null || true
+          if [ -f eslint-results.json ]; then
+            ERROR_COUNT=$(python3 -c "
+          import json
+          with open('eslint-results.json') as f:
+              data = json.load(f)
+          total = sum(r.get('errorCount', 0) for r in data)
+          print(total)
+          " 2>/dev/null || echo "0")
+            if [ "$ERROR_COUNT" -gt 0 ]; then
+              echo "::error::ESLint found $ERROR_COUNT error(s) — treating as high severity"
+              python3 -c "
+          import json
+          with open('eslint-results.json') as f:
+              data = json.load(f)
+          for r in data:
+              for m in r.get('messages', []):
+                  if m.get('severity', 0) == 2:
+                      print(f\"  ❌ {r['filePath']}:{m['line']} — {m['ruleId']}: {m['message'][:100]}\")
+          "
+              exit 1
+            fi
+          fi
+          echo "✅ No ESLint errors"
 
   # ─────────────────────────────────────────────
   # 2. Dependency Scan — SCA
