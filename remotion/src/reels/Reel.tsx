@@ -11,6 +11,7 @@ interface ReelProps {
   color1: string;
   color2: string;
   accent: string;
+  audioFile?: string;
 }
 
 export const Reel: React.FC<ReelProps> = ({ title, subtitle, bullets, color1, color2, accent }) => {
