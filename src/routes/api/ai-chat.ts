@@ -34,13 +34,47 @@ export const Route = createFileRoute("/api/ai-chat")({
             });
           }
 
-          const { messages, model } = await request.json();
+          const body = await request.json();
+          const { messages } = body;
           if (!Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: "messages must be an array" }), {
               status: 400,
               headers: { "Content-Type": "application/json" },
             });
           }
+
+          // Validate messages size
+          if (messages.length > 50) {
+            return new Response(JSON.stringify({ error: "عدد الرسائل أكثر من الحد المسموح" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          const ALLOWED_ROLES = new Set(["user", "assistant"]);
+          let totalChars = 0;
+          for (const msg of messages) {
+            if (!msg || typeof msg.content !== "string" || !ALLOWED_ROLES.has(msg.role)) {
+              return new Response(JSON.stringify({ error: "رسالة غير صالحة" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+              });
+            }
+            totalChars += msg.content.length;
+            if (totalChars > 32_000) {
+              return new Response(JSON.stringify({ error: "حجم الرسائل أكبر من الحد المسموح" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+              });
+            }
+          }
+
+          // Model allowlist
+          const ALLOWED_MODELS = [
+            "google/gemini-3-flash-preview",
+            "google/gemini-2.5-flash",
+            "google/gemini-2.5-flash-lite",
+          ];
+          const model = ALLOWED_MODELS.includes(body.model) ? body.model : ALLOWED_MODELS[0];
 
           const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
