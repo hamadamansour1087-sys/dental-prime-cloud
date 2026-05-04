@@ -105,7 +105,7 @@ function SuperAdminPage() {
 }
 
 /* ─── Login ─── */
-function SuperAdminLogin({ onSuccess }: { onSuccess: () => void }) {
+function SuperAdminLogin({ onSuccess }: { onSuccess: (nextUser: any | null) => void | Promise<void> }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -115,12 +115,12 @@ function SuperAdminLogin({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setSubmitting(true);
     setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError("بيانات الدخول غير صحيحة");
       setSubmitting(false);
     } else {
-      onSuccess();
+      await onSuccess(data.user);
     }
   };
 
