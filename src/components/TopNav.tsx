@@ -22,7 +22,7 @@ import {
   Menu,
   X,
   MessageSquare,
-  Building2,
+  
   Truck as TruckIcon,
   Route as RouteIcon,
   Wallet as WalletIcon,
