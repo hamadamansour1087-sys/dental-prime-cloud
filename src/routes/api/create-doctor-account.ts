@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { randomInt } from "crypto";
 
-// Normalize a phone number to digits only (Egyptian style: drop leading 0/+/spaces)
 function normalizePhone(p: string): string {
   return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
 }
 
 function generatePassword(length = 8): string {
-  // 8-digit numeric password (easy to dictate over the phone)
   let s = "";
-  for (let i = 0; i < length; i++) s += Math.floor(Math.random() * 10).toString();
+  for (let i = 0; i < length; i++) s += randomInt(0, 10).toString();
   return s;
 }
 
