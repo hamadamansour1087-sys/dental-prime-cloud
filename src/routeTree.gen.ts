@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SuperAdminRouteImport } from './routes/super-admin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -69,6 +70,11 @@ import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.del
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
 
+const SuperAdminRoute = SuperAdminRouteImport.update({
+  id: '/super-admin',
+  path: '/super-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -372,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/super-admin': typeof SuperAdminRoute
   '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -432,6 +439,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/super-admin': typeof SuperAdminRoute
   '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
+  '/super-admin': typeof SuperAdminRoute
   '/_app/agent-tracking': typeof AppAgentTrackingRoute
   '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
@@ -556,6 +565,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/super-admin'
     | '/agent-tracking'
     | '/backup'
     | '/cases'
@@ -616,6 +626,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/super-admin'
     | '/agent-tracking'
     | '/backup'
     | '/cases'
@@ -677,6 +688,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/register'
     | '/signup'
+    | '/super-admin'
     | '/_app/agent-tracking'
     | '/_app/backup'
     | '/_app/cases'
@@ -739,6 +751,7 @@ export interface RootRouteChildren {
   PortalRoute: typeof PortalRouteWithChildren
   RegisterRoute: typeof RegisterRoute
   SignupRoute: typeof SignupRoute
+  SuperAdminRoute: typeof SuperAdminRoute
   ApiAgentResolveLoginRoute: typeof ApiAgentResolveLoginRoute
   ApiAiAnalyzeCaseRoute: typeof ApiAiAnalyzeCaseRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
@@ -753,6 +766,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/super-admin': {
+      id: '/super-admin'
+      path: '/super-admin'
+      fullPath: '/super-admin'
+      preLoaderRoute: typeof SuperAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -1298,6 +1318,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalRoute: PortalRouteWithChildren,
   RegisterRoute: RegisterRoute,
   SignupRoute: SignupRoute,
+  SuperAdminRoute: SuperAdminRoute,
   ApiAgentResolveLoginRoute: ApiAgentResolveLoginRoute,
   ApiAiAnalyzeCaseRoute: ApiAiAnalyzeCaseRoute,
   ApiAiChatRoute: ApiAiChatRoute,
