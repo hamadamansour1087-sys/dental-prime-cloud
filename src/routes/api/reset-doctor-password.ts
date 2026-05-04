@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/reset-doctor-password")({
         } catch (e) {
           console.error("reset-doctor-password error:", e);
           return Response.json(
-            { error: e instanceof Error ? e.message : "خطأ غير متوقع" },
+            { error: "حدث خطأ داخلي" },
             { status: 500 },
           );
         }
