@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/delivery/deliver/$caseId")({
 });
 
 function DeliverPage() {
+  const { user } = useAuth();
   const { caseId } = Route.useParams();
   const navigate = useNavigate();
   const [recipientName, setRecipientName] = useState("");
@@ -34,12 +36,22 @@ function DeliverPage() {
     queryFn: async () => {
       const { data } = await supabase.from("cases")
         .select(`
-          id, case_number, date_received, due_date, tooth_numbers, units, shade, notes, price,
-          doctors(name, clinic_name, phone, governorate, address),
+          id, lab_id, case_number, date_received, due_date, tooth_numbers, units, shade, notes, price, doctor_id,
+          doctors(id, name, clinic_name, phone, governorate, address),
           work_types(name),
           case_items(id, units, shade, tooth_numbers, total_price, notes, work_types(name))
         `)
         .eq("id", caseId).maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: agentRow } = useQuery({
+    queryKey: ["delivery-agent-self-id", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("delivery_agents")
+        .select("id, lab_id").eq("user_id", user!.id).eq("is_active", true).maybeSingle();
       return data;
     },
   });
@@ -133,6 +145,22 @@ function DeliverPage() {
         _notes: notes || undefined,
       });
       if (error) throw new Error(error.message);
+
+      // Auto-record tracking point for delivery
+      if (coords && agentRow) {
+        supabase.from("agent_tracking_points").insert({
+          lab_id: agentRow.lab_id,
+          agent_id: agentRow.id,
+          event_type: "delivery",
+          latitude: coords.lat,
+          longitude: coords.lng,
+          location_accuracy: coords.acc,
+          case_id: caseId,
+          doctor_id: caseRow?.doctor_id ?? null,
+          notes: `تسليم حالة ${caseRow?.case_number ?? ""}`,
+        }).then(() => {}); // fire-and-forget
+      }
+
       return data;
     },
     onSuccess: () => {

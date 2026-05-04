@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Settings,
   LogOut,
+  Navigation,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,6 +59,15 @@ const groups: NavGroup[] = [
       { title: "الخزن", url: "/cash-accounts", icon: Wallet },
       { title: "المصروفات", url: "/expenses", icon: Receipt },
       { title: "سندات قبض/صرف", url: "/vouchers", icon: ArrowLeftRight },
+    ],
+  },
+  {
+    label: "التوصيل",
+    items: [
+      { title: "المندوبون", url: "/delivery-agents", icon: Truck },
+      { title: "خطوط السير", url: "/delivery-routes", icon: Truck },
+      { title: "تتبع المندوبين", url: "/agent-tracking", icon: Navigation },
+      { title: "المدفوعات المعلقة", url: "/pending-payments", icon: Wallet },
     ],
   },
   {

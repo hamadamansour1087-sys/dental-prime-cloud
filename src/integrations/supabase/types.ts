@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_tracking_points: {
+        Row: {
+          agent_id: string
+          case_id: string | null
+          created_at: string
+          doctor_id: string | null
+          event_type: string
+          id: string
+          lab_id: string
+          latitude: number
+          location_accuracy: number | null
+          longitude: number
+          notes: string | null
+          tracked_at: string
+        }
+        Insert: {
+          agent_id: string
+          case_id?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          event_type?: string
+          id?: string
+          lab_id: string
+          latitude: number
+          location_accuracy?: number | null
+          longitude: number
+          notes?: string | null
+          tracked_at?: string
+        }
+        Update: {
+          agent_id?: string
+          case_id?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          event_type?: string
+          id?: string
+          lab_id?: string
+          latitude?: number
+          location_accuracy?: number | null
+          longitude?: number
+          notes?: string | null
+          tracked_at?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
