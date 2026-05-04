@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,8 +53,10 @@ function SuperAdminPage() {
   const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const verifyRunRef = useRef(0);
 
   const verifySuperAdmin = useCallback(async (nextUser: any | null) => {
+    const runId = ++verifyRunRef.current;
     console.log("[super-admin] verifySuperAdmin called, user:", nextUser?.id ?? "null");
     if (!nextUser) {
       setUser(null);
@@ -63,6 +65,7 @@ function SuperAdminPage() {
       return;
     }
 
+    setLoading(true);
     setUser(nextUser);
     try {
       const { data, error } = await supabase
@@ -72,12 +75,14 @@ function SuperAdminPage() {
         .maybeSingle();
 
       console.log("[super-admin] super_admins check:", { data, error: error?.message });
+      if (runId !== verifyRunRef.current) return;
       setAuthed(!error && !!data);
     } catch (e: any) {
       console.error("[super-admin] super_admins query failed:", e?.message);
+      if (runId !== verifyRunRef.current) return;
       setAuthed(false);
     }
-    setLoading(false);
+    if (runId === verifyRunRef.current) setLoading(false);
   }, []);
 
   useEffect(() => {
