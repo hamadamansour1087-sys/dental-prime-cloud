@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { writeScopedSession } from "@/lib/authScope";
 
 export const Route = createFileRoute("/delivery/login")({
   component: DeliveryLogin,
