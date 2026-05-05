@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type MouseEvent as ReactMouseEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -696,7 +697,7 @@ function CasesPage() {
         />
       )}
 
-      {contextMenu && (
+      {contextMenu && typeof document !== "undefined" && createPortal(
         <div
           ref={contextMenuRef}
           dir="rtl"
@@ -809,7 +810,7 @@ function CasesPage() {
             <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
           </button>
         </div>
-      )}
+      , document.body)}
 
       {/* Cancel Case Confirmation */}
       <AlertDialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
