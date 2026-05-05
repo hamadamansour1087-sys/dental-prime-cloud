@@ -39,14 +39,15 @@ function DeliveryLogin() {
         setBusy(false);
         return;
       }
-      const { error: setErr } = await supabase.auth.setSession({
+      const { data: sessData, error: setErr } = await supabase.auth.setSession({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
       });
       setBusy(false);
-      if (setErr) {
+      if (setErr || !sessData.session) {
         toast.error("بيانات الدخول غير صحيحة");
       } else {
+        writeScopedSession("delivery", sessData.session);
         toast.success("أهلاً بك");
         navigate({ to: "/delivery/dashboard" });
       }
