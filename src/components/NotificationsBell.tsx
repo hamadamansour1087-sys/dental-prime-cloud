@@ -202,7 +202,7 @@ export function NotificationsBell() {
               variant="ghost"
               size="sm"
               className="h-7 gap-1 px-2 text-xs"
-              onClick={() => markAllRead(allVisibleIds)}
+              onClick={() => { markAllRead(allVisibleIds); clearAllAgentNotifs(); }}
               title="تعليم الكل كمقروء"
             >
               <CheckCheck className="h-3.5 w-3.5" />
