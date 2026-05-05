@@ -560,10 +560,28 @@ function CasesPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const openCaseContextMenu = (event: ReactMouseEvent<HTMLElement>, caseData: any) => {
     event.preventDefault();
     setContextMenu({ x: event.clientX, y: event.clientY, caseData });
   };
+
+  // Reposition context menu after it renders to ensure it stays in viewport
+  useEffect(() => {
+    if (!contextMenu || !contextMenuRef.current) return;
+    const el = contextMenuRef.current;
+    const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let newLeft = contextMenu.x;
+    let newTop = contextMenu.y;
+    if (newLeft + rect.width > vw - 8) newLeft = vw - rect.width - 8;
+    if (newTop + rect.height > vh - 8) newTop = vh - rect.height - 8;
+    if (newLeft < 8) newLeft = 8;
+    if (newTop < 8) newTop = 8;
+    el.style.left = `${newLeft}px`;
+    el.style.top = `${newTop}px`;
+  }, [contextMenu]);
 
   useEffect(() => {
     if (!contextMenu) return;
