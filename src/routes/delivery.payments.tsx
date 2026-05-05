@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -14,22 +15,47 @@ export const Route = createFileRoute("/delivery/payments")({
 
 function AgentPayments() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: agent } = useQuery({
+    queryKey: ["delivery-agent-self", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("delivery_agents")
+        .select("id, name, lab_id, route_id, governorates, is_active, labs(name)").eq("user_id", user!.id).maybeSingle();
+      return data;
+    },
+  });
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["agent-payments", user?.id],
-    enabled: !!user,
+    enabled: !!agent,
     queryFn: async () => {
-      const { data: agent } = await supabase.from("delivery_agents").select("id").eq("user_id", user!.id).maybeSingle();
-      if (!agent) return [];
       const { data } = await supabase
         .from("pending_payments")
         .select("id, amount, method, status, collected_at, rejection_reason, doctors(name)")
-        .eq("agent_id", agent.id)
+        .eq("agent_id", agent!.id)
         .order("collected_at", { ascending: false })
         .limit(100);
       return data ?? [];
     },
   });
+
+  useEffect(() => {
+    if (!agent?.id || !user?.id) return;
+    const ch = supabase
+      .channel(`agent-payments-${agent.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "pending_payments", filter: `agent_id=eq.${agent.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["agent-payments", user.id] });
+          queryClient.invalidateQueries({ queryKey: ["agent-daily-summary", agent.id] });
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [agent?.id, queryClient, user?.id]);
 
   return (
     <div className="space-y-3" dir="rtl">
