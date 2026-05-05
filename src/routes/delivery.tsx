@@ -95,6 +95,7 @@ function DeliveryLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-16" dir="rtl">
+      <InstallPromptBanner />
       <header className="sticky top-0 z-10 border-b bg-card/90 backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
