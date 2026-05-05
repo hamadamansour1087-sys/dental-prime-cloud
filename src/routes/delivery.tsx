@@ -36,7 +36,7 @@ function DeliveryLayout() {
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/delivery/login";
 
-  const { data: agent, isLoading: agentLoading } = useQuery({
+  const { data: agent, isPending: agentPending } = useQuery({
     queryKey: ["delivery-agent-self", user?.id],
     enabled: !!user && !isLoginRoute,
     queryFn: async () => {
@@ -56,12 +56,16 @@ function DeliveryLayout() {
     }
   }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || (!isLoginRoute && user && agentLoading)) {
+  if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   }
 
   if (isLoginRoute) return <Outlet />;
   if (!user) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  if (agentPending) {
+    return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  }
 
   if (!agent) {
     return (
