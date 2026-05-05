@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Truck, LayoutDashboard, ClipboardCheck, Wallet, LogOut } from "lucide-react";
+import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 
 export const Route = createFileRoute("/delivery")({
   head: () => ({
