@@ -273,6 +273,41 @@ export function NotificationsBell() {
                 ))}
               </div>
             )}
+
+            {agentNotifs.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <Truck className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-primary">
+                    إشعارات المندوبين
+                  </span>
+                  <Badge className="h-4 bg-primary px-1.5 text-[10px] text-primary-foreground">
+                    {agentNotifs.length}
+                  </Badge>
+                </div>
+                {agentNotifs.map((n) => (
+                  <Link
+                    key={n.id}
+                    to={n.link}
+                    onClick={() => dismissAgentNotif(n.id)}
+                    className="flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-smooth hover:bg-accent"
+                  >
+                    {n.type === "payment" ? (
+                      <Wallet className="h-3.5 w-3.5 text-primary shrink-0" />
+                    ) : (
+                      <Truck className="h-3.5 w-3.5 text-primary shrink-0" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-xs">{n.title}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">{n.body}</p>
+                    </div>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {new Date(n.time).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </ScrollArea>
         <div className="border-t p-2">
