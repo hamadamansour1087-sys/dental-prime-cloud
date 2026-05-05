@@ -697,7 +697,7 @@ function CasesPage() {
         />
       )}
 
-      {contextMenu && (
+      {contextMenu && typeof document !== "undefined" && createPortal(
         <div
           ref={contextMenuRef}
           dir="rtl"
@@ -810,7 +810,7 @@ function CasesPage() {
             <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
           </button>
         </div>
-      )}
+      , document.body)}
 
       {/* Cancel Case Confirmation */}
       <AlertDialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
