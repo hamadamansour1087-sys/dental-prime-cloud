@@ -36,7 +36,7 @@ function DeliveryLayout() {
   const navigate = useNavigate();
   const isLoginRoute = location.pathname === "/delivery/login";
 
-  const { data: agent, isLoading: agentLoading } = useQuery({
+  const { data: agent, isPending: agentPending } = useQuery({
     queryKey: ["delivery-agent-self", user?.id],
     enabled: !!user && !isLoginRoute,
     queryFn: async () => {
@@ -63,13 +63,8 @@ function DeliveryLayout() {
   if (isLoginRoute) return <Outlet />;
   if (!user) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
-  // Still loading agent data or query hasn't started yet
-  if (agentLoading || (!agent && !agentLoading && user)) {
-    // Check if query has resolved with no data (agent is null after loading)
-    // vs query is still in progress
-    if (agentLoading) {
-      return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
-    }
+  if (agentPending) {
+    return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   }
 
   if (!agent) {
