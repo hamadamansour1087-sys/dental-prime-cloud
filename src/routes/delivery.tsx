@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Truck, LayoutDashboard, ClipboardCheck, Wallet, LogOut } from "lucide-react";
@@ -34,6 +34,7 @@ function DeliveryLayout() {
   const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isLoginRoute = location.pathname === "/delivery/login";
 
   const { data: agent, isPending: agentPending } = useQuery({
@@ -55,6 +56,19 @@ function DeliveryLayout() {
       navigate({ to: "/delivery/login", replace: true });
     }
   }, [loading, user, isLoginRoute, navigate]);
+
+  useEffect(() => {
+    if (!user || !agent?.id || isLoginRoute) return;
+    const ch = supabase
+      .channel(`delivery-agent-status-${agent.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "delivery_agents", filter: `id=eq.${agent.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["delivery-agent-self", user.id] }),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [agent?.id, isLoginRoute, queryClient, user]);
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
