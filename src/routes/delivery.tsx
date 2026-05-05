@@ -56,12 +56,21 @@ function DeliveryLayout() {
     }
   }, [loading, user, isLoginRoute, navigate]);
 
-  if (loading || (!isLoginRoute && user && agentLoading)) {
+  if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   }
 
   if (isLoginRoute) return <Outlet />;
   if (!user) return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+
+  // Still loading agent data or query hasn't started yet
+  if (agentLoading || (!agent && !agentLoading && user)) {
+    // Check if query has resolved with no data (agent is null after loading)
+    // vs query is still in progress
+    if (agentLoading) {
+      return <div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+    }
+  }
 
   if (!agent) {
     return (
