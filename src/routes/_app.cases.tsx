@@ -802,10 +802,8 @@ function CasesPage() {
             type="button"
             className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-accent hover:text-destructive"
             onClick={() => {
+              setCancelTarget({ id: contextMenu.caseData.id, caseNumber: contextMenu.caseData.case_number });
               setContextMenu(null);
-              if (confirm(`إلغاء الحالة ${contextMenu.caseData.case_number}؟`)) {
-                updateCaseStatus(contextMenu.caseData.id, "cancelled");
-              }
             }}
           >
             <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
