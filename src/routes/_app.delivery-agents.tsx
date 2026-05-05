@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Truck, Phone, Mail, KeyRound, Copy, Trash2, MapPin, Route as RouteIcon } from "lucide-react";
+import { Plus, Truck, Phone, Mail, KeyRound, Copy, Trash2, MapPin, Route as RouteIcon, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { EGYPT_GOVERNORATES } from "@/lib/governorates";
 
