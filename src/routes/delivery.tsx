@@ -7,6 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Truck, LayoutDashboard, ClipboardCheck, Wallet, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/delivery")({
+  head: () => ({
+    meta: [
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "المندوبين" },
+      { name: "theme-color", content: "#3B82F6" },
+    ],
+    links: [
+      { rel: "manifest", href: "/delivery-manifest.json" },
+      { rel: "apple-touch-icon", href: "/delivery-icon-192.png" },
+    ],
+  }),
   component: DeliveryLayout,
 });
 
