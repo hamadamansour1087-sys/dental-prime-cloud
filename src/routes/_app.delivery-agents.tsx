@@ -223,6 +223,11 @@ function DeliveryAgentsPage() {
                     <KeyRound className="ml-1 h-3 w-3" /> إنشاء حساب
                   </Button>
                 )}
+                {a.user_id && (
+                  <Button size="sm" variant="outline" onClick={() => resetAgentPassword(a.id, a.name)}>
+                    <RotateCcw className="ml-1 h-3 w-3" /> إعادة تعيين كلمة السر
+                  </Button>
+                )}
                 <Button size="sm" variant="ghost" className="text-destructive ml-auto"
                   onClick={() => { if (confirm(`حذف المندوب ${a.name}؟`)) deleteAgent.mutate(a.id); }}>
                   <Trash2 className="h-3 w-3" />
