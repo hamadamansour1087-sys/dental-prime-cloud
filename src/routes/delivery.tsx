@@ -5,8 +5,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Truck, LayoutDashboard, ClipboardCheck, Wallet, LogOut } from "lucide-react";
+import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 
 export const Route = createFileRoute("/delivery")({
+  head: () => ({
+    meta: [
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "المندوبين" },
+      { name: "theme-color", content: "#3B82F6" },
+    ],
+    links: [
+      { rel: "manifest", href: "/delivery-manifest.json" },
+      { rel: "apple-touch-icon", href: "/delivery-icon-192.png" },
+    ],
+  }),
   component: DeliveryLayout,
 });
 
@@ -81,6 +95,7 @@ function DeliveryLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-16" dir="rtl">
+      <InstallPromptBanner />
       <header className="sticky top-0 z-10 border-b bg-card/90 backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2">
