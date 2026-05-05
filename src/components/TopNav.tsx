@@ -74,6 +74,7 @@ const groups: NavGroup[] = [
     items: [
       { title: "المندوبون", url: "/delivery-agents", icon: TruckIcon },
       { title: "خطوط السير", url: "/delivery-routes", icon: RouteIcon },
+      { title: "الحالات المسلّمة", url: "/agent-deliveries", icon: ClipboardList },
       { title: "سندات المندوبين", url: "/pending-payments", icon: WalletIcon },
     ],
   },
