@@ -13,6 +13,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+type AgentNotif = {
+  id: string;
+  type: "payment" | "delivery";
+  title: string;
+  body: string;
+  time: string;
+  link: string;
+};
+
 const STORAGE_KEY_PREFIX = "notif_read:";
 
 function loadRead(labId: string | null): Set<string> {
