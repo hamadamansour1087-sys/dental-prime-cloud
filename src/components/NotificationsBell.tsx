@@ -170,7 +170,7 @@ export function NotificationsBell() {
 
   const overdueCount = overdue.length;
   const soonCount = dueSoon.length;
-  const total = overdueCount + soonCount;
+  const total = overdueCount + soonCount + agentNotifs.length;
 
   const allVisibleIds = useMemo(
     () => [...overdue.map((c) => c.id), ...dueSoon.map((c) => c.id)],
