@@ -209,6 +209,7 @@ function CasesPage() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; caseData: any } | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [deliveryCaseId, setDeliveryCaseId] = useState("");
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; caseNumber: string } | null>(null);
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
