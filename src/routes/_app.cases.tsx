@@ -633,12 +633,8 @@ function CasesPage() {
 
   const contextStage = contextMenu ? stages?.find((s) => s.id === contextMenu.caseData.current_stage_id) ?? null : null;
   const contextNextStage = contextStage ? stages?.find((s) => s.order_index === contextStage.order_index + 1) ?? null : null;
-  const contextMenuLeft = contextMenu
-    ? Math.max(8, Math.min(contextMenu.x, (typeof window !== "undefined" ? window.innerWidth : 1280) - 240))
-    : 0;
-  const contextMenuTop = contextMenu
-    ? Math.max(8, Math.min(contextMenu.y, (typeof window !== "undefined" ? window.innerHeight : 720) - 360))
-    : 0;
+  const contextMenuLeft = contextMenu ? contextMenu.x : 0;
+  const contextMenuTop = contextMenu ? contextMenu.y : 0;
 
   // Predict due date based on workflow stages estimated_days + workload
   const baseLeadDays = (stages ?? []).reduce((s, st: any) => s + (Number(st.estimated_days) || 0), 0);
