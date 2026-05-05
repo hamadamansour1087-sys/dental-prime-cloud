@@ -117,6 +117,30 @@ function DeliveryDashboard() {
     return () => { supabase.removeChannel(ch); };
   }, [agent?.lab_id, agent?.id, queryClient]);
 
+  useEffect(() => {
+    if (!agent?.id) return;
+    const pendingCh = supabase
+      .channel(`delivery-summary-payments-${agent.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "pending_payments", filter: `agent_id=eq.${agent.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["agent-daily-summary", agent.id] }),
+      )
+      .subscribe();
+    const deliveriesCh = supabase
+      .channel(`delivery-summary-deliveries-${agent.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "case_deliveries", filter: `agent_id=eq.${agent.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["agent-daily-summary", agent.id] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(pendingCh);
+      supabase.removeChannel(deliveriesCh);
+    };
+  }, [agent?.id, queryClient]);
+
   const requestNotifPermission = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
     try {
