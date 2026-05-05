@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Truck, Phone, Mail, KeyRound, Copy, Trash2, MapPin, Route as RouteIcon } from "lucide-react";
+import { Plus, Truck, Phone, Mail, KeyRound, Copy, Trash2, MapPin, Route as RouteIcon, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { EGYPT_GOVERNORATES } from "@/lib/governorates";
 
@@ -108,6 +108,21 @@ function DeliveryAgentsPage() {
     setGeneratedPasswords((prev) => ({ ...prev, [agentId]: data.password }));
     toast.success(`تم إنشاء الحساب — كلمة السر: ${data.password} (انسخها الآن، لن تظهر مرة أخرى)`);
     qc.invalidateQueries({ queryKey: ["delivery-agents"] });
+  };
+
+  const resetAgentPassword = async (agentId: string, agentName: string) => {
+    if (!confirm(`إعادة تعيين كلمة سر المندوب ${agentName}؟`)) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return toast.error("جلسة غير صالحة");
+    const res = await fetch("/api/reset-agent-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ agent_id: agentId }),
+    });
+    const data = await res.json();
+    if (!res.ok) return toast.error(data.error ?? "فشل");
+    setGeneratedPasswords((prev) => ({ ...prev, [agentId]: data.password }));
+    toast.success(`كلمة السر الجديدة: ${data.password}`);
   };
 
   return (
@@ -206,6 +221,11 @@ function DeliveryAgentsPage() {
                 {!a.user_id && a.phone && (
                   <Button size="sm" variant="outline" onClick={() => createAccount(a.id)}>
                     <KeyRound className="ml-1 h-3 w-3" /> إنشاء حساب
+                  </Button>
+                )}
+                {a.user_id && (
+                  <Button size="sm" variant="outline" onClick={() => resetAgentPassword(a.id, a.name)}>
+                    <RotateCcw className="ml-1 h-3 w-3" /> إعادة تعيين كلمة السر
                   </Button>
                 )}
                 <Button size="sm" variant="ghost" className="text-destructive ml-auto"
