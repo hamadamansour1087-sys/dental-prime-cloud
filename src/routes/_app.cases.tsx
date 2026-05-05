@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -208,6 +209,7 @@ function CasesPage() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; caseData: any } | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [deliveryCaseId, setDeliveryCaseId] = useState("");
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; caseNumber: string } | null>(null);
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -558,10 +560,28 @@ function CasesPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const openCaseContextMenu = (event: ReactMouseEvent<HTMLElement>, caseData: any) => {
     event.preventDefault();
     setContextMenu({ x: event.clientX, y: event.clientY, caseData });
   };
+
+  // Reposition context menu after it renders to ensure it stays in viewport
+  useEffect(() => {
+    if (!contextMenu || !contextMenuRef.current) return;
+    const el = contextMenuRef.current;
+    const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let newLeft = contextMenu.x;
+    let newTop = contextMenu.y;
+    if (newLeft + rect.width > vw - 8) newLeft = vw - rect.width - 8;
+    if (newTop + rect.height > vh - 8) newTop = vh - rect.height - 8;
+    if (newLeft < 8) newLeft = 8;
+    if (newTop < 8) newTop = 8;
+    el.style.left = `${newLeft}px`;
+    el.style.top = `${newTop}px`;
+  }, [contextMenu]);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -613,12 +633,8 @@ function CasesPage() {
 
   const contextStage = contextMenu ? stages?.find((s) => s.id === contextMenu.caseData.current_stage_id) ?? null : null;
   const contextNextStage = contextStage ? stages?.find((s) => s.order_index === contextStage.order_index + 1) ?? null : null;
-  const contextMenuLeft = contextMenu
-    ? Math.max(8, Math.min(contextMenu.x, (typeof window !== "undefined" ? window.innerWidth : 1280) - 240))
-    : 0;
-  const contextMenuTop = contextMenu
-    ? Math.max(8, Math.min(contextMenu.y, (typeof window !== "undefined" ? window.innerHeight : 720) - 360))
-    : 0;
+  const contextMenuLeft = contextMenu ? contextMenu.x : 0;
+  const contextMenuTop = contextMenu ? contextMenu.y : 0;
 
   // Predict due date based on workflow stages estimated_days + workload
   const baseLeadDays = (stages ?? []).reduce((s, st: any) => s + (Number(st.estimated_days) || 0), 0);
@@ -682,6 +698,7 @@ function CasesPage() {
 
       {contextMenu && (
         <div
+          ref={contextMenuRef}
           dir="rtl"
           className="fixed z-50 w-56 rounded-xl border border-border/60 bg-popover p-1.5 text-popover-foreground shadow-elevated"
           style={{ left: contextMenuLeft, top: contextMenuTop }}
@@ -785,10 +802,8 @@ function CasesPage() {
             type="button"
             className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm text-destructive transition-colors hover:bg-accent hover:text-destructive"
             onClick={() => {
+              setCancelTarget({ id: contextMenu.caseData.id, caseNumber: contextMenu.caseData.case_number });
               setContextMenu(null);
-              if (confirm(`إلغاء الحالة ${contextMenu.caseData.case_number}؟`)) {
-                updateCaseStatus(contextMenu.caseData.id, "cancelled");
-              }
             }}
           >
             <XCircle className="ml-2 h-4 w-4" /> إلغاء الحالة
@@ -796,7 +811,30 @@ function CasesPage() {
         </div>
       )}
 
-      {/* Page Header */}
+      {/* Cancel Case Confirmation */}
+      <AlertDialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد إلغاء الحالة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من إلغاء الحالة <span className="font-mono font-semibold">{cancelTarget?.caseNumber}</span>؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>تراجع</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (cancelTarget) updateCaseStatus(cancelTarget.id, "cancelled");
+                setCancelTarget(null);
+              }}
+            >
+              إلغاء الحالة
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-medium tracking-tight">الحالات</h1>
