@@ -22,6 +22,7 @@ function AgentDoctorDetail() {
   const { doctorId } = Route.useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [tab, setTab] = useState("statement");
   const [collectOpen, setCollectOpen] = useState(false);
 
