@@ -41,11 +41,54 @@ function saveRead(labId: string | null, ids: Set<string>) {
 
 export function NotificationsBell() {
   const { labId } = useAuth();
+  const qc = useQueryClient();
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [agentNotifs, setAgentNotifs] = useState<AgentNotif[]>([]);
 
   useEffect(() => {
     setReadIds(loadRead(labId));
   }, [labId]);
+
+  // Realtime agent notifications
+  useEffect(() => {
+    if (!labId) return;
+    const channel = supabase
+      .channel(`lab-agent-notifs-${labId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pending_payments", filter: `lab_id=eq.${labId}` },
+        async (payload) => {
+          const pp = payload.new as any;
+          const [{ data: agent }, { data: doctor }] = await Promise.all([
+            supabase.from("delivery_agents").select("name").eq("id", pp.agent_id).maybeSingle(),
+            supabase.from("doctors").select("name").eq("id", pp.doctor_id).maybeSingle(),
+          ]);
+          setAgentNotifs((prev) => [{
+            id: pp.id, type: "payment" as const,
+            title: "سند تحصيل جديد",
+            body: `${agent?.name ?? "مندوب"} سجّل سند بمبلغ ${pp.amount} من د. ${doctor?.name ?? "—"}`,
+            time: pp.collected_at ?? new Date().toISOString(),
+            link: "/pending-payments",
+          }, ...prev].slice(0, 30));
+          qc.invalidateQueries({ queryKey: ["pending-payments"] });
+        })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "case_deliveries", filter: `lab_id=eq.${labId}` },
+        async (payload) => {
+          const cd = payload.new as any;
+          const [{ data: agent }, { data: caseData }] = await Promise.all([
+            supabase.from("delivery_agents").select("name").eq("id", cd.agent_id).maybeSingle(),
+            supabase.from("cases").select("case_number, doctors(name)").eq("id", cd.case_id).maybeSingle(),
+          ]);
+          setAgentNotifs((prev) => [{
+            id: cd.id, type: "delivery" as const,
+            title: "حالة تم تسليمها",
+            body: `${agent?.name ?? "مندوب"} سلّم ${(caseData as any)?.case_number ?? ""} لـ د. ${(caseData as any)?.doctors?.name ?? "—"}`,
+            time: cd.delivered_at ?? new Date().toISOString(),
+            link: "/agent-deliveries",
+          }, ...prev].slice(0, 30));
+          qc.invalidateQueries({ queryKey: ["agent-deliveries-lab"] });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [labId, qc]);
 
   const markRead = (id: string) => {
     setReadIds((prev) => {
@@ -65,6 +108,14 @@ export function NotificationsBell() {
       return next;
     });
   };
+
+  const dismissAgentNotif = useCallback((id: string) => {
+    setAgentNotifs((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  const clearAllAgentNotifs = useCallback(() => {
+    setAgentNotifs([]);
+  }, []);
 
   const { data } = useQuery({
     queryKey: ["notifications", labId],
