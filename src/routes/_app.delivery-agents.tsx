@@ -110,6 +110,21 @@ function DeliveryAgentsPage() {
     qc.invalidateQueries({ queryKey: ["delivery-agents"] });
   };
 
+  const resetAgentPassword = async (agentId: string, agentName: string) => {
+    if (!confirm(`إعادة تعيين كلمة سر المندوب ${agentName}؟`)) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return toast.error("جلسة غير صالحة");
+    const res = await fetch("/api/reset-agent-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ agent_id: agentId }),
+    });
+    const data = await res.json();
+    if (!res.ok) return toast.error(data.error ?? "فشل");
+    setGeneratedPasswords((prev) => ({ ...prev, [agentId]: data.password }));
+    toast.success(`كلمة السر الجديدة: ${data.password}`);
+  };
+
   return (
     <div className="space-y-4" dir="rtl">
       <div className="flex items-center justify-between">
