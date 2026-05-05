@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -22,6 +22,7 @@ function AgentDoctorDetail() {
   const { doctorId } = Route.useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [tab, setTab] = useState("statement");
   const [collectOpen, setCollectOpen] = useState(false);
 
@@ -51,6 +52,32 @@ function AgentDoctorDetail() {
       return { cases, payments, pendingPayments, charges, paid, pendingTotal };
     },
   });
+
+  useEffect(() => {
+    const paymentsCh = supabase
+      .channel(`agent-doctor-payments-${doctorId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "payments", filter: `doctor_id=eq.${doctorId}` },
+        () => qc.invalidateQueries({ queryKey: ["doctor-ledger-agent", doctorId] }),
+      )
+      .subscribe();
+    const pendingCh = supabase
+      .channel(`agent-doctor-pending-${doctorId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "pending_payments", filter: `doctor_id=eq.${doctorId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["doctor-ledger-agent", doctorId] });
+          qc.invalidateQueries({ queryKey: ["agent-payments"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(paymentsCh);
+      supabase.removeChannel(pendingCh);
+    };
+  }, [doctorId, qc]);
 
   const opening = Number(doctor?.opening_balance ?? 0);
   const balance = opening + (ledger?.charges ?? 0) - (ledger?.paid ?? 0);
