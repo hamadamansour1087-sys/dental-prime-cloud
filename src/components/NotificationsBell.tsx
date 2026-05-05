@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Bell, AlertTriangle, Clock, CalendarClock, CheckCheck } from "lucide-react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, AlertTriangle, Clock, CalendarClock, CheckCheck, Truck, Wallet } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+
+type AgentNotif = {
+  id: string;
+  type: "payment" | "delivery";
+  title: string;
+  body: string;
+  time: string;
+  link: string;
+};
 
 const STORAGE_KEY_PREFIX = "notif_read:";
 
@@ -41,11 +50,54 @@ function saveRead(labId: string | null, ids: Set<string>) {
 
 export function NotificationsBell() {
   const { labId } = useAuth();
+  const qc = useQueryClient();
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [agentNotifs, setAgentNotifs] = useState<AgentNotif[]>([]);
 
   useEffect(() => {
     setReadIds(loadRead(labId));
   }, [labId]);
+
+  // Realtime agent notifications
+  useEffect(() => {
+    if (!labId) return;
+    const channel = supabase
+      .channel(`lab-agent-notifs-${labId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pending_payments", filter: `lab_id=eq.${labId}` },
+        async (payload) => {
+          const pp = payload.new as any;
+          const [{ data: agent }, { data: doctor }] = await Promise.all([
+            supabase.from("delivery_agents").select("name").eq("id", pp.agent_id).maybeSingle(),
+            supabase.from("doctors").select("name").eq("id", pp.doctor_id).maybeSingle(),
+          ]);
+          setAgentNotifs((prev) => [{
+            id: pp.id, type: "payment" as const,
+            title: "سند تحصيل جديد",
+            body: `${agent?.name ?? "مندوب"} سجّل سند بمبلغ ${pp.amount} من د. ${doctor?.name ?? "—"}`,
+            time: pp.collected_at ?? new Date().toISOString(),
+            link: "/pending-payments",
+          }, ...prev].slice(0, 30));
+          qc.invalidateQueries({ queryKey: ["pending-payments"] });
+        })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "case_deliveries", filter: `lab_id=eq.${labId}` },
+        async (payload) => {
+          const cd = payload.new as any;
+          const [{ data: agent }, { data: caseData }] = await Promise.all([
+            supabase.from("delivery_agents").select("name").eq("id", cd.agent_id).maybeSingle(),
+            supabase.from("cases").select("case_number, doctors(name)").eq("id", cd.case_id).maybeSingle(),
+          ]);
+          setAgentNotifs((prev) => [{
+            id: cd.id, type: "delivery" as const,
+            title: "حالة تم تسليمها",
+            body: `${agent?.name ?? "مندوب"} سلّم ${(caseData as any)?.case_number ?? ""} لـ د. ${(caseData as any)?.doctors?.name ?? "—"}`,
+            time: cd.delivered_at ?? new Date().toISOString(),
+            link: "/agent-deliveries",
+          }, ...prev].slice(0, 30));
+          qc.invalidateQueries({ queryKey: ["agent-deliveries-lab"] });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [labId, qc]);
 
   const markRead = (id: string) => {
     setReadIds((prev) => {
@@ -65,6 +117,14 @@ export function NotificationsBell() {
       return next;
     });
   };
+
+  const dismissAgentNotif = useCallback((id: string) => {
+    setAgentNotifs((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  const clearAllAgentNotifs = useCallback(() => {
+    setAgentNotifs([]);
+  }, []);
 
   const { data } = useQuery({
     queryKey: ["notifications", labId],
@@ -110,7 +170,7 @@ export function NotificationsBell() {
 
   const overdueCount = overdue.length;
   const soonCount = dueSoon.length;
-  const total = overdueCount + soonCount;
+  const total = overdueCount + soonCount + agentNotifs.length;
 
   const allVisibleIds = useMemo(
     () => [...overdue.map((c) => c.id), ...dueSoon.map((c) => c.id)],
@@ -142,7 +202,7 @@ export function NotificationsBell() {
               variant="ghost"
               size="sm"
               className="h-7 gap-1 px-2 text-xs"
-              onClick={() => markAllRead(allVisibleIds)}
+              onClick={() => { markAllRead(allVisibleIds); clearAllAgentNotifs(); }}
               title="تعليم الكل كمقروء"
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -210,6 +270,41 @@ export function NotificationsBell() {
                     variant="soon"
                     onRead={() => markRead(c.id)}
                   />
+                ))}
+              </div>
+            )}
+
+            {agentNotifs.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <Truck className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-primary">
+                    إشعارات المندوبين
+                  </span>
+                  <Badge className="h-4 bg-primary px-1.5 text-[10px] text-primary-foreground">
+                    {agentNotifs.length}
+                  </Badge>
+                </div>
+                {agentNotifs.map((n) => (
+                  <Link
+                    key={n.id}
+                    to={n.link}
+                    onClick={() => dismissAgentNotif(n.id)}
+                    className="flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-smooth hover:bg-accent"
+                  >
+                    {n.type === "payment" ? (
+                      <Wallet className="h-3.5 w-3.5 text-primary shrink-0" />
+                    ) : (
+                      <Truck className="h-3.5 w-3.5 text-primary shrink-0" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-xs">{n.title}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">{n.body}</p>
+                    </div>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {new Date(n.time).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </Link>
                 ))}
               </div>
             )}

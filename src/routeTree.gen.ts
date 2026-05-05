@@ -66,6 +66,7 @@ import { Route as AppCashAccountsRouteImport } from './routes/_app.cash-accounts
 import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppBackupRouteImport } from './routes/_app.backup'
 import { Route as AppAgentTrackingRouteImport } from './routes/_app.agent-tracking'
+import { Route as AppAgentDeliveriesRouteImport } from './routes/_app.agent-deliveries'
 import { Route as DeliveryDoctorDoctorIdRouteImport } from './routes/delivery.doctor.$doctorId'
 import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.deliver.$caseId'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
@@ -356,6 +357,11 @@ const AppAgentTrackingRoute = AppAgentTrackingRouteImport.update({
   path: '/agent-tracking',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAgentDeliveriesRoute = AppAgentDeliveriesRouteImport.update({
+  id: '/agent-deliveries',
+  path: '/agent-deliveries',
+  getParentRoute: () => AppRoute,
+} as any)
 const DeliveryDoctorDoctorIdRoute = DeliveryDoctorDoctorIdRouteImport.update({
   id: '/doctor/$doctorId',
   path: '/doctor/$doctorId',
@@ -385,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/super-admin': typeof SuperAdminRoute
+  '/agent-deliveries': typeof AppAgentDeliveriesRoute
   '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -447,6 +454,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/super-admin': typeof SuperAdminRoute
+  '/agent-deliveries': typeof AppAgentDeliveriesRoute
   '/agent-tracking': typeof AppAgentTrackingRoute
   '/backup': typeof AppBackupRoute
   '/cases': typeof AppCasesRouteWithChildren
@@ -511,6 +519,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/super-admin': typeof SuperAdminRoute
+  '/_app/agent-deliveries': typeof AppAgentDeliveriesRoute
   '/_app/agent-tracking': typeof AppAgentTrackingRoute
   '/_app/backup': typeof AppBackupRoute
   '/_app/cases': typeof AppCasesRouteWithChildren
@@ -575,6 +584,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/signup'
     | '/super-admin'
+    | '/agent-deliveries'
     | '/agent-tracking'
     | '/backup'
     | '/cases'
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/signup'
     | '/super-admin'
+    | '/agent-deliveries'
     | '/agent-tracking'
     | '/backup'
     | '/cases'
@@ -700,6 +711,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/signup'
     | '/super-admin'
+    | '/_app/agent-deliveries'
     | '/_app/agent-tracking'
     | '/_app/backup'
     | '/_app/cases'
@@ -1178,6 +1190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAgentTrackingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/agent-deliveries': {
+      id: '/_app/agent-deliveries'
+      path: '/agent-deliveries'
+      fullPath: '/agent-deliveries'
+      preLoaderRoute: typeof AppAgentDeliveriesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/delivery/doctor/$doctorId': {
       id: '/delivery/doctor/$doctorId'
       path: '/doctor/$doctorId'
@@ -1224,6 +1243,7 @@ const AppCasesRouteWithChildren = AppCasesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAgentDeliveriesRoute: typeof AppAgentDeliveriesRoute
   AppAgentTrackingRoute: typeof AppAgentTrackingRoute
   AppBackupRoute: typeof AppBackupRoute
   AppCasesRoute: typeof AppCasesRouteWithChildren
@@ -1254,6 +1274,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAgentDeliveriesRoute: AppAgentDeliveriesRoute,
   AppAgentTrackingRoute: AppAgentTrackingRoute,
   AppBackupRoute: AppBackupRoute,
   AppCasesRoute: AppCasesRouteWithChildren,
