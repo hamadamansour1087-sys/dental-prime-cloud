@@ -18,7 +18,7 @@ function AgentDoctors() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase.from("delivery_agents")
-        .select("id, lab_id, route_id, governorates").eq("user_id", user!.id).maybeSingle();
+        .select("id, name, lab_id, route_id, governorates, is_active, labs(name)").eq("user_id", user!.id).maybeSingle();
       return data;
     },
   });
