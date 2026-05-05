@@ -811,7 +811,30 @@ function CasesPage() {
         </div>
       )}
 
-      {/* Page Header */}
+      {/* Cancel Case Confirmation */}
+      <AlertDialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد إلغاء الحالة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من إلغاء الحالة <span className="font-mono font-semibold">{cancelTarget?.caseNumber}</span>؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>تراجع</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (cancelTarget) updateCaseStatus(cancelTarget.id, "cancelled");
+                setCancelTarget(null);
+              }}
+            >
+              إلغاء الحالة
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-medium tracking-tight">الحالات</h1>
