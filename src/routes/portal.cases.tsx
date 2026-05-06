@@ -158,6 +158,7 @@ function PortalCases() {
         const s = statusLabels[c.status] ?? { label: c.status, variant: "outline" as const };
         const canRequestFollowup =
           c.status === "delivered" && (c.case_type ?? "new") === "new";
+        const canEdit = c.status === "pending_approval" || c.status === "active";
         const isExpanded = expandedCase === c.id;
         return (
           <Card key={c.id}>
