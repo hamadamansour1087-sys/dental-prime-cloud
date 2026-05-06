@@ -47,6 +47,7 @@ function CaseDetailsPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const router = useRouter();
+  const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanPreview, setScanPreview] = useState<{ url: string; name: string } | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
