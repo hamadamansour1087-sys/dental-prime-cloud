@@ -74,6 +74,10 @@ export function PortalAccountButton({
         },
         body: JSON.stringify({ doctor_id: doctor.id }),
       });
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error("فشل الاتصال بالخادم — جرّب مرة أخرى");
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل إنشاء الحساب");
       setGeneratedPassword(data.password);
