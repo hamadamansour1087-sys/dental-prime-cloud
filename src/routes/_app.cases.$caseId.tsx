@@ -112,10 +112,15 @@ function CaseDetailsPage() {
       const rows = data ?? [];
       const withUrls = await Promise.all(
         rows.map(async (a) => {
-          const { data: signed } = await supabase.storage
-            .from("case-media")
-            .createSignedUrl(a.storage_path, 60 * 60);
-          return { ...a, url: signed?.signedUrl ?? "" };
+          // Try case-media first, then case-attachments (portal uploads)
+          let signedUrl = "";
+          for (const bucket of ["case-media", "case-attachments"]) {
+            const { data: signed } = await supabase.storage
+              .from(bucket)
+              .createSignedUrl(a.storage_path, 60 * 60);
+            if (signed?.signedUrl) { signedUrl = signed.signedUrl; break; }
+          }
+          return { ...a, url: signedUrl };
         })
       );
       return withUrls;
