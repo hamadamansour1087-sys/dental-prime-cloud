@@ -99,6 +99,10 @@ export function PortalAccountButton({
         },
         body: JSON.stringify({ doctor_id: doctor.id }),
       });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("فشل الاتصال بالخادم — جرّب مرة أخرى");
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل إعادة تعيين كلمة المرور");
       setGeneratedPassword(data.password);
