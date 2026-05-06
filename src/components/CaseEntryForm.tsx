@@ -103,6 +103,8 @@ interface CaseEntryFormProps {
   labId: string;
   /** Pre-bound doctor (used by portal so the picker is hidden) */
   fixedDoctorId?: string;
+  /** If provided, form loads existing case data and updates instead of creating */
+  editCaseId?: string;
   /** Where to navigate after a successful single-save */
   onSaved?: (caseId: string, caseNumber: string) => void;
   /** Cancel/back action */
@@ -293,7 +295,7 @@ const printThermalSlip = (data: PrintSlipData) => {
 // Main component
 // ============================================================================
 
-export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }: CaseEntryFormProps) {
+export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved, onCancel }: CaseEntryFormProps) {
   const navigate = useNavigate();
   const prefs = useMemo(loadPrefs, []);
   const DRAFT_KEY = useMemo(() => makeDraftKey(mode, fixedDoctorId), [mode, fixedDoctorId]);
@@ -381,6 +383,60 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
         .order("order_index")).data ?? []),
   });
 
+  // ---------- load existing case for editing ----------
+  const isEdit = !!editCaseId;
+  const [editLoaded, setEditLoaded] = useState(false);
+  const { data: editCase } = useQuery({
+    queryKey: ["edit-case", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cases")
+        .select("*, patients(id, name)")
+        .eq("id", editCaseId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: editItems } = useQuery({
+    queryKey: ["edit-case-items", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_items")
+        .select("*")
+        .eq("case_id", editCaseId!)
+        .order("position");
+      return data ?? [];
+    },
+  });
+
+  useEffect(() => {
+    if (!isEdit || editLoaded || !editCase) return;
+    setForm({
+      doctor_id: editCase.doctor_id ?? fixedDoctorId ?? "",
+      clinic_id: "",
+      patient_name: (editCase as any).patients?.name ?? "",
+      due_date: editCase.due_date ?? "",
+      notes: editCase.notes ?? "",
+    });
+    if (editItems?.length) {
+      setItems(
+        editItems.map((it: any) => ({
+          id: it.id,
+          work_type_id: it.work_type_id ?? "",
+          tooth_numbers: it.tooth_numbers ?? "",
+          shade: it.shade ?? "",
+          units: String(it.units ?? 1),
+          unit_price: it.unit_price != null ? String(it.unit_price) : "",
+        }))
+      );
+    }
+    setDueAuto(false); // Don't override edited due date
+    setEditLoaded(true);
+  }, [isEdit, editLoaded, editCase, editItems, fixedDoctorId]);
+
   useEffect(() => {
     if (!labId) return;
     supabase.from("labs").select("name").eq("id", labId).maybeSingle().then(({ data }) => {
@@ -392,12 +448,13 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
   // Clear any previously stored draft so it never gets restored.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isEdit) return; // Don't clear drafts when editing
     try {
       localStorage.removeItem(DRAFT_KEY);
     } catch {
       /* ignore */
     }
-  }, [DRAFT_KEY]);
+  }, [DRAFT_KEY, isEdit]);
 
   // ---------- predicted due date ----------
   // 1) أساس من مراحل سير العمل
@@ -530,7 +587,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
       const isPortal = mode === "portal";
 
       // Patient upsert (lab members only — doctors can't write to patients table via RLS).
-      // For portal submissions, the patient name is preserved in the case notes instead.
       let patientId: string | null = null;
       const trimmedName = form.patient_name.trim();
       if (trimmedName && !isPortal) {
@@ -552,16 +608,6 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
         }
       }
 
-      const { data: caseNum } = isPortal
-        ? { data: `PND-${Date.now()}` }
-        : await supabase.rpc("generate_case_number", { _lab_id: labId });
-
-      const { data: wf } = isPortal
-        ? { data: null }
-        : await supabase.from("workflows").select("id").eq("is_default", true).maybeSingle();
-
-      const startStage = isPortal ? null : ((stages ?? []).find((s: { order_index: number }) => s.order_index === 1) as { id: string } | undefined);
-
       const first = validItems[0];
       const allTeeth = Array.from(
         new Set(validItems.flatMap((it) => it.tooth_numbers.split(",").map((s) => s.trim()).filter(Boolean))),
@@ -582,29 +628,89 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
         ? `${noDxMarker}${baseNotes ? `\n${baseNotes}` : ""}`
         : baseNotes;
 
-      const { data: created, error } = await supabase
-        .from("cases")
-        .insert({
-          lab_id: labId,
-          case_number: caseNum as string,
+      let caseId: string;
+      let caseNumber: string;
+
+      if (isEdit && editCaseId) {
+        // ---- UPDATE existing case ----
+        const updatePayload = {
           doctor_id: form.doctor_id,
-          patient_id: patientId,
+          patient_id: patientId ?? (editCase as any)?.patient_id ?? null,
           work_type_id: first?.work_type_id || null,
-          workflow_id: wf?.id ?? null,
-          current_stage_id: startStage?.id ?? null,
           shade: allShades || null,
           tooth_numbers: allTeeth || null,
           units: totalUnits || 1,
           price: totalPrice || null,
           due_date: form.due_date || null,
           notes: finalNotes,
-          status: isPortal ? "pending_approval" : "active",
-        })
-        .select()
-        .single();
-      if (error) throw error;
+        } as const;
+        const { error } = await supabase
+          .from("cases")
+          .update(updatePayload)
+          .eq("id", editCaseId);
+        if (error) throw error;
 
-      if (created) {
+        caseId = editCaseId;
+        caseNumber = (editCase as any)?.case_number ?? "";
+
+        // Replace case_items: delete old, insert new
+        await supabase.from("case_items").delete().eq("case_id", editCaseId);
+        const itemRows = validItems.map((it, idx) => {
+          const u = parseInt(it.units) || 1;
+          const p = it.unit_price ? parseFloat(it.unit_price) : null;
+          return {
+            lab_id: labId,
+            case_id: editCaseId,
+            work_type_id: it.work_type_id,
+            tooth_numbers: it.tooth_numbers || null,
+            shade: it.shade || null,
+            units: u,
+            unit_price: p,
+            total_price: p != null ? p * u : null,
+            position: idx,
+          };
+        });
+        if (itemRows.length) {
+          const { error: itemsErr } = await supabase.from("case_items").insert(itemRows);
+          if (itemsErr) throw itemsErr;
+        }
+      } else {
+        // ---- CREATE new case ----
+        const { data: caseNum } = isPortal
+          ? { data: `PND-${Date.now()}` }
+          : await supabase.rpc("generate_case_number", { _lab_id: labId });
+
+        const { data: wf } = isPortal
+          ? { data: null }
+          : await supabase.from("workflows").select("id").eq("is_default", true).maybeSingle();
+
+        const startStage = isPortal ? null : ((stages ?? []).find((s: { order_index: number }) => s.order_index === 1) as { id: string } | undefined);
+
+        const { data: created, error } = await supabase
+          .from("cases")
+          .insert({
+            lab_id: labId,
+            case_number: caseNum as string,
+            doctor_id: form.doctor_id,
+            patient_id: patientId,
+            work_type_id: first?.work_type_id || null,
+            workflow_id: wf?.id ?? null,
+            current_stage_id: startStage?.id ?? null,
+            shade: allShades || null,
+            tooth_numbers: allTeeth || null,
+            units: totalUnits || 1,
+            price: totalPrice || null,
+            due_date: form.due_date || null,
+            notes: finalNotes,
+            status: isPortal ? "pending_approval" : "active",
+          })
+          .select()
+          .single();
+        if (error) throw error;
+
+        caseId = created.id;
+        caseNumber = created.case_number;
+
         // Items
         const itemRows = validItems.map((it, idx) => {
           const u = parseInt(it.units) || 1;
@@ -631,24 +737,25 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             stage_id: startStage.id,
           });
         }
+      }
 
-        // Snapshot blobs now, then upload in the background so case saving stays fast.
-        const attachmentFiles = files
-          .map((f) => ({ ...f, blob: fileBlobsRef.current.get(f.id) }))
-          .filter((f): f is PendingFileMeta & { blob: File } => !!f.blob);
+      // Upload new attachments (both create and edit)
+      const attachmentFiles = files
+        .map((f) => ({ ...f, blob: fileBlobsRef.current.get(f.id) }))
+        .filter((f): f is PendingFileMeta & { blob: File } => !!f.blob);
 
-        const uploadAttachments = async () => {
-          if (!attachmentFiles.length) return;
-          const toastId = toast.loading(`تم حفظ الحالة، جاري رفع ${attachmentFiles.length} ملف في الخلفية...`);
-          const scanFiles = attachmentFiles.filter((f) => f.kind === "scan");
-          const otherFiles = attachmentFiles.filter((f) => f.kind !== "scan");
-          let uploadFailures = 0;
-          const uploadOne = async (pf: PendingFileMeta & { blob: File }) => {
+      const uploadAttachments = async () => {
+        if (!attachmentFiles.length) return;
+        const toastId = toast.loading(`تم حفظ الحالة، جاري رفع ${attachmentFiles.length} ملف في الخلفية...`);
+        const scanFiles = attachmentFiles.filter((f) => f.kind === "scan");
+        const otherFiles = attachmentFiles.filter((f) => f.kind !== "scan");
+        let uploadFailures = 0;
+        const uploadOne = async (pf: PendingFileMeta & { blob: File }) => {
           const safeName = pf.name.replace(/[^\w.\-]+/g, "_");
           const bucket = isPortal ? "case-attachments" : "case-media";
           const path = isPortal
-            ? `${labId}/${created.id}/${Date.now()}_${safeName}`
-            : `${labId}/${created.id}/${pf.kind}/${Date.now()}_${safeName}`;
+            ? `${labId}/${caseId}/${Date.now()}_${safeName}`
+            : `${labId}/${caseId}/${pf.kind}/${Date.now()}_${safeName}`;
           const { error: upErr } = await supabase.storage.from(bucket).upload(path, pf.blob, {
             contentType: pf.type || undefined,
             upsert: false,
@@ -660,7 +767,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           }
           const { error: attErr } = await supabase.from("case_attachments").insert({
             lab_id: labId,
-            case_id: created.id,
+            case_id: caseId,
             storage_path: path,
             file_name: pf.name,
             file_size: pf.size,
@@ -672,23 +779,22 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
             toast.error(`تم رفع ${pf.name} لكن تعذر ربطه بالحالة`);
           }
         };
-          const SCAN_CONCURRENCY = 2;
-          for (let i = 0; i < scanFiles.length; i += SCAN_CONCURRENCY) {
-            await Promise.all(scanFiles.slice(i, i + SCAN_CONCURRENCY).map(uploadOne));
-          }
-          const OTHER_CONCURRENCY = 3;
-          for (let i = 0; i < otherFiles.length; i += OTHER_CONCURRENCY) {
-            await Promise.all(otherFiles.slice(i, i + OTHER_CONCURRENCY).map(uploadOne));
-          }
-          if (uploadFailures > 0) {
-            toast.warning("تم حفظ الحالة، لكن بعض الملفات لم ترفع بسبب الاتصال. أعد رفعها من صفحة الحالة.", { duration: 8000 });
-            toast.dismiss(toastId);
-          } else {
-            toast.success("اكتمل رفع ملفات الحالة", { id: toastId });
-          }
-        };
-        void uploadAttachments();
-      }
+        const SCAN_CONCURRENCY = 2;
+        for (let i = 0; i < scanFiles.length; i += SCAN_CONCURRENCY) {
+          await Promise.all(scanFiles.slice(i, i + SCAN_CONCURRENCY).map(uploadOne));
+        }
+        const OTHER_CONCURRENCY = 3;
+        for (let i = 0; i < otherFiles.length; i += OTHER_CONCURRENCY) {
+          await Promise.all(otherFiles.slice(i, i + OTHER_CONCURRENCY).map(uploadOne));
+        }
+        if (uploadFailures > 0) {
+          toast.warning("تم حفظ الحالة، لكن بعض الملفات لم ترفع بسبب الاتصال. أعد رفعها من صفحة الحالة.", { duration: 8000 });
+          toast.dismiss(toastId);
+        } else {
+          toast.success("اكتمل رفع ملفات الحالة", { id: toastId });
+        }
+      };
+      void uploadAttachments();
 
       // Save smart defaults
       if (validItems.length) {
@@ -705,9 +811,11 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
         /* ignore */
       }
 
-      const successMsg = isPortal
-        ? "تم رفع الحالة بنجاح، بانتظار موافقة المعمل"
-        : `تم تسجيل الحالة رقم ${created.case_number}`;
+      const successMsg = isEdit
+        ? `تم تعديل الحالة رقم ${caseNumber}`
+        : isPortal
+          ? "تم رفع الحالة بنجاح، بانتظار موافقة المعمل"
+          : `تم تسجيل الحالة رقم ${caseNumber}`;
 
       // Print before navigation
       if (submitMode === "save_print") {
@@ -717,7 +825,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
           .filter(Boolean)
           .join(" + ");
         printThermalSlip({
-          caseNumber: created.case_number,
+          caseNumber,
           doctorName,
           patientName: form.patient_name,
           workTypes: workTypeNames || "بدون تشخيص",
@@ -734,10 +842,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
         toast.warning("تذكير: هذه الحالة بدون تشخيص — لا تنسَ إضافة نوع العمل والأسنان لاحقًا", { duration: 6000 });
       }
 
-      if (submitMode === "save_new") {
+      if (submitMode === "save_new" && !isEdit) {
         resetForm(true); // keep doctor for bulk entry
       } else {
-        if (onSaved) onSaved(created.id, created.case_number);
+        if (onSaved) onSaved(caseId, caseNumber);
         else if (mode === "admin") navigate({ to: "/cases" });
         else navigate({ to: "/portal/cases" });
       }
@@ -806,7 +914,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
               </Button>
             )}
             <div className="min-w-0">
-              <h1 className="truncate text-base font-bold sm:text-lg">حالة جديدة</h1>
+              <h1 className="truncate text-base font-bold sm:text-lg">{isEdit ? "تعديل الحالة" : "حالة جديدة"}</h1>
               <p className="hidden truncate text-xs text-muted-foreground sm:block">
                 {form.patient_name || "بدون اسم مريض"}
                 {selectedDoctor && ` · ${selectedDoctor.name}`}
@@ -832,15 +940,17 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
                   <Printer className="ml-1.5 h-4 w-4" /> حفظ وطباعة
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => submit("save_new")}
-                disabled={!canSubmit}
-                title="حفظ + حالة جديدة (Ctrl+Enter)"
-              >
-                <Zap className="ml-1.5 h-4 w-4" /> حفظ + جديد
-              </Button>
+              {!isEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => submit("save_new")}
+                  disabled={!canSubmit}
+                  title="حفظ + حالة جديدة (Ctrl+Enter)"
+                >
+                  <Zap className="ml-1.5 h-4 w-4" /> حفظ + جديد
+                </Button>
+              )}
               <Button size="sm" onClick={() => submit("save")} disabled={!canSubmit} title="حفظ (Ctrl+S)">
                 {submitting ? (
                   <>
@@ -1272,16 +1382,18 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }:
               <span className="text-xs">طباعة</span>
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => submit("save_new")}
-            disabled={!canSubmit}
-            className="flex-1"
-          >
-            <Zap className="ml-1 h-4 w-4" />
-            <span className="text-xs">+ جديد</span>
-          </Button>
+          {!isEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => submit("save_new")}
+              disabled={!canSubmit}
+              className="flex-1"
+            >
+              <Zap className="ml-1 h-4 w-4" />
+              <span className="text-xs">+ جديد</span>
+            </Button>
+          )}
           <Button size="sm" onClick={() => submit("save")} disabled={!canSubmit} className="flex-1">
             {submitting ? (
               <Upload className="h-4 w-4 animate-pulse" />

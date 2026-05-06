@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye, Pencil } from "lucide-react";
 import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 import { toast } from "sonner";
 import { QuadrantsView } from "@/components/QuadrantsView";
@@ -47,6 +47,7 @@ function CaseDetailsPage() {
   const { labId } = useAuth();
   const qc = useQueryClient();
   const router = useRouter();
+  const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanPreview, setScanPreview] = useState<{ url: string; name: string } | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
@@ -325,6 +326,17 @@ function CaseDetailsPage() {
           }
         }}
       />
+
+      {/* Edit button */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate({ to: "/cases/$caseId/edit", params: { caseId } })}
+        >
+          <Pencil className="me-1.5 h-4 w-4" /> تعديل الحالة
+        </Button>
+      </div>
 
       <StageTransitionDialog
         open={stageOpen}

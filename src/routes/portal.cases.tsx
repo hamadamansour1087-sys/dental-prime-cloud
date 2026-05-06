@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +17,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { RotateCcw, Wrench, Eye, Download, FileBox, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Wrench, Eye, Download, FileBox, ImageIcon, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 
 export const Route = createFileRoute("/portal/cases")({
@@ -41,6 +41,7 @@ type FollowupTarget = {
 function PortalCases() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [followup, setFollowup] = useState<FollowupTarget>(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -157,6 +158,7 @@ function PortalCases() {
         const s = statusLabels[c.status] ?? { label: c.status, variant: "outline" as const };
         const canRequestFollowup =
           c.status === "delivered" && (c.case_type ?? "new") === "new";
+        const canEdit = c.status === "pending_approval" || c.status === "active";
         const isExpanded = expandedCase === c.id;
         return (
           <Card key={c.id}>
@@ -176,7 +178,19 @@ function PortalCases() {
                     {c.work_types?.name ?? "—"} • {c.date_received}
                   </p>
                 </div>
-                <Badge variant={s.variant}>{s.label}</Badge>
+                <div className="flex items-center gap-2">
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => navigate({ to: "/portal/edit-case/$caseId", params: { caseId: c.id } })}
+                    >
+                      <Pencil className="me-1 h-3 w-3" /> تعديل
+                    </Button>
+                  )}
+                  <Badge variant={s.variant}>{s.label}</Badge>
+                </div>
               </div>
               {c.workflow_stages && (
                 <div className="flex items-center gap-2 text-sm">

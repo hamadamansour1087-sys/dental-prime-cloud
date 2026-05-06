@@ -67,10 +67,12 @@ import { Route as AppCasesRouteImport } from './routes/_app.cases'
 import { Route as AppBackupRouteImport } from './routes/_app.backup'
 import { Route as AppAgentTrackingRouteImport } from './routes/_app.agent-tracking'
 import { Route as AppAgentDeliveriesRouteImport } from './routes/_app.agent-deliveries'
+import { Route as PortalEditCaseCaseIdRouteImport } from './routes/portal.edit-case.$caseId'
 import { Route as DeliveryDoctorDoctorIdRouteImport } from './routes/delivery.doctor.$doctorId'
 import { Route as DeliveryDeliverCaseIdRouteImport } from './routes/delivery.deliver.$caseId'
 import { Route as AppCasesNewRouteImport } from './routes/_app.cases.new'
 import { Route as AppCasesCaseIdRouteImport } from './routes/_app.cases.$caseId'
+import { Route as AppCasesCaseIdEditRouteImport } from './routes/_app.cases.$caseId.edit'
 
 const SuperAdminRoute = SuperAdminRouteImport.update({
   id: '/super-admin',
@@ -362,6 +364,11 @@ const AppAgentDeliveriesRoute = AppAgentDeliveriesRouteImport.update({
   path: '/agent-deliveries',
   getParentRoute: () => AppRoute,
 } as any)
+const PortalEditCaseCaseIdRoute = PortalEditCaseCaseIdRouteImport.update({
+  id: '/edit-case/$caseId',
+  path: '/edit-case/$caseId',
+  getParentRoute: () => PortalRoute,
+} as any)
 const DeliveryDoctorDoctorIdRoute = DeliveryDoctorDoctorIdRouteImport.update({
   id: '/doctor/$doctorId',
   path: '/doctor/$doctorId',
@@ -381,6 +388,11 @@ const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
   id: '/$caseId',
   path: '/$caseId',
   getParentRoute: () => AppCasesRoute,
+} as any)
+const AppCasesCaseIdEditRoute = AppCasesCaseIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AppCasesCaseIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -441,10 +453,12 @@ export interface FileRoutesByFullPath {
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
-  '/cases/$caseId': typeof AppCasesCaseIdRoute
+  '/cases/$caseId': typeof AppCasesCaseIdRouteWithChildren
   '/cases/new': typeof AppCasesNewRoute
   '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
   '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
+  '/portal/edit-case/$caseId': typeof PortalEditCaseCaseIdRoute
+  '/cases/$caseId/edit': typeof AppCasesCaseIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -504,10 +518,12 @@ export interface FileRoutesByTo {
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
-  '/cases/$caseId': typeof AppCasesCaseIdRoute
+  '/cases/$caseId': typeof AppCasesCaseIdRouteWithChildren
   '/cases/new': typeof AppCasesNewRoute
   '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
   '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
+  '/portal/edit-case/$caseId': typeof PortalEditCaseCaseIdRoute
+  '/cases/$caseId/edit': typeof AppCasesCaseIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -569,10 +585,12 @@ export interface FileRoutesById {
   '/portal/messages': typeof PortalMessagesRoute
   '/portal/new-case': typeof PortalNewCaseRoute
   '/portal/statement': typeof PortalStatementRoute
-  '/_app/cases/$caseId': typeof AppCasesCaseIdRoute
+  '/_app/cases/$caseId': typeof AppCasesCaseIdRouteWithChildren
   '/_app/cases/new': typeof AppCasesNewRoute
   '/delivery/deliver/$caseId': typeof DeliveryDeliverCaseIdRoute
   '/delivery/doctor/$doctorId': typeof DeliveryDoctorDoctorIdRoute
+  '/portal/edit-case/$caseId': typeof PortalEditCaseCaseIdRoute
+  '/_app/cases/$caseId/edit': typeof AppCasesCaseIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -638,6 +656,8 @@ export interface FileRouteTypes {
     | '/cases/new'
     | '/delivery/deliver/$caseId'
     | '/delivery/doctor/$doctorId'
+    | '/portal/edit-case/$caseId'
+    | '/cases/$caseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -701,6 +721,8 @@ export interface FileRouteTypes {
     | '/cases/new'
     | '/delivery/deliver/$caseId'
     | '/delivery/doctor/$doctorId'
+    | '/portal/edit-case/$caseId'
+    | '/cases/$caseId/edit'
   id:
     | '__root__'
     | '/'
@@ -765,6 +787,8 @@ export interface FileRouteTypes {
     | '/_app/cases/new'
     | '/delivery/deliver/$caseId'
     | '/delivery/doctor/$doctorId'
+    | '/portal/edit-case/$caseId'
+    | '/_app/cases/$caseId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1197,6 +1221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAgentDeliveriesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/portal/edit-case/$caseId': {
+      id: '/portal/edit-case/$caseId'
+      path: '/edit-case/$caseId'
+      fullPath: '/portal/edit-case/$caseId'
+      preLoaderRoute: typeof PortalEditCaseCaseIdRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/delivery/doctor/$doctorId': {
       id: '/delivery/doctor/$doctorId'
       path: '/doctor/$doctorId'
@@ -1225,16 +1256,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCasesCaseIdRouteImport
       parentRoute: typeof AppCasesRoute
     }
+    '/_app/cases/$caseId/edit': {
+      id: '/_app/cases/$caseId/edit'
+      path: '/edit'
+      fullPath: '/cases/$caseId/edit'
+      preLoaderRoute: typeof AppCasesCaseIdEditRouteImport
+      parentRoute: typeof AppCasesCaseIdRoute
+    }
   }
 }
 
+interface AppCasesCaseIdRouteChildren {
+  AppCasesCaseIdEditRoute: typeof AppCasesCaseIdEditRoute
+}
+
+const AppCasesCaseIdRouteChildren: AppCasesCaseIdRouteChildren = {
+  AppCasesCaseIdEditRoute: AppCasesCaseIdEditRoute,
+}
+
+const AppCasesCaseIdRouteWithChildren = AppCasesCaseIdRoute._addFileChildren(
+  AppCasesCaseIdRouteChildren,
+)
+
 interface AppCasesRouteChildren {
-  AppCasesCaseIdRoute: typeof AppCasesCaseIdRoute
+  AppCasesCaseIdRoute: typeof AppCasesCaseIdRouteWithChildren
   AppCasesNewRoute: typeof AppCasesNewRoute
 }
 
 const AppCasesRouteChildren: AppCasesRouteChildren = {
-  AppCasesCaseIdRoute: AppCasesCaseIdRoute,
+  AppCasesCaseIdRoute: AppCasesCaseIdRouteWithChildren,
   AppCasesNewRoute: AppCasesNewRoute,
 }
 
@@ -1337,6 +1387,7 @@ interface PortalRouteChildren {
   PortalMessagesRoute: typeof PortalMessagesRoute
   PortalNewCaseRoute: typeof PortalNewCaseRoute
   PortalStatementRoute: typeof PortalStatementRoute
+  PortalEditCaseCaseIdRoute: typeof PortalEditCaseCaseIdRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
@@ -1346,6 +1397,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalMessagesRoute: PortalMessagesRoute,
   PortalNewCaseRoute: PortalNewCaseRoute,
   PortalStatementRoute: PortalStatementRoute,
+  PortalEditCaseCaseIdRoute: PortalEditCaseCaseIdRoute,
 }
 
 const PortalRouteWithChildren =
