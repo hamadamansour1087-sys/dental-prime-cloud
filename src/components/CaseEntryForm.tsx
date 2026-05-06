@@ -740,6 +740,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
           const { error: itemsErr } = await supabase.from("case_items").insert(itemRows);
           if (itemsErr) throw itemsErr;
         }
+
+        // Delete removed existing attachments
+        if (editAttachments?.length) {
+          const keptIds = new Set(existingAttachments.map((f) => f.id.replace("existing-", "")));
+          const toDelete = editAttachments.filter((a: any) => !keptIds.has(a.id));
+          for (const att of toDelete) {
+            await supabase.from("case_attachments").delete().eq("id", (att as any).id);
+          }
+        }
       } else {
         // ---- CREATE new case ----
         const { data: caseNum } = isPortal
