@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileBox, Loader2 } from "lucide-react";
 import type { Object3D, WebGLRenderer } from "three";
@@ -26,10 +26,17 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [containerMounted, setContainerMounted] = useState(false);
 
   const name = fileName ?? file?.name ?? "";
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const supported = ["stl", "ply", "obj", "3mf", "zip"].includes(ext);
+
+  // Track when the container div is actually in the DOM
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+    setContainerMounted(!!node);
+  }, []);
 
   useEffect(() => {
     if (!open || !supported || !containerRef.current) return;
@@ -212,7 +219,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
       }
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [open, supported, file, url, ext]);
+  }, [open, supported, file, url, ext, containerMounted]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -228,7 +235,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         </DialogHeader>
         {supported ? (
           <div className="relative h-[420px] min-h-[320px] w-full overflow-hidden rounded-lg border bg-muted/20">
-            <div ref={containerRef} className="h-full w-full" />
+            <div ref={setContainerRef} className="h-full w-full" />
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground">
                 <Loader2 className="ml-2 h-5 w-5 animate-spin" /> جارٍ تحميل المعاينة...

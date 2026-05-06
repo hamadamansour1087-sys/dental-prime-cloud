@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { CaseEntryForm } from "@/components/CaseEntryForm";
 
-export const Route = createFileRoute("/_app/cases/$caseId/edit")({
+export const Route = createFileRoute("/_app/edit-case/$caseId")({
   component: EditCasePage,
 });
 
