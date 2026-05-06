@@ -103,6 +103,8 @@ interface CaseEntryFormProps {
   labId: string;
   /** Pre-bound doctor (used by portal so the picker is hidden) */
   fixedDoctorId?: string;
+  /** If provided, form loads existing case data and updates instead of creating */
+  editCaseId?: string;
   /** Where to navigate after a successful single-save */
   onSaved?: (caseId: string, caseNumber: string) => void;
   /** Cancel/back action */
