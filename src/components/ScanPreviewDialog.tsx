@@ -219,7 +219,7 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
       }
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [open, supported, file, url, ext]);
+  }, [open, supported, file, url, ext, containerMounted]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
