@@ -386,6 +386,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
   // ---------- load existing case for editing ----------
   const isEdit = !!editCaseId;
   const [editLoaded, setEditLoaded] = useState(false);
+  const [existingAttachments, setExistingAttachments] = useState<PendingFileMeta[]>([]);
   const { data: editCase } = useQuery({
     queryKey: ["edit-case", editCaseId],
     enabled: isEdit,
@@ -412,14 +413,41 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
     },
   });
 
+  // Fetch existing attachments for edit mode
+  const { data: editAttachments } = useQuery({
+    queryKey: ["edit-case-attachments", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_attachments")
+        .select("*")
+        .eq("case_id", editCaseId!)
+        .order("created_at");
+      return data ?? [];
+    },
+  });
+
   useEffect(() => {
     if (!isEdit || editLoaded || !editCase) return;
+
+    // Extract patient name: from patients relation, or from notes "المريض: xxx"
+    let patientName = (editCase as any).patients?.name ?? "";
+    let cleanNotes = editCase.notes ?? "";
+    if (!patientName && cleanNotes) {
+      const match = cleanNotes.match(/^المريض:\s*(.+?)(?:\n|$)/);
+      if (match) {
+        patientName = match[1].trim();
+        // Remove the patient prefix from notes so it doesn't duplicate
+        cleanNotes = cleanNotes.replace(/^المريض:\s*.+?\n?/, "").trim();
+      }
+    }
+
     setForm({
       doctor_id: editCase.doctor_id ?? fixedDoctorId ?? "",
       clinic_id: "",
-      patient_name: (editCase as any).patients?.name ?? "",
+      patient_name: patientName,
       due_date: editCase.due_date ?? "",
-      notes: editCase.notes ?? "",
+      notes: cleanNotes,
     });
     if (editItems?.length) {
       setItems(
@@ -433,9 +461,47 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
         }))
       );
     }
+
+    // Load existing attachments as display-only items
+    if (editAttachments?.length) {
+      const mapped: PendingFileMeta[] = editAttachments.map((a: any) => ({
+        id: `existing-${a.id}`,
+        name: a.file_name,
+        size: a.file_size ?? 0,
+        type: a.mime_type ?? "",
+        kind: a.kind === "photo" ? "photo" as const : "scan" as const,
+        previewUrl: undefined, // will be resolved below
+        _storagePath: a.storage_path,
+        _attachmentId: a.id,
+      }));
+      setExistingAttachments(mapped);
+
+      // Resolve signed URLs for photo previews
+      (async () => {
+        const withUrls = await Promise.all(
+          editAttachments.map(async (a: any) => {
+            if (a.kind !== "photo") return null;
+            for (const bucket of ["case-attachments", "case-media"]) {
+              const { data: signed } = await supabase.storage
+                .from(bucket)
+                .createSignedUrl(a.storage_path, 60 * 60);
+              if (signed?.signedUrl) return { id: `existing-${a.id}`, url: signed.signedUrl };
+            }
+            return null;
+          }),
+        );
+        setExistingAttachments((prev) =>
+          prev.map((f) => {
+            const match = withUrls.find((u) => u?.id === f.id);
+            return match ? { ...f, previewUrl: match.url } : f;
+          }),
+        );
+      })();
+    }
+
     setDueAuto(false); // Don't override edited due date
     setEditLoaded(true);
-  }, [isEdit, editLoaded, editCase, editItems, fixedDoctorId]);
+  }, [isEdit, editLoaded, editCase, editItems, editAttachments, fixedDoctorId]);
 
   useEffect(() => {
     if (!labId) return;
