@@ -41,6 +41,7 @@ type FollowupTarget = {
 function PortalCases() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [followup, setFollowup] = useState<FollowupTarget>(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
