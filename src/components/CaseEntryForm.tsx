@@ -386,6 +386,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
   // ---------- load existing case for editing ----------
   const isEdit = !!editCaseId;
   const [editLoaded, setEditLoaded] = useState(false);
+  const [existingAttachments, setExistingAttachments] = useState<PendingFileMeta[]>([]);
   const { data: editCase } = useQuery({
     queryKey: ["edit-case", editCaseId],
     enabled: isEdit,
@@ -412,14 +413,41 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
     },
   });
 
+  // Fetch existing attachments for edit mode
+  const { data: editAttachments } = useQuery({
+    queryKey: ["edit-case-attachments", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_attachments")
+        .select("*")
+        .eq("case_id", editCaseId!)
+        .order("created_at");
+      return data ?? [];
+    },
+  });
+
   useEffect(() => {
     if (!isEdit || editLoaded || !editCase) return;
+
+    // Extract patient name: from patients relation, or from notes "المريض: xxx"
+    let patientName = (editCase as any).patients?.name ?? "";
+    let cleanNotes = editCase.notes ?? "";
+    if (!patientName && cleanNotes) {
+      const match = cleanNotes.match(/^المريض:\s*(.+?)(?:\n|$)/);
+      if (match) {
+        patientName = match[1].trim();
+        // Remove the patient prefix from notes so it doesn't duplicate
+        cleanNotes = cleanNotes.replace(/^المريض:\s*.+?\n?/, "").trim();
+      }
+    }
+
     setForm({
       doctor_id: editCase.doctor_id ?? fixedDoctorId ?? "",
       clinic_id: "",
-      patient_name: (editCase as any).patients?.name ?? "",
+      patient_name: patientName,
       due_date: editCase.due_date ?? "",
-      notes: editCase.notes ?? "",
+      notes: cleanNotes,
     });
     if (editItems?.length) {
       setItems(
@@ -433,9 +461,47 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
         }))
       );
     }
+
+    // Load existing attachments as display-only items
+    if (editAttachments?.length) {
+      const mapped: PendingFileMeta[] = editAttachments.map((a: any) => ({
+        id: `existing-${a.id}`,
+        name: a.file_name,
+        size: a.file_size ?? 0,
+        type: a.mime_type ?? "",
+        kind: a.kind === "photo" ? "photo" as const : "scan" as const,
+        previewUrl: undefined, // will be resolved below
+        _storagePath: a.storage_path,
+        _attachmentId: a.id,
+      }));
+      setExistingAttachments(mapped);
+
+      // Resolve signed URLs for photo previews
+      (async () => {
+        const withUrls = await Promise.all(
+          editAttachments.map(async (a: any) => {
+            if (a.kind !== "photo") return null;
+            for (const bucket of ["case-attachments", "case-media"]) {
+              const { data: signed } = await supabase.storage
+                .from(bucket)
+                .createSignedUrl(a.storage_path, 60 * 60);
+              if (signed?.signedUrl) return { id: `existing-${a.id}`, url: signed.signedUrl };
+            }
+            return null;
+          }),
+        );
+        setExistingAttachments((prev) =>
+          prev.map((f) => {
+            const match = withUrls.find((u) => u?.id === f.id);
+            return match ? { ...f, previewUrl: match.url } : f;
+          }),
+        );
+      })();
+    }
+
     setDueAuto(false); // Don't override edited due date
     setEditLoaded(true);
-  }, [isEdit, editLoaded, editCase, editItems, fixedDoctorId]);
+  }, [isEdit, editLoaded, editCase, editItems, editAttachments, fixedDoctorId]);
 
   useEffect(() => {
     if (!labId) return;
@@ -674,6 +740,15 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
           const { error: itemsErr } = await supabase.from("case_items").insert(itemRows);
           if (itemsErr) throw itemsErr;
         }
+
+        // Delete removed existing attachments
+        if (editAttachments?.length) {
+          const keptIds = new Set(existingAttachments.map((f) => f.id.replace("existing-", "")));
+          const toDelete = editAttachments.filter((a: any) => !keptIds.has(a.id));
+          for (const att of toDelete) {
+            await supabase.from("case_attachments").delete().eq("id", (att as any).id);
+          }
+        }
       } else {
         // ---- CREATE new case ----
         const { data: caseNum } = isPortal
@@ -900,6 +975,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
   const totalUnits = items.reduce((s, it) => s + (parseInt(it.units) || 0), 0);
   const itemsValid = items.filter((it) => it.work_type_id).length > 0;
   const canSubmit = !!form.doctor_id && (itemsValid || noDiagnosis) && !submitting;
+
+  // Combine existing attachments with new files for display
+  const allDisplayFiles = [...existingAttachments, ...files];
+  const allFilesCount = allDisplayFiles.length;
 
   // ---------- UI ----------
   return (
@@ -1159,7 +1238,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
                   <div className="text-[10px] text-muted-foreground">وحدات</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-primary">{files.length}</div>
+                  <div className="text-2xl font-black text-primary">{allFilesCount}</div>
                   <div className="text-[10px] text-muted-foreground">ملفات</div>
                 </div>
               </div>
@@ -1353,13 +1432,32 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
                 onDrop={onDrop}
                 className="rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/10 p-3"
               >
-                {files.length === 0 ? (
+                {allFilesCount === 0 ? (
                   <div className="py-6 text-center text-xs text-muted-foreground">
                     <Upload className="mx-auto mb-2 h-6 w-6 opacity-40" />
                     اسحب الملفات هنا أو استخدم الأزرار أعلاه
                   </div>
                 ) : (
-                  <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
+                  <>
+                    {existingAttachments.length > 0 && (
+                      <div className="mb-2">
+                        <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">ملفات موجودة ({existingAttachments.length})</p>
+                        <FileGrid
+                          files={existingAttachments}
+                          onRemove={(id) => setExistingAttachments((prev) => prev.filter((f) => f.id !== id))}
+                          onPreview={setScanPreviewId}
+                        />
+                      </div>
+                    )}
+                    {files.length > 0 && (
+                      <div>
+                        {existingAttachments.length > 0 && (
+                          <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">ملفات جديدة ({files.length})</p>
+                        )}
+                        <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
