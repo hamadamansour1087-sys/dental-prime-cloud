@@ -332,7 +332,7 @@ function CaseDetailsPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate({ to: "/cases/$caseId/edit", params: { caseId } })}
+          onClick={() => navigate({ to: "/edit-case/$caseId", params: { caseId } })}
         >
           <Pencil className="me-1.5 h-4 w-4" /> تعديل الحالة
         </Button>
