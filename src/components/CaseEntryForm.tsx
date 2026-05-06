@@ -1229,7 +1229,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
                   <div className="text-[10px] text-muted-foreground">وحدات</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-primary">{files.length}</div>
+                  <div className="text-2xl font-black text-primary">{allFilesCount}</div>
                   <div className="text-[10px] text-muted-foreground">ملفات</div>
                 </div>
               </div>
