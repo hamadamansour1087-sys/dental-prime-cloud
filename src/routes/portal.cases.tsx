@@ -17,7 +17,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { RotateCcw, Wrench, Eye, Download, FileBox, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { RotateCcw, Wrench, Eye, Download, FileBox, ImageIcon, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 
 export const Route = createFileRoute("/portal/cases")({
