@@ -178,7 +178,19 @@ function PortalCases() {
                     {c.work_types?.name ?? "—"} • {c.date_received}
                   </p>
                 </div>
-                <Badge variant={s.variant}>{s.label}</Badge>
+                <div className="flex items-center gap-2">
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2"
+                      onClick={() => navigate({ to: "/portal/edit-case/$caseId", params: { caseId: c.id } })}
+                    >
+                      <Pencil className="me-1 h-3 w-3" /> تعديل
+                    </Button>
+                  )}
+                  <Badge variant={s.variant}>{s.label}</Badge>
+                </div>
               </div>
               {c.workflow_stages && (
                 <div className="flex items-center gap-2 text-sm">
