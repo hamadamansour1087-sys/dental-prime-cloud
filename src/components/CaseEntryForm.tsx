@@ -295,7 +295,7 @@ const printThermalSlip = (data: PrintSlipData) => {
 // Main component
 // ============================================================================
 
-export function CaseEntryForm({ mode, labId, fixedDoctorId, onSaved, onCancel }: CaseEntryFormProps) {
+export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved, onCancel }: CaseEntryFormProps) {
   const navigate = useNavigate();
   const prefs = useMemo(loadPrefs, []);
   const DRAFT_KEY = useMemo(() => makeDraftKey(mode, fixedDoctorId), [mode, fixedDoctorId]);
