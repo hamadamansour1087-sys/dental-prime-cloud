@@ -940,15 +940,17 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
                   <Printer className="ml-1.5 h-4 w-4" /> حفظ وطباعة
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => submit("save_new")}
-                disabled={!canSubmit}
-                title="حفظ + حالة جديدة (Ctrl+Enter)"
-              >
-                <Zap className="ml-1.5 h-4 w-4" /> حفظ + جديد
-              </Button>
+              {!isEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => submit("save_new")}
+                  disabled={!canSubmit}
+                  title="حفظ + حالة جديدة (Ctrl+Enter)"
+                >
+                  <Zap className="ml-1.5 h-4 w-4" /> حفظ + جديد
+                </Button>
+              )}
               <Button size="sm" onClick={() => submit("save")} disabled={!canSubmit} title="حفظ (Ctrl+S)">
                 {submitting ? (
                   <>
