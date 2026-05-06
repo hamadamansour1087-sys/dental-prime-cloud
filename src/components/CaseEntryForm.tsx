@@ -967,6 +967,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
   const itemsValid = items.filter((it) => it.work_type_id).length > 0;
   const canSubmit = !!form.doctor_id && (itemsValid || noDiagnosis) && !submitting;
 
+  // Combine existing attachments with new files for display
+  const allDisplayFiles = [...existingAttachments, ...files];
+  const allFilesCount = allDisplayFiles.length;
+
   // ---------- UI ----------
   return (
     <div className="flex h-full min-h-screen flex-col bg-background">
