@@ -29,11 +29,11 @@ export const Route = createFileRoute("/api/reset-doctor-password")({
             global: { headers: { Authorization: `Bearer ${token}` } },
             auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
           });
-          const { data: claimsRes, error: claimsErr } = await userClient.auth.getClaims(token);
-          if (claimsErr || !claimsRes?.claims?.sub) {
+          const { data: userData, error: userErr } = await userClient.auth.getUser();
+          if (userErr || !userData?.user?.id) {
             return Response.json({ error: "جلسة غير صالحة" }, { status: 401 });
           }
-          const callerId = claimsRes.claims.sub as string;
+          const callerId = userData.user.id;
 
           const body = (await request.json()) as { doctor_id: string };
           if (!body.doctor_id) {
@@ -59,14 +59,13 @@ export const Route = createFileRoute("/api/reset-doctor-password")({
             .select("role")
             .eq("user_id", callerId)
             .eq("lab_id", doctor.lab_id);
-          const isPriv = (roleCheck ?? []).some((r) => r.role === "admin" || r.role === "manager");
+          const isPriv = (roleCheck ?? []).some((r: any) => r.role === "admin" || r.role === "manager");
           if (!isPriv) {
             return Response.json({ error: "صلاحيات غير كافية" }, { status: 403 });
           }
 
           const newPassword = generatePassword(8);
 
-          // Update password via admin API — no account deletion needed
           const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
             doctor.user_id,
             { password: newPassword }
@@ -76,7 +75,7 @@ export const Route = createFileRoute("/api/reset-doctor-password")({
           }
 
           return Response.json({ success: true, password: newPassword });
-        } catch (e) {
+        } catch (e: any) {
           console.error("reset-doctor-password error:", e);
           return Response.json(
             { error: "حدث خطأ داخلي" },
