@@ -155,7 +155,9 @@ function CaseDetailsPage() {
 
   const deleteAttachment = async (id: string, path: string) => {
     if (!confirm("حذف هذا الملف؟")) return;
-    const { error: stErr } = await supabase.storage.from("case-media").remove([path]);
+    // Try both buckets
+    await supabase.storage.from("case-media").remove([path]);
+    await supabase.storage.from("case-attachments").remove([path]);
     if (stErr) return toast.error(stErr.message);
     const { error } = await supabase.from("case_attachments").delete().eq("id", id);
     if (error) return toast.error(error.message);
