@@ -383,6 +383,60 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
         .order("order_index")).data ?? []),
   });
 
+  // ---------- load existing case for editing ----------
+  const isEdit = !!editCaseId;
+  const [editLoaded, setEditLoaded] = useState(false);
+  const { data: editCase } = useQuery({
+    queryKey: ["edit-case", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cases")
+        .select("*, patients(id, name)")
+        .eq("id", editCaseId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: editItems } = useQuery({
+    queryKey: ["edit-case-items", editCaseId],
+    enabled: isEdit,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("case_items")
+        .select("*")
+        .eq("case_id", editCaseId!)
+        .order("position");
+      return data ?? [];
+    },
+  });
+
+  useEffect(() => {
+    if (!isEdit || editLoaded || !editCase) return;
+    setForm({
+      doctor_id: editCase.doctor_id ?? fixedDoctorId ?? "",
+      clinic_id: "",
+      patient_name: (editCase as any).patients?.name ?? "",
+      due_date: editCase.due_date ?? "",
+      notes: editCase.notes ?? "",
+    });
+    if (editItems?.length) {
+      setItems(
+        editItems.map((it: any) => ({
+          id: it.id,
+          work_type_id: it.work_type_id ?? "",
+          tooth_numbers: it.tooth_numbers ?? "",
+          shade: it.shade ?? "",
+          units: String(it.units ?? 1),
+          unit_price: it.unit_price != null ? String(it.unit_price) : "",
+        }))
+      );
+    }
+    setDueAuto(false); // Don't override edited due date
+    setEditLoaded(true);
+  }, [isEdit, editLoaded, editCase, editItems, fixedDoctorId]);
+
   useEffect(() => {
     if (!labId) return;
     supabase.from("labs").select("name").eq("id", labId).maybeSingle().then(({ data }) => {
@@ -394,12 +448,13 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
   // Clear any previously stored draft so it never gets restored.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isEdit) return; // Don't clear drafts when editing
     try {
       localStorage.removeItem(DRAFT_KEY);
     } catch {
       /* ignore */
     }
-  }, [DRAFT_KEY]);
+  }, [DRAFT_KEY, isEdit]);
 
   // ---------- predicted due date ----------
   // 1) أساس من مراحل سير العمل
