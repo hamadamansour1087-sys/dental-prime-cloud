@@ -914,7 +914,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
               </Button>
             )}
             <div className="min-w-0">
-              <h1 className="truncate text-base font-bold sm:text-lg">حالة جديدة</h1>
+              <h1 className="truncate text-base font-bold sm:text-lg">{isEdit ? "تعديل الحالة" : "حالة جديدة"}</h1>
               <p className="hidden truncate text-xs text-muted-foreground sm:block">
                 {form.patient_name || "بدون اسم مريض"}
                 {selectedDoctor && ` · ${selectedDoctor.name}`}
