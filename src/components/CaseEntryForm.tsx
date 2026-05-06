@@ -1382,16 +1382,18 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
               <span className="text-xs">طباعة</span>
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => submit("save_new")}
-            disabled={!canSubmit}
-            className="flex-1"
-          >
-            <Zap className="ml-1 h-4 w-4" />
-            <span className="text-xs">+ جديد</span>
-          </Button>
+          {!isEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => submit("save_new")}
+              disabled={!canSubmit}
+              className="flex-1"
+            >
+              <Zap className="ml-1 h-4 w-4" />
+              <span className="text-xs">+ جديد</span>
+            </Button>
+          )}
           <Button size="sm" onClick={() => submit("save")} disabled={!canSubmit} className="flex-1">
             {submitting ? (
               <Upload className="h-4 w-4 animate-pulse" />
