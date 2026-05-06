@@ -1423,13 +1423,32 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
                 onDrop={onDrop}
                 className="rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/10 p-3"
               >
-                {files.length === 0 ? (
+                {allFilesCount === 0 ? (
                   <div className="py-6 text-center text-xs text-muted-foreground">
                     <Upload className="mx-auto mb-2 h-6 w-6 opacity-40" />
                     اسحب الملفات هنا أو استخدم الأزرار أعلاه
                   </div>
                 ) : (
-                  <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
+                  <>
+                    {existingAttachments.length > 0 && (
+                      <div className="mb-2">
+                        <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">ملفات موجودة ({existingAttachments.length})</p>
+                        <FileGrid
+                          files={existingAttachments}
+                          onRemove={(id) => setExistingAttachments((prev) => prev.filter((f) => f.id !== id))}
+                          onPreview={setScanPreviewId}
+                        />
+                      </div>
+                    )}
+                    {files.length > 0 && (
+                      <div>
+                        {existingAttachments.length > 0 && (
+                          <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">ملفات جديدة ({files.length})</p>
+                        )}
+                        <FileGrid files={files} onRemove={removeFile} onPreview={setScanPreviewId} />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
