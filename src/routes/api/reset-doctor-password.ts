@@ -46,7 +46,11 @@ export const Route = createFileRoute("/api/reset-doctor-password")({
             .select("id, lab_id, name, user_id, phone")
             .eq("id", body.doctor_id)
             .maybeSingle();
-          if (dErr || !doctor) {
+          if (dErr) {
+            console.error("reset-doctor-password doctor lookup error:", dErr);
+            return Response.json({ error: "خطأ في البحث عن الطبيب" }, { status: 500 });
+          }
+          if (!doctor) {
             return Response.json({ error: "الطبيب غير موجود" }, { status: 404 });
           }
           if (!doctor.user_id) {
