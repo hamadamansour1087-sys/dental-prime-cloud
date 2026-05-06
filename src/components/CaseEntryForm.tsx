@@ -633,7 +633,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
 
       if (isEdit && editCaseId) {
         // ---- UPDATE existing case ----
-        const updatePayload: Record<string, unknown> = {
+        const updatePayload = {
           doctor_id: form.doctor_id,
           patient_id: patientId ?? (editCase as any)?.patient_id ?? null,
           work_type_id: first?.work_type_id || null,
@@ -643,7 +643,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
           price: totalPrice || null,
           due_date: form.due_date || null,
           notes: finalNotes,
-        };
+        } as const;
         const { error } = await supabase
           .from("cases")
           .update(updatePayload)
