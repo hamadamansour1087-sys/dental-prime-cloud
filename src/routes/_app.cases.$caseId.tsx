@@ -327,6 +327,17 @@ function CaseDetailsPage() {
         }}
       />
 
+      {/* Edit button */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate({ to: "/cases/$caseId/edit", params: { caseId } })}
+        >
+          <Pencil className="me-1.5 h-4 w-4" /> تعديل الحالة
+        </Button>
+      </div>
+
       <StageTransitionDialog
         open={stageOpen}
         onOpenChange={setStageOpen}
