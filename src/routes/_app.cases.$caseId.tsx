@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye } from "lucide-react";
+import { Download, Trash2, FileBox, ImageIcon, History, FileText, Activity, Plus, Eye, Pencil } from "lucide-react";
 import { ScanPreviewDialog } from "@/components/ScanPreviewDialog";
 import { toast } from "sonner";
 import { QuadrantsView } from "@/components/QuadrantsView";
