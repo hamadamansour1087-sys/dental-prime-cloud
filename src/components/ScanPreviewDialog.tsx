@@ -94,7 +94,8 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
         if (file) {
           buffer = ext === "obj" ? await file.text() : await file.arrayBuffer();
         } else if (url) {
-          const res = await fetch(url);
+          const res = await fetch(url, { mode: "cors" });
+          if (!res.ok) throw new Error(`فشل تحميل الملف (${res.status})`);
           buffer = ext === "obj" ? await res.text() : await res.arrayBuffer();
         } else {
           throw new Error("لا يوجد ملف للمعاينة");
