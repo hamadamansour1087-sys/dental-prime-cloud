@@ -26,10 +26,17 @@ export function ScanPreviewDialog({ open, onOpenChange, file, url, fileName }: P
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [containerMounted, setContainerMounted] = useState(false);
 
   const name = fileName ?? file?.name ?? "";
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const supported = ["stl", "ply", "obj", "3mf", "zip"].includes(ext);
+
+  // Track when the container div is actually in the DOM
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+    setContainerMounted(!!node);
+  }, []);
 
   useEffect(() => {
     if (!open || !supported || !containerRef.current) return;
