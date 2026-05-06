@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Stethoscope } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { writeScopedSession } from "@/lib/authScope";
 
 export const Route = createFileRoute("/portal/login")({
   component: PortalLoginPage,
