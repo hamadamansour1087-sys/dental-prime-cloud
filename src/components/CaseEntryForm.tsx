@@ -811,9 +811,11 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
         /* ignore */
       }
 
-      const successMsg = isPortal
-        ? "تم رفع الحالة بنجاح، بانتظار موافقة المعمل"
-        : `تم تسجيل الحالة رقم ${created.case_number}`;
+      const successMsg = isEdit
+        ? `تم تعديل الحالة رقم ${caseNumber}`
+        : isPortal
+          ? "تم رفع الحالة بنجاح، بانتظار موافقة المعمل"
+          : `تم تسجيل الحالة رقم ${caseNumber}`;
 
       // Print before navigation
       if (submitMode === "save_print") {
@@ -823,7 +825,7 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
           .filter(Boolean)
           .join(" + ");
         printThermalSlip({
-          caseNumber: created.case_number,
+          caseNumber,
           doctorName,
           patientName: form.patient_name,
           workTypes: workTypeNames || "بدون تشخيص",
@@ -840,10 +842,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
         toast.warning("تذكير: هذه الحالة بدون تشخيص — لا تنسَ إضافة نوع العمل والأسنان لاحقًا", { duration: 6000 });
       }
 
-      if (submitMode === "save_new") {
+      if (submitMode === "save_new" && !isEdit) {
         resetForm(true); // keep doctor for bulk entry
       } else {
-        if (onSaved) onSaved(created.id, created.case_number);
+        if (onSaved) onSaved(caseId, caseNumber);
         else if (mode === "admin") navigate({ to: "/cases" });
         else navigate({ to: "/portal/cases" });
       }
