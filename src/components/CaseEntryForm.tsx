@@ -434,11 +434,10 @@ export function CaseEntryForm({ mode, labId, fixedDoctorId, editCaseId, onSaved,
     let patientName = (editCase as any).patients?.name ?? "";
     let cleanNotes = editCase.notes ?? "";
     if (!patientName && cleanNotes) {
-      const match = cleanNotes.match(/^المريض:\s*(.+?)(?:\n|$)/);
+      const match = cleanNotes.match(/(?:^|\n)المريض:\s*(.+?)(?:\n|$)/);
       if (match) {
         patientName = match[1].trim();
-        // Remove the patient prefix from notes so it doesn't duplicate
-        cleanNotes = cleanNotes.replace(/^المريض:\s*.+?\n?/, "").trim();
+        cleanNotes = cleanNotes.replace(/(?:^|\n)المريض:\s*.+?(?:\n|$)/, "\n").trim();
       }
     }
 
