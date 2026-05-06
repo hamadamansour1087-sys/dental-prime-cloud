@@ -46,14 +46,16 @@ function PortalLoginPage() {
         return;
       }
       // Set the session in supabase client using the server-returned tokens
-      const { error: setErr } = await supabase.auth.setSession({
+      const { data: sessionData, error: setErr } = await supabase.auth.setSession({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
       });
       setBusy(false);
-      if (setErr) {
+      if (setErr || !sessionData.session) {
         toast.error("بيانات الدخول غير صحيحة");
       } else {
+        // Write scoped session so useAuth picks up the auth state change
+        writeScopedSession("portal", sessionData.session);
         toast.success("تم تسجيل الدخول");
         navigate({ to: "/portal/dashboard" });
       }
