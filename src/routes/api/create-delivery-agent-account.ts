@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { randomInt } from "crypto";
+import { writeAuditLog } from "@/lib/audit.server";
+import { clientIp } from "@/lib/serverAuth";
 
 function normalizePhone(p: string): string {
   return p.replace(/[^\d]/g, "").replace(/^00/, "").replace(/^20/, "").replace(/^0+/, "");
@@ -97,6 +99,17 @@ export const Route = createFileRoute("/api/create-delivery-agent-account")({
             .from("delivery_agents")
             .update({ user_id: created.user.id, email: internalEmail })
             .eq("id", body.agent_id);
+
+          await writeAuditLog({
+            actorId: callerId,
+            labId: agent.lab_id,
+            action: "agent_account_created",
+            resourceType: "delivery_agent",
+            resourceId: agent.id,
+            ipAddress: clientIp(request),
+            userAgent: request.headers.get("user-agent"),
+            metadata: { agent_name: agent.name, new_user_id: created.user.id, phone: phoneNorm },
+          });
 
           return Response.json({ success: true, user_id: created.user.id, phone: phoneNorm, password });
         } catch (e) {
