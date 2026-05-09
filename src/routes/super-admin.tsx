@@ -88,7 +88,6 @@ function SuperAdminPage() {
         .eq("user_id", nextUser.id)
         .maybeSingle();
 
-      console.log("[super-admin] super_admins check:", { data, error: error?.message });
       if (runId !== verifyRunRef.current) return;
       setAuthed(!error && !!data);
     } catch (e: any) {
