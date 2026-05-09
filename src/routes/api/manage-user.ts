@@ -116,6 +116,18 @@ export const Route = createFileRoute("/api/manage-user")({
               .from("user_roles")
               .insert(roles.map((role) => ({ user_id: newUserId!, lab_id: body.lab_id, role })));
 
+            await writeAuditLog({
+              actorId: userRes.user.id,
+              actorEmail: userRes.user.email ?? null,
+              labId: body.lab_id,
+              action: "user_invited",
+              resourceType: "user",
+              resourceId: newUserId,
+              ipAddress: clientIp(request),
+              userAgent: request.headers.get("user-agent"),
+              metadata: { email: body.email, full_name: body.full_name, roles },
+            });
+
             return Response.json({ ok: true, user_id: newUserId });
           }
 
@@ -147,6 +159,17 @@ export const Route = createFileRoute("/api/manage-user")({
                 .from("user_roles")
                 .insert(body.roles.map((role) => ({ user_id: body.user_id!, lab_id: body.lab_id, role })));
             }
+            await writeAuditLog({
+              actorId: userRes.user.id,
+              actorEmail: userRes.user.email ?? null,
+              labId: body.lab_id,
+              action: "user_roles_changed",
+              resourceType: "user",
+              resourceId: body.user_id,
+              ipAddress: clientIp(request),
+              userAgent: request.headers.get("user-agent"),
+              metadata: { new_roles: body.roles },
+            });
             return Response.json({ ok: true });
           }
 
@@ -158,6 +181,16 @@ export const Route = createFileRoute("/api/manage-user")({
               .from("profiles")
               .update({ is_active: body.action === "activate" })
               .eq("id", body.user_id);
+            await writeAuditLog({
+              actorId: userRes.user.id,
+              actorEmail: userRes.user.email ?? null,
+              labId: body.lab_id,
+              action: body.action === "activate" ? "user_activated" : "user_deactivated",
+              resourceType: "user",
+              resourceId: body.user_id,
+              ipAddress: clientIp(request),
+              userAgent: request.headers.get("user-agent"),
+            });
             return Response.json({ ok: true });
           }
 
@@ -180,6 +213,16 @@ export const Route = createFileRoute("/api/manage-user")({
               .update({ lab_id: null, is_active: false })
               .eq("id", body.user_id)
               .eq("lab_id", body.lab_id);
+            await writeAuditLog({
+              actorId: userRes.user.id,
+              actorEmail: userRes.user.email ?? null,
+              labId: body.lab_id,
+              action: "user_removed_from_lab",
+              resourceType: "user",
+              resourceId: body.user_id,
+              ipAddress: clientIp(request),
+              userAgent: request.headers.get("user-agent"),
+            });
             return Response.json({ ok: true });
           }
 
