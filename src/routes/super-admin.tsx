@@ -102,12 +102,10 @@ function SuperAdminPage() {
     let cancelled = false;
 
     const check = async () => {
-      console.log("[super-admin] initial check starting...");
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        console.log("[super-admin] getSession result:", session?.user?.id ?? "no session");
         if (!cancelled) await verifySuperAdmin(session?.user ?? null);
       } catch (e: any) {
         console.error("[super-admin] getSession failed:", e?.message);
@@ -119,7 +117,6 @@ function SuperAdminPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[super-admin] onAuthStateChange:", _event, session?.user?.id ?? "no session");
       if (!cancelled) void verifySuperAdmin(session?.user ?? null);
     });
     return () => {
