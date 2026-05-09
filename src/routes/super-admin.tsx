@@ -72,7 +72,6 @@ function SuperAdminPage() {
 
   const verifySuperAdmin = useCallback(async (nextUser: any | null) => {
     const runId = ++verifyRunRef.current;
-    console.log("[super-admin] verifySuperAdmin called, user:", nextUser?.id ?? "null");
     if (!nextUser) {
       setUser(null);
       setAuthed(false);
