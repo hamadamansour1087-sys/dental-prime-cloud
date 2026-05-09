@@ -19,19 +19,21 @@ export interface AuditLogEntry {
 // can never break the calling operation.
 export async function writeAuditLog(entry: AuditLogEntry): Promise<void> {
   try {
-    const { error } = await supabaseAdmin.from("audit_logs").insert({
-      actor_id: entry.actorId ?? null,
-      actor_email: entry.actorEmail ?? null,
-      lab_id: entry.labId ?? null,
-      action: entry.action,
-      resource_type: entry.resourceType ?? null,
-      resource_id: entry.resourceId ?? null,
-      before_data: entry.beforeData ?? null,
-      after_data: entry.afterData ?? null,
-      ip_address: entry.ipAddress ?? null,
-      user_agent: entry.userAgent ?? null,
-      metadata: entry.metadata ?? null,
-    });
+    const { error } = await supabaseAdmin.from("audit_logs").insert([
+      {
+        actor_id: entry.actorId ?? null,
+        actor_email: entry.actorEmail ?? null,
+        lab_id: entry.labId ?? null,
+        action: entry.action,
+        resource_type: entry.resourceType ?? null,
+        resource_id: entry.resourceId ?? null,
+        before_data: (entry.beforeData ?? null) as never,
+        after_data: (entry.afterData ?? null) as never,
+        ip_address: entry.ipAddress ?? null,
+        user_agent: entry.userAgent ?? null,
+        metadata: (entry.metadata ?? null) as never,
+      },
+    ]);
     if (error) console.error("[audit] insert failed:", error.message);
   } catch (e) {
     console.error("[audit] unexpected error:", e);
