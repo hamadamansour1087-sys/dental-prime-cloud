@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,21 @@ import {
 
 export const Route = createFileRoute("/super-admin")({
   component: SuperAdminPage,
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const { data: userRes } = await supabase.auth.getUser();
+    if (!userRes?.user) {
+      throw redirect({ to: "/login" });
+    }
+    const { data, error } = await supabase
+      .from("super_admins")
+      .select("id")
+      .eq("user_id", userRes.user.id)
+      .maybeSingle();
+    if (error || !data) {
+      throw redirect({ to: "/login" });
+    }
+  },
   head: () => ({
     meta: [{ title: "H.A.M.D — لوحة تحكم السوبر أدمن" }],
   }),

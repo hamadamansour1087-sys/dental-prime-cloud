@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 // Lightweight server-side helpers shared by API routes.
 import { createClient } from "@supabase/supabase-js";
 
