@@ -72,7 +72,6 @@ function SuperAdminPage() {
 
   const verifySuperAdmin = useCallback(async (nextUser: any | null) => {
     const runId = ++verifyRunRef.current;
-    console.log("[super-admin] verifySuperAdmin called, user:", nextUser?.id ?? "null");
     if (!nextUser) {
       setUser(null);
       setAuthed(false);
@@ -89,7 +88,6 @@ function SuperAdminPage() {
         .eq("user_id", nextUser.id)
         .maybeSingle();
 
-      console.log("[super-admin] super_admins check:", { data, error: error?.message });
       if (runId !== verifyRunRef.current) return;
       setAuthed(!error && !!data);
     } catch (e: any) {
@@ -104,12 +102,10 @@ function SuperAdminPage() {
     let cancelled = false;
 
     const check = async () => {
-      console.log("[super-admin] initial check starting...");
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        console.log("[super-admin] getSession result:", session?.user?.id ?? "no session");
         if (!cancelled) await verifySuperAdmin(session?.user ?? null);
       } catch (e: any) {
         console.error("[super-admin] getSession failed:", e?.message);
@@ -121,7 +117,6 @@ function SuperAdminPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[super-admin] onAuthStateChange:", _event, session?.user?.id ?? "no session");
       if (!cancelled) void verifySuperAdmin(session?.user ?? null);
     });
     return () => {
