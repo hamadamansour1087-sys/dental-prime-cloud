@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { randomInt } from "crypto";
+import { writeAuditLog } from "@/lib/audit.server";
+import { clientIp } from "@/lib/serverAuth";
 
 function generatePassword(length = 8): string {
   let s = "";
@@ -72,6 +74,17 @@ export const Route = createFileRoute("/api/reset-agent-password")({
           if (updateErr) {
             return Response.json({ error: updateErr.message }, { status: 500 });
           }
+
+          await writeAuditLog({
+            actorId: callerId,
+            labId: agent.lab_id,
+            action: "agent_password_reset",
+            resourceType: "delivery_agent",
+            resourceId: agent.id,
+            ipAddress: clientIp(request),
+            userAgent: request.headers.get("user-agent"),
+            metadata: { agent_name: agent.name, agent_user_id: agent.user_id },
+          });
 
           return Response.json({ success: true, password: newPassword });
         } catch (e) {

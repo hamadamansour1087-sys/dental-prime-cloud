@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createClient } from "@supabase/supabase-js";
+import { writeAuditLog } from "@/lib/audit.server";
+import { clientIp } from "@/lib/serverAuth";
 
 type AppRole = "admin" | "manager" | "technician";
 
