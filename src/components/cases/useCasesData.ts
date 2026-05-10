@@ -31,8 +31,8 @@ export function useCasesData(labId: string | null | undefined) {
     },
   });
 
-  // Latest technician at the "ready" stage per case
-  const readyTechnicians = useQuery<Map<string, string>>({
+  // Latest technician + entry date at the "ready" (تم التسليم) stage per case
+  const readyTechnicians = useQuery<Map<string, { name: string | null; enteredAt: string | null }>>({
     queryKey: ["cases-ready-technicians", labId],
     enabled: !!labId,
     queryFn: async () => {
@@ -40,13 +40,12 @@ export function useCasesData(labId: string | null | undefined) {
         .from("case_stage_history")
         .select("case_id, entered_at, technicians(name), workflow_stages!inner(code)")
         .eq("workflow_stages.code", "ready")
-        .not("technician_id", "is", null)
         .order("entered_at", { ascending: false });
       if (error) throw error;
-      const map = new Map<string, string>();
-      (data ?? []).forEach((row: { case_id: string; technicians?: { name?: string } | null }) => {
-        if (!map.has(row.case_id) && row.technicians?.name) {
-          map.set(row.case_id, row.technicians.name);
+      const map = new Map<string, { name: string | null; enteredAt: string | null }>();
+      (data ?? []).forEach((row: { case_id: string; entered_at: string | null; technicians?: { name?: string } | null }) => {
+        if (!map.has(row.case_id)) {
+          map.set(row.case_id, { name: row.technicians?.name ?? null, enteredAt: row.entered_at });
         }
       });
       return map;
