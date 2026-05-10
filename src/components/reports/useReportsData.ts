@@ -348,6 +348,8 @@ export function useReportsData(labId: string | null | undefined, f: ReportsFilte
     totalDelivered,
     totalReceived,
     totalReceivables,
+    remakeRepairCases,
+    technicianProduction,
     loadingDelivered,
     refetchDelivered,
   };
