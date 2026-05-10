@@ -7,7 +7,7 @@ import type { CaseRow, CaseStage } from "./types";
 interface Props {
   cases: CaseRow[];
   stages: CaseStage[] | undefined;
-  readyTechnicians: Map<string, string> | undefined;
+  readyTechnicians: Map<string, { name: string | null; enteredAt: string | null }> | undefined;
   deliveryAgents: Map<string, string> | undefined;
   parentWorkTypes: Map<string, string> | undefined;
   today: string;
@@ -37,7 +37,7 @@ export function CasesTableView({
             <TableHead>نوع العمل</TableHead>
             <TableHead>المرحلة</TableHead>
             <TableHead className="w-[130px]">دخول المرحلة</TableHead>
-            <TableHead>الفني</TableHead>
+            <TableHead>التسليم</TableHead>
             <TableHead className="text-center">الوحدات</TableHead>
             <TableHead>التسليم المتوقع</TableHead>
             <TableHead>تأكيد التسليم</TableHead>
@@ -96,10 +96,19 @@ export function CasesTableView({
                   {c.stage_entered_at ? format(new Date(c.stage_entered_at), "dd/MM/yyyy HH:mm") : "—"}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {technicianName ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
-                      {technicianName}
-                    </span>
+                  {technicianName?.name || technicianName?.enteredAt ? (
+                    <div className="flex flex-col gap-0.5">
+                      {technicianName?.name && (
+                        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                          {technicianName.name}
+                        </span>
+                      )}
+                      {technicianName?.enteredAt && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                          {format(new Date(technicianName.enteredAt), "dd/MM/yyyy")}
+                        </span>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
