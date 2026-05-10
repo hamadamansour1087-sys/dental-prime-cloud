@@ -37,7 +37,7 @@ export function CasesTableView({
             <TableHead>نوع العمل</TableHead>
             <TableHead>المرحلة</TableHead>
             <TableHead className="w-[130px]">دخول المرحلة</TableHead>
-            <TableHead>الفني</TableHead>
+            <TableHead>التسليم</TableHead>
             <TableHead className="text-center">الوحدات</TableHead>
             <TableHead>التسليم المتوقع</TableHead>
             <TableHead>تأكيد التسليم</TableHead>
