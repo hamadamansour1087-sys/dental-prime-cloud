@@ -35,11 +35,11 @@ export function CasesTableView({
             <TableHead>الطبيب</TableHead>
             <TableHead>المريض</TableHead>
             <TableHead>نوع العمل</TableHead>
+            <TableHead>التسليم المتوقع</TableHead>
             <TableHead>المرحلة</TableHead>
             <TableHead className="w-[130px]">دخول المرحلة</TableHead>
-            <TableHead>التسليم</TableHead>
             <TableHead className="text-center">الوحدات</TableHead>
-            <TableHead>التسليم المتوقع</TableHead>
+            <TableHead>التسليم</TableHead>
             <TableHead>تأكيد التسليم</TableHead>
           </TableRow>
         </TableHeader>
