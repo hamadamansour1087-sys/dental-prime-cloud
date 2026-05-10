@@ -52,19 +52,19 @@ export function useCasesData(labId: string | null | undefined) {
     },
   });
 
-  const deliveryAgents = useQuery<Map<string, string>>({
+  const deliveryAgents = useQuery<Map<string, { name: string | null; deliveredAt: string | null }>>({
     queryKey: ["cases-delivery-agents", labId],
     enabled: !!labId,
     queryFn: async () => {
       const { data } = await supabase
         .from("case_deliveries")
-        .select("case_id, delivery_agents(name)")
+        .select("case_id, delivered_at, delivery_agents(name)")
         .eq("lab_id", labId!)
         .order("delivered_at", { ascending: false });
-      const map = new Map<string, string>();
-      data?.forEach((d: { case_id: string; delivery_agents?: { name?: string } | null }) => {
-        if (!map.has(d.case_id) && d.delivery_agents?.name) {
-          map.set(d.case_id, d.delivery_agents.name);
+      const map = new Map<string, { name: string | null; deliveredAt: string | null }>();
+      data?.forEach((d: { case_id: string; delivered_at: string | null; delivery_agents?: { name?: string } | null }) => {
+        if (!map.has(d.case_id)) {
+          map.set(d.case_id, { name: d.delivery_agents?.name ?? null, deliveredAt: d.delivered_at });
         }
       });
       return map;
