@@ -7,7 +7,9 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 const securityHeaders = createMiddleware().server(async ({ next }) => {
   setResponseHeaders({
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "SAMEORIGIN",
+    // Allow embedding inside the Lovable editor preview (different subdomain)
+    // while still blocking arbitrary third-party iframes.
+    "Content-Security-Policy": "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(self), microphone=(), geolocation=(self)",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
