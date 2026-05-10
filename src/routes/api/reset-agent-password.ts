@@ -1,82 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { randomInt } from "crypto";
 import { writeAuditLog } from "@/lib/audit.server";
 import { clientIp } from "@/lib/serverAuth";
-
-function generatePassword(length = 8): string {
-  let s = "";
-  for (let i = 0; i < length; i++) s += randomInt(0, 10).toString();
-  return s;
-}
+import {
+  authenticateCaller,
+  generatePassword,
+  isLabAdminOrManager,
+  jsonError,
+} from "@/lib/portalAccounts.server";
 
 export const Route = createFileRoute("/api/reset-agent-password")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
-          const authHeader = request.headers.get("Authorization");
-          if (!authHeader?.startsWith("Bearer ")) {
-            return Response.json({ error: "غير مصرح" }, { status: 401 });
-          }
-          const token = authHeader.slice(7).trim();
-          if (!token) {
-            return Response.json({ error: "رمز الجلسة فارغ" }, { status: 401 });
-          }
-
-          const SUPABASE_URL = process.env.SUPABASE_URL!;
-          const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
-          const userClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-            global: { headers: { Authorization: `Bearer ${token}` } },
-            auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-          });
-          const { data: claimsRes, error: claimsErr } = await userClient.auth.getClaims(token);
-          if (claimsErr || !claimsRes?.claims?.sub) {
-            return Response.json({ error: "جلسة غير صالحة" }, { status: 401 });
-          }
-          const callerId = claimsRes.claims.sub as string;
+          const caller = await authenticateCaller(request);
+          if (caller instanceof Response) return caller;
 
           const body = (await request.json()) as { agent_id: string };
-          if (!body.agent_id) {
-            return Response.json({ error: "بيانات ناقصة" }, { status: 400 });
-          }
+          if (!body.agent_id) return jsonError("بيانات ناقصة", 400);
 
           const { data: agent, error: aErr } = await supabaseAdmin
             .from("delivery_agents")
             .select("id, lab_id, name, user_id, phone")
             .eq("id", body.agent_id)
             .maybeSingle();
-          if (aErr || !agent) {
-            return Response.json({ error: "المندوب غير موجود" }, { status: 404 });
-          }
-          if (!agent.user_id) {
-            return Response.json({ error: "المندوب ليس لديه حساب" }, { status: 400 });
-          }
+          if (aErr || !agent) return jsonError("المندوب غير موجود", 404);
+          if (!agent.user_id) return jsonError("المندوب ليس لديه حساب", 400);
 
-          // Verify caller is admin/manager in the same lab
-          const { data: roleCheck } = await supabaseAdmin
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", callerId)
-            .eq("lab_id", agent.lab_id);
-          const isPriv = (roleCheck ?? []).some((r) => r.role === "admin" || r.role === "manager");
-          if (!isPriv) {
-            return Response.json({ error: "صلاحيات غير كافية" }, { status: 403 });
+          if (!(await isLabAdminOrManager(caller.id, agent.lab_id))) {
+            return jsonError("صلاحيات غير كافية", 403);
           }
 
           const newPassword = generatePassword(8);
-
           const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
             agent.user_id,
             { password: newPassword },
           );
-          if (updateErr) {
-            return Response.json({ error: updateErr.message }, { status: 500 });
-          }
+          if (updateErr) return jsonError(updateErr.message, 500);
 
           await writeAuditLog({
-            actorId: callerId,
+            actorId: caller.id,
+            actorEmail: caller.email,
             labId: agent.lab_id,
             action: "agent_password_reset",
             resourceType: "delivery_agent",
@@ -89,7 +54,7 @@ export const Route = createFileRoute("/api/reset-agent-password")({
           return Response.json({ success: true, password: newPassword });
         } catch (e) {
           console.error("reset-agent-password error:", e);
-          return Response.json({ error: "حدث خطأ داخلي" }, { status: 500 });
+          return jsonError("حدث خطأ داخلي", 500);
         }
       },
     },
