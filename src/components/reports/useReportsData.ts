@@ -238,6 +238,91 @@ export function useReportsData(labId: string | null | undefined, f: ReportsFilte
     return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
   }, [deliveredCases, payments]);
 
+  // Remake / repair cases in the period (received in range)
+  const { data: remakeRepairCases = [] } = useQuery({
+    queryKey: ["rep-remakes", labId, range, doctorFilter],
+    enabled: !!labId,
+    queryFn: async () => {
+      let q = supabase
+        .from("cases")
+        .select("id,case_number,case_type,date_received,date_delivered,units,price,doctor_id,work_type_id,status,parent_case_id,notes")
+        .eq("lab_id", labId!)
+        .in("case_type", ["remake", "repair"])
+        .gte("date_received", range.from)
+        .lte("date_received", range.to)
+        .limit(5000);
+      if (doctorFilter !== "all") q = q.eq("doctor_id", doctorFilter);
+      const { data } = await q;
+      return (data ?? []) as Array<{
+        id: string; case_number: string; case_type: string; date_received: string | null;
+        date_delivered: string | null; units: number | null; price: number | null;
+        doctor_id: string | null; work_type_id: string | null; status: string | null;
+        parent_case_id: string | null; notes: string | null;
+      }>;
+    },
+  });
+
+  // Technician production: cases that passed through "ready" stage in the period
+  const { data: technicianProduction = [] } = useQuery({
+    queryKey: ["rep-tech-prod", labId, range],
+    enabled: !!labId,
+    queryFn: async () => {
+      const { data: history } = await supabase
+        .from("case_stage_history")
+        .select("technician_id, case_id, entered_at, workflow_stages(code)")
+        .eq("lab_id", labId!)
+        .not("technician_id", "is", null)
+        .gte("entered_at", range.from)
+        .lte("entered_at", range.to + "T23:59:59")
+        .limit(10000);
+      const filtered = ((history ?? []) as Array<{
+        technician_id: string; case_id: string;
+        workflow_stages: { code: string } | null;
+      }>).filter((h) => h.workflow_stages?.code === "ready");
+      const caseIds = Array.from(new Set(filtered.map((h) => h.case_id)));
+      const unitsByCase = new Map<string, number>();
+      if (caseIds.length) {
+        const { data: cs } = await supabase.from("cases").select("id,units").in("id", caseIds);
+        (cs ?? []).forEach((c: { id: string; units: number | null }) => unitsByCase.set(c.id, c.units ?? 0));
+      }
+      // Find which of those cases later spawned a remake/repair (quality metric)
+      let remakeParentIds = new Set<string>();
+      if (caseIds.length) {
+        const { data: kids } = await supabase
+          .from("cases")
+          .select("parent_case_id")
+          .eq("lab_id", labId!)
+          .in("case_type", ["remake", "repair"])
+          .in("parent_case_id", caseIds);
+        (kids ?? []).forEach((k: { parent_case_id: string | null }) => {
+          if (k.parent_case_id) remakeParentIds.add(k.parent_case_id);
+        });
+      }
+      const { data: techs } = await supabase.from("technicians").select("id,name").eq("lab_id", labId!);
+      const techMap = new Map<string, string>();
+      ((techs ?? []) as Array<{ id: string; name: string }>).forEach((t) => techMap.set(t.id, t.name));
+
+      const agg = new Map<string, { id: string; name: string; cases: number; units: number; remakes: number; caseIds: Set<string> }>();
+      filtered.forEach((h) => {
+        const cur = agg.get(h.technician_id) ?? {
+          id: h.technician_id, name: techMap.get(h.technician_id) ?? "—",
+          cases: 0, units: 0, remakes: 0, caseIds: new Set<string>(),
+        };
+        if (!cur.caseIds.has(h.case_id)) {
+          cur.caseIds.add(h.case_id);
+          cur.cases += 1;
+          cur.units += unitsByCase.get(h.case_id) ?? 0;
+          if (remakeParentIds.has(h.case_id)) cur.remakes += 1;
+        }
+        agg.set(h.technician_id, cur);
+      });
+      return Array.from(agg.values())
+        .map((v) => ({ id: v.id, name: v.name, cases: v.cases, units: v.units, remakes: v.remakes,
+          quality: v.cases > 0 ? Math.round(((v.cases - v.remakes) / v.cases) * 100) : 100 }))
+        .sort((a, b) => b.units - a.units);
+    },
+  });
+
   const totalRevenue = deliveredCases.reduce((s, c) => s + (Number(c.price) || 0), 0);
   const totalCollected = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
   const totalDelivered = deliveredCases.length;
