@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   PieChart, Pie, Cell, LineChart, Line,
 } from "recharts";
-import { MapPin, TrendingUp, Users, Wallet, Wrench } from "lucide-react";
+import { HardHat, MapPin, RefreshCcw, TrendingUp, Users, Wallet, Wrench } from "lucide-react";
 import { CHART_COLORS, fmtCurrency, fmtNum } from "./presets";
 import { DataTable, KpiCard } from "./shared";
 import type { ReportsData } from "./useReportsData";
@@ -17,8 +17,10 @@ export function ReportsTabs({ d }: { d: ReportsData }) {
   const [tab, setTab] = useState("production");
   return (
     <Tabs value={tab} onValueChange={setTab}>
-      <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full print:hidden">
+      <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full print:hidden">
         <TabsTrigger value="production"><Wrench className="h-4 w-4 ml-1" />الإنتاج</TabsTrigger>
+        <TabsTrigger value="technicians"><HardHat className="h-4 w-4 ml-1" />الفنيون</TabsTrigger>
+        <TabsTrigger value="remakes"><RefreshCcw className="h-4 w-4 ml-1" />الإعادة والتصليح</TabsTrigger>
         <TabsTrigger value="doctors"><Users className="h-4 w-4 ml-1" />الأطباء</TabsTrigger>
         <TabsTrigger value="geography"><MapPin className="h-4 w-4 ml-1" />المحافظات</TabsTrigger>
         <TabsTrigger value="financial"><Wallet className="h-4 w-4 ml-1" />المالية</TabsTrigger>
