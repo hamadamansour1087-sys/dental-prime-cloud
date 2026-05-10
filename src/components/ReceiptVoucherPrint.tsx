@@ -15,6 +15,7 @@ export interface ReceiptLine {
 export interface ReceiptVoucherData {
   voucherNumber: string;
   voucherDate: string; // yyyy-MM-dd
+  voucherType?: "receipt" | "payment";
   cashAccountName?: string;
   notes?: string;
   lines: ReceiptLine[];
@@ -68,8 +69,8 @@ export const ReceiptVoucherPrint = forwardRef<HTMLDivElement, { data: ReceiptVou
             </div>
           </div>
           <div style={{ textAlign: "left", border: "2px solid #000", padding: "6px 14px", borderRadius: 4 }}>
-            <div style={{ fontSize: "16pt", fontWeight: 800 }}>سند قبض</div>
-            <div style={{ fontSize: "10pt", marginTop: 2 }}>RECEIPT VOUCHER</div>
+            <div style={{ fontSize: "16pt", fontWeight: 800 }}>{data.voucherType === "payment" ? "سند صرف" : "سند قبض"}</div>
+            <div style={{ fontSize: "10pt", marginTop: 2 }}>{data.voucherType === "payment" ? "PAYMENT VOUCHER" : "RECEIPT VOUCHER"}</div>
           </div>
         </div>
 
