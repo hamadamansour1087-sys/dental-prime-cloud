@@ -8,7 +8,7 @@ interface Props {
   cases: CaseRow[];
   stages: CaseStage[] | undefined;
   readyTechnicians: Map<string, { name: string | null; enteredAt: string | null }> | undefined;
-  deliveryAgents: Map<string, string> | undefined;
+  deliveryAgents: Map<string, { name: string | null; deliveredAt: string | null }> | undefined;
   parentWorkTypes: Map<string, string> | undefined;
   today: string;
   onOpen: (caseId: string) => void;
