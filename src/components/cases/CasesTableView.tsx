@@ -117,17 +117,25 @@ export function CasesTableView({
                 <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
                   {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                 </TableCell>
-                <TableCell className="text-xs text-emerald-600 dark:text-emerald-400">
-                  {c.date_delivered ? (
-                    <div>
-                      <span>{format(new Date(c.date_delivered), "dd/MM/yyyy")}</span>
-                      {deliveryAgents?.get(c.id) && (
-                        <span className="block text-[10px] text-muted-foreground">{deliveryAgents.get(c.id)}</span>
-                      )}
-                    </div>
-                  ) : (
-                    "—"
-                  )}
+                <TableCell className="text-xs">
+                  {(() => {
+                    const agent = deliveryAgents?.get(c.id);
+                    if (!agent?.deliveredAt && !agent?.name) return <span className="text-muted-foreground">—</span>;
+                    return (
+                      <div className="flex flex-col gap-0.5">
+                        {agent?.deliveredAt && (
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            {format(new Date(agent.deliveredAt), "dd/MM/yyyy")}
+                          </span>
+                        )}
+                        {agent?.name && (
+                          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                            {agent.name}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TableCell>
               </TableRow>
             );
