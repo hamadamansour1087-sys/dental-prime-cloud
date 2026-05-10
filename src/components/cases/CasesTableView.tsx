@@ -40,7 +40,7 @@ export function CasesTableView({
             <TableHead>الفني</TableHead>
             <TableHead className="text-center">الوحدات</TableHead>
             <TableHead>التسليم المتوقع</TableHead>
-            <TableHead>التسليم الفعلي</TableHead>
+            <TableHead>تأكيد التسليم</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
