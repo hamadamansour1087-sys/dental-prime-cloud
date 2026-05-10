@@ -7,7 +7,7 @@ import type { CaseRow, CaseStage } from "./types";
 interface Props {
   cases: CaseRow[];
   stages: CaseStage[] | undefined;
-  readyTechnicians: Map<string, string> | undefined;
+  readyTechnicians: Map<string, { name: string | null; enteredAt: string | null }> | undefined;
   deliveryAgents: Map<string, string> | undefined;
   parentWorkTypes: Map<string, string> | undefined;
   today: string;
