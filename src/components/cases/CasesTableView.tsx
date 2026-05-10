@@ -79,6 +79,9 @@ export function CasesTableView({
                     <span className="block text-[10px] text-muted-foreground">الأصلي: {parentWorkType}</span>
                   )}
                 </TableCell>
+                <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
+                  {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
+                </TableCell>
                 <TableCell>
                   {stage ? (
                     <span
@@ -95,6 +98,7 @@ export function CasesTableView({
                 <TableCell className="text-xs text-muted-foreground">
                   {c.stage_entered_at ? format(new Date(c.stage_entered_at), "dd/MM/yyyy HH:mm") : "—"}
                 </TableCell>
+                <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
                 <TableCell className="text-xs">
                   {technicianName?.name || technicianName?.enteredAt ? (
                     <div className="flex flex-col gap-0.5">
@@ -112,10 +116,6 @@ export function CasesTableView({
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
-                </TableCell>
-                <TableCell className="text-center font-mono text-xs">{c.units ?? 0}</TableCell>
-                <TableCell className={`text-xs ${overdue ? "text-destructive font-semibold" : ""}`}>
-                  {c.due_date ? format(new Date(c.due_date), "dd/MM/yyyy") : "—"}
                 </TableCell>
                 <TableCell className="text-xs">
                   {(() => {
