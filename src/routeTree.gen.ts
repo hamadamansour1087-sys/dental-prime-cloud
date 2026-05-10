@@ -14,6 +14,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -32,6 +33,7 @@ import { Route as ApiResetDoctorPasswordRouteImport } from './routes/api/reset-d
 import { Route as ApiResetAgentPasswordRouteImport } from './routes/api/reset-agent-password'
 import { Route as ApiPortalResolveLoginRouteImport } from './routes/api/portal-resolve-login'
 import { Route as ApiManageUserRouteImport } from './routes/api/manage-user'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiCreateDoctorAccountRouteImport } from './routes/api/create-doctor-account'
 import { Route as ApiCreateDeliveryAgentAccountRouteImport } from './routes/api/create-delivery-agent-account'
 import { Route as ApiAiPredictDeliveryRouteImport } from './routes/api/ai-predict-delivery'
@@ -97,6 +99,11 @@ const PortalRoute = PortalRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeliveryRoute = DeliveryRouteImport.update({
@@ -186,6 +193,11 @@ const ApiPortalResolveLoginRoute = ApiPortalResolveLoginRouteImport.update({
 const ApiManageUserRoute = ApiManageUserRouteImport.update({
   id: '/api/manage-user',
   path: '/api/manage-user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCreateDoctorAccountRoute = ApiCreateDoctorAccountRouteImport.update({
@@ -398,6 +410,7 @@ const AppCasesCaseIdRoute = AppCasesCaseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/delivery': typeof DeliveryRouteWithChildren
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
@@ -438,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/api/reset-agent-password': typeof ApiResetAgentPasswordRoute
@@ -463,6 +477,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/delivery': typeof DeliveryRouteWithChildren
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
@@ -503,6 +518,7 @@ export interface FileRoutesByTo {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/api/reset-agent-password': typeof ApiResetAgentPasswordRoute
@@ -530,6 +546,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/delivery': typeof DeliveryRouteWithChildren
+  '/health': typeof HealthRoute
   '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/register': typeof RegisterRoute
@@ -570,6 +587,7 @@ export interface FileRoutesById {
   '/api/ai-predict-delivery': typeof ApiAiPredictDeliveryRoute
   '/api/create-delivery-agent-account': typeof ApiCreateDeliveryAgentAccountRoute
   '/api/create-doctor-account': typeof ApiCreateDoctorAccountRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/manage-user': typeof ApiManageUserRoute
   '/api/portal-resolve-login': typeof ApiPortalResolveLoginRoute
   '/api/reset-agent-password': typeof ApiResetAgentPasswordRoute
@@ -597,6 +615,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/delivery'
+    | '/health'
     | '/login'
     | '/portal'
     | '/register'
@@ -637,6 +656,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
+    | '/api/health'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
     | '/api/reset-agent-password'
@@ -662,6 +682,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/delivery'
+    | '/health'
     | '/login'
     | '/portal'
     | '/register'
@@ -702,6 +723,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
+    | '/api/health'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
     | '/api/reset-agent-password'
@@ -728,6 +750,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/delivery'
+    | '/health'
     | '/login'
     | '/portal'
     | '/register'
@@ -768,6 +791,7 @@ export interface FileRouteTypes {
     | '/api/ai-predict-delivery'
     | '/api/create-delivery-agent-account'
     | '/api/create-doctor-account'
+    | '/api/health'
     | '/api/manage-user'
     | '/api/portal-resolve-login'
     | '/api/reset-agent-password'
@@ -795,6 +819,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   DeliveryRoute: typeof DeliveryRouteWithChildren
+  HealthRoute: typeof HealthRoute
   LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
   RegisterRoute: typeof RegisterRoute
@@ -807,6 +832,7 @@ export interface RootRouteChildren {
   ApiAiPredictDeliveryRoute: typeof ApiAiPredictDeliveryRoute
   ApiCreateDeliveryAgentAccountRoute: typeof ApiCreateDeliveryAgentAccountRoute
   ApiCreateDoctorAccountRoute: typeof ApiCreateDoctorAccountRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiManageUserRoute: typeof ApiManageUserRoute
   ApiPortalResolveLoginRoute: typeof ApiPortalResolveLoginRoute
   ApiResetAgentPasswordRoute: typeof ApiResetAgentPasswordRoute
@@ -848,6 +874,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/delivery': {
@@ -974,6 +1007,13 @@ declare module '@tanstack/react-router' {
       path: '/api/manage-user'
       fullPath: '/api/manage-user'
       preLoaderRoute: typeof ApiManageUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/create-doctor-account': {
@@ -1397,6 +1437,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   DeliveryRoute: DeliveryRouteWithChildren,
+  HealthRoute: HealthRoute,
   LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
   RegisterRoute: RegisterRoute,
@@ -1409,6 +1450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiPredictDeliveryRoute: ApiAiPredictDeliveryRoute,
   ApiCreateDeliveryAgentAccountRoute: ApiCreateDeliveryAgentAccountRoute,
   ApiCreateDoctorAccountRoute: ApiCreateDoctorAccountRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiManageUserRoute: ApiManageUserRoute,
   ApiPortalResolveLoginRoute: ApiPortalResolveLoginRoute,
   ApiResetAgentPasswordRoute: ApiResetAgentPasswordRoute,
@@ -1417,13 +1459,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
